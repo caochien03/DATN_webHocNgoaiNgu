@@ -45,7 +45,13 @@ export function AppHeader() {
         <nav className="flex items-center gap-3 text-sm">
           {user ? (
             <>
-              <span className="truncate text-zinc-600 dark:text-zinc-400">
+              <Link
+                href="/decks"
+                className="text-zinc-700 hover:underline dark:text-zinc-300"
+              >
+                Bộ từ
+              </Link>
+              <span className="max-w-[140px] truncate text-zinc-600 dark:text-zinc-400">
                 {user.name || user.email}
               </span>
               <button

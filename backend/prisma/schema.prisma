@@ -15,4 +15,36 @@ model User {
   avatarUrl    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  decks        Deck[]
+}
+
+model Deck {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cards       Card[]
+
+  @@index([userId])
+}
+
+model Card {
+  id             String    @id @default(cuid())
+  deckId         String
+  deck           Deck      @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  frontText      String
+  backText       String
+  note           String?
+  sortOrder      Int       @default(0)
+  correctCount   Int       @default(0)
+  wrongCount     Int       @default(0)
+  lastResult     Boolean?
+  lastReviewedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([deckId])
 }
