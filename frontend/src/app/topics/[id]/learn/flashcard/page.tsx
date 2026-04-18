@@ -3,19 +3,18 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { AuthGate } from "@/components/AuthGate";
-import { WriteGame } from "@/components/learn/WriteGame";
-import { recordAttempt } from "@/lib/api-fetch";
-import { useDeck } from "@/lib/use-deck";
+import { FlashcardGame } from "@/components/learn/FlashcardGame";
+import { useTopic } from "@/lib/use-topic";
 
-function DeckWrite() {
+function TopicFlashcard() {
   const params = useParams();
   const id = params.id as string;
-  const { deck, loading, error } = useDeck(id);
+  const { topic, loading, error } = useTopic(id);
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-8">
       <Link
-        href={`/decks/${id}/learn`}
+        href={`/topics/${id}/learn`}
         className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
       >
         ← Chọn chế độ khác
@@ -26,15 +25,15 @@ function DeckWrite() {
         <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
       ) : null}
 
-      {deck ? <WriteGame cards={deck.cards} onAttempt={recordAttempt} /> : null}
+      {topic ? <FlashcardGame cards={topic.words} /> : null}
     </div>
   );
 }
 
-export default function WritePage() {
+export default function TopicFlashcardPage() {
   return (
     <AuthGate>
-      <DeckWrite />
+      <TopicFlashcard />
     </AuthGate>
   );
 }

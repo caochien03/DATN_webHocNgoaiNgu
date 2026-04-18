@@ -19,16 +19,49 @@ model User {
 }
 
 model Deck {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  cards       Card[]
+  id            String            @id @default(cuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  sourceTopicId String?
+  sourceTopic   VocabularyTopic?  @relation(fields: [sourceTopicId], references: [id], onDelete: SetNull)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  cards         Card[]
 
   @@index([userId])
+  @@index([sourceTopicId])
+}
+
+model VocabularyTopic {
+  id           String           @id @default(cuid())
+  title        String
+  description  String?
+  languageCode String           @default("ko")
+  level        String?
+  sortOrder    Int              @default(0)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  words        VocabularyWord[]
+  derivedDecks Deck[]
+
+  @@index([languageCode])
+  @@index([level])
+}
+
+model VocabularyWord {
+  id        String          @id @default(cuid())
+  topicId   String
+  topic     VocabularyTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  frontText String
+  backText  String
+  note      String?
+  sortOrder Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([topicId])
 }
 
 model Card {

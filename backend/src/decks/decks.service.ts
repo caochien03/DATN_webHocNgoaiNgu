@@ -14,11 +14,80 @@ export class DecksService {
   constructor(private readonly prisma: PrismaService) {}
 
   async listDecks(userId: string) {
-    return this.prisma.deck.findMany({
-      where: { userId },
+    const decks = await this.prisma.deck.findMany({
+      where: { userId, sourceTopicId: null },
       orderBy: { updatedAt: 'desc' },
-      include: { _count: { select: { cards: true } } },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        updatedAt: true,
+        cards: {
+          select: { lastResult: true, lastReviewedAt: true },
+        },
+      },
     });
+
+    const now = new Date();
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    let totalCards = 0;
+    let totalLearned = 0;
+    let totalWeak = 0;
+    let totalReviewed = 0;
+    let reviewedToday = 0;
+    let reviewedLast7Days = 0;
+
+    const deckRows = decks.map((d) => {
+      let learned = 0;
+      let weak = 0;
+      let reviewed = 0;
+      for (const c of d.cards) {
+        totalCards += 1;
+        if (c.lastResult === true) {
+          learned += 1;
+          totalLearned += 1;
+        }
+        if (c.lastResult === false) {
+          weak += 1;
+          totalWeak += 1;
+        }
+        if (c.lastReviewedAt) {
+          reviewed += 1;
+          totalReviewed += 1;
+          if (c.lastReviewedAt >= startOfToday) reviewedToday += 1;
+          if (c.lastReviewedAt >= sevenDaysAgo) reviewedLast7Days += 1;
+        }
+      }
+      return {
+        id: d.id,
+        title: d.title,
+        description: d.description,
+        updatedAt: d.updatedAt,
+        total: d.cards.length,
+        learned,
+        weak,
+        reviewed,
+      };
+    });
+
+    return {
+      decks: deckRows,
+      totals: {
+        decks: deckRows.length,
+        cards: totalCards,
+        learned: totalLearned,
+        weak: totalWeak,
+        reviewed: totalReviewed,
+        reviewedToday,
+        reviewedLast7Days,
+      },
+    };
   }
 
   async getDeck(deckId: string, userId: string) {

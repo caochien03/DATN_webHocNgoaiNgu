@@ -16,3 +16,57 @@ export type DeckDetail = {
   description: string | null;
   cards: CardRow[];
 };
+
+export type DeckWithStats = {
+  id: string;
+  title: string;
+  description: string | null;
+  updatedAt: string;
+  total: number;
+  learned: number;
+  weak: number;
+  reviewed: number;
+};
+
+export type DecksTotals = {
+  decks: number;
+  cards: number;
+  learned: number;
+  weak: number;
+  reviewed: number;
+  reviewedToday: number;
+  reviewedLast7Days: number;
+};
+
+export type DecksResponse = {
+  decks: DeckWithStats[];
+  totals: DecksTotals;
+};
+
+export type VocabWord = {
+  id: string;
+  frontText: string;
+  backText: string;
+  note: string | null;
+  sortOrder: number;
+};
+
+export type TopicRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  languageCode: string;
+  level: string | null;
+  sortOrder: number;
+  _count: { words: number };
+};
+
+export type TopicDetail = {
+  id: string;
+  title: string;
+  description: string | null;
+  languageCode: string;
+  level: string | null;
+  sortOrder: number;
+  words: VocabWord[];
+};

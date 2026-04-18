@@ -46,14 +46,23 @@ export function AppHeader() {
           {user ? (
             <>
               <Link
+                href="/topics"
+                className="text-zinc-700 hover:underline dark:text-zinc-300"
+              >
+                Chủ đề
+              </Link>
+              <Link
                 href="/decks"
                 className="text-zinc-700 hover:underline dark:text-zinc-300"
               >
                 Bộ từ
               </Link>
-              <span className="max-w-[140px] truncate text-zinc-600 dark:text-zinc-400">
+              <Link
+                href="/me"
+                className="max-w-[140px] truncate text-zinc-700 hover:underline dark:text-zinc-300"
+              >
                 {user.name || user.email}
-              </span>
+              </Link>
               <button
                 type="button"
                 onClick={logout}
