@@ -61,6 +61,44 @@ export type TopicRow = {
   _count: { words: number };
 };
 
+export type GrammarLevel =
+  | "BEGINNER_1"
+  | "BEGINNER_2"
+  | "INTERMEDIATE_1"
+  | "INTERMEDIATE_2"
+  | "ADVANCED_1"
+  | "ADVANCED_2";
+
+export type GrammarPoint = {
+  id: string;
+  lessonId: string;
+  title: string;
+  meaning: string | null;
+  structure: string | null;
+  example: string | null;
+  translation: string | null;
+  note: string | null;
+  sortOrder: number;
+};
+
+export type GrammarLessonRow = {
+  id: string;
+  level: GrammarLevel;
+  title: string;
+  summary: string | null;
+  sortOrder: number;
+  _count: { points: number };
+};
+
+export type GrammarLessonDetail = {
+  id: string;
+  level: GrammarLevel;
+  title: string;
+  summary: string | null;
+  sortOrder: number;
+  points: GrammarPoint[];
+};
+
 export type TopicDetail = {
   id: string;
   title: string;

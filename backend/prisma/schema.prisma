@@ -64,6 +64,45 @@ model VocabularyWord {
   @@index([topicId])
 }
 
+enum GrammarLevel {
+  BEGINNER_1
+  BEGINNER_2
+  INTERMEDIATE_1
+  INTERMEDIATE_2
+  ADVANCED_1
+  ADVANCED_2
+}
+
+model GrammarLesson {
+  id        String         @id @default(cuid())
+  level     GrammarLevel
+  title     String
+  summary   String?
+  sortOrder Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  points    GrammarPoint[]
+
+  @@index([level])
+}
+
+model GrammarPoint {
+  id          String        @id @default(cuid())
+  lessonId    String
+  lesson      GrammarLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title       String
+  meaning     String?
+  structure   String?
+  example     String?
+  translation String?
+  note        String?
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([lessonId])
+}
+
 model Card {
   id             String    @id @default(cuid())
   deckId         String
