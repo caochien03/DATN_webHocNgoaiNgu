@@ -16,4 +16,9 @@ export class GrammarController {
   getLesson(@Param('id') id: string) {
     return this.grammarService.getLesson(id);
   }
+
+  @Get('lessons/:id/exercises')
+  listExercises(@Param('id') id: string) {
+    return this.grammarService.listExercises(id);
+  }
 }

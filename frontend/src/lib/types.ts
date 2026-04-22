@@ -87,7 +87,7 @@ export type GrammarLessonRow = {
   title: string;
   summary: string | null;
   sortOrder: number;
-  _count: { points: number };
+  _count: { points: number; exercises: number };
 };
 
 export type GrammarLessonDetail = {
@@ -97,6 +97,17 @@ export type GrammarLessonDetail = {
   summary: string | null;
   sortOrder: number;
   points: GrammarPoint[];
+  _count: { exercises: number };
+};
+
+export type GrammarExercise = {
+  id: string;
+  lessonId: string;
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string | null;
+  sortOrder: number;
 };
 
 export type TopicDetail = {

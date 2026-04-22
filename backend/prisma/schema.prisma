@@ -74,14 +74,15 @@ enum GrammarLevel {
 }
 
 model GrammarLesson {
-  id        String         @id @default(cuid())
+  id        String            @id @default(cuid())
   level     GrammarLevel
   title     String
   summary   String?
-  sortOrder Int            @default(0)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  sortOrder Int               @default(0)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
   points    GrammarPoint[]
+  exercises GrammarExercise[]
 
   @@index([level])
 }
@@ -99,6 +100,21 @@ model GrammarPoint {
   sortOrder   Int           @default(0)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  @@index([lessonId])
+}
+
+model GrammarExercise {
+  id           String        @id @default(cuid())
+  lessonId     String
+  lesson       GrammarLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  prompt       String
+  options      String[]
+  correctIndex Int
+  explanation  String?
+  sortOrder    Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@index([lessonId])
 }

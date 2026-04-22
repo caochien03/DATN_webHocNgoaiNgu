@@ -23,7 +23,9 @@ export class GrammarService {
     return this.prisma.grammarLesson.findMany({
       where,
       orderBy: [{ level: 'asc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }],
-      include: { _count: { select: { points: true } } },
+      include: {
+        _count: { select: { points: true, exercises: true } },
+      },
     });
   }
 
@@ -34,11 +36,25 @@ export class GrammarService {
         points: {
           orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
         },
+        _count: { select: { exercises: true } },
       },
     });
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
     }
     return lesson;
+  }
+
+  async listExercises(lessonId: string) {
+    const lesson = await this.prisma.grammarLesson.findUnique({
+      where: { id: lessonId },
+    });
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+    return this.prisma.grammarExercise.findMany({
+      where: { lessonId },
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+    });
   }
 }

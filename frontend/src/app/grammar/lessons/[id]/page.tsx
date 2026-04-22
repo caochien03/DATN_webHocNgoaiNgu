@@ -63,17 +63,27 @@ function LessonDetailContent() {
 
       {lesson ? (
         <>
-          <div className="mt-4">
-            <p className="text-xs uppercase tracking-wide text-zinc-500">
-              {LEVEL_LABEL[lesson.level]}
-            </p>
-            <h1 className="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-              {lesson.title}
-            </h1>
-            {lesson.summary ? (
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                {lesson.summary}
+          <div className="mt-4 flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-zinc-500">
+                {LEVEL_LABEL[lesson.level]}
               </p>
+              <h1 className="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+                {lesson.title}
+              </h1>
+              {lesson.summary ? (
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  {lesson.summary}
+                </p>
+              ) : null}
+            </div>
+            {lesson._count.exercises > 0 ? (
+              <Link
+                href={`/grammar/lessons/${lesson.id}/practice`}
+                className="shrink-0 rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+              >
+                Luyện tập ({lesson._count.exercises})
+              </Link>
             ) : null}
           </div>
 

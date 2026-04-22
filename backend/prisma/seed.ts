@@ -105,11 +105,19 @@ type SeedGrammarPoint = {
   note?: string;
 };
 
+type SeedGrammarExercise = {
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+  explanation?: string;
+};
+
 type SeedGrammarLesson = {
   level: GrammarLevel;
   title: string;
   summary?: string;
   points: SeedGrammarPoint[];
+  exercises?: SeedGrammarExercise[];
 };
 
 const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
@@ -141,6 +149,26 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         translation: 'Tôi là người Hàn.',
       },
     ],
+    exercises: [
+      {
+        prompt: '저는 학생___.',
+        options: ['이에요', '예요', '이에요가', '예요는'],
+        correctIndex: 0,
+        explanation: '학생 kết thúc bằng phụ âm ㅇ nên dùng 이에요.',
+      },
+      {
+        prompt: '사과___ 맛있어요.',
+        options: ['을', '를', '이', '가'],
+        correctIndex: 3,
+        explanation: '사과 kết thúc bằng nguyên âm ㅏ, chủ ngữ dùng 가.',
+      },
+      {
+        prompt: '제 친구___ 학생이에요.',
+        options: ['은', '는', '이', '가'],
+        correctIndex: 1,
+        explanation: '친구 kết thúc bằng nguyên âm, chủ đề dùng 는.',
+      },
+    ],
   },
   {
     level: 'BEGINNER_1',
@@ -168,6 +196,26 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         translation: 'Tôi học.',
       },
     ],
+    exercises: [
+      {
+        prompt: '저는 밥___ 먹어요.',
+        options: ['을', '를', '이', '가'],
+        correctIndex: 0,
+        explanation: '밥 kết thúc bằng phụ âm → tân ngữ dùng 을.',
+      },
+      {
+        prompt: '저는 한국어를 ___.',
+        options: ['공부하요', '공부해요', '공부하다', '공부합'],
+        correctIndex: 1,
+        explanation: '하다 → 해요; phần còn lại là dạng sai.',
+      },
+      {
+        prompt: '감사___. (trang trọng)',
+        options: ['합니다', '합니까', '해요', '해'],
+        correctIndex: 0,
+        explanation: 'Dạng trang trọng khẳng định dùng -ㅂ니다/-습니다.',
+      },
+    ],
   },
   {
     level: 'BEGINNER_1',
@@ -185,6 +233,20 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         meaning: 'Nhưng.',
         example: '매워요, 지만 맛있어요.',
         translation: 'Cay nhưng ngon.',
+      },
+    ],
+    exercises: [
+      {
+        prompt: '저는 밥을 먹___ 물을 마셔요.',
+        options: ['고', '지만', '서', '면'],
+        correctIndex: 0,
+        explanation: '“và” nối hai hành động dùng -고.',
+      },
+      {
+        prompt: '한국어는 재미있___ 어려워요.',
+        options: ['고', '지만', '면', '은'],
+        correctIndex: 1,
+        explanation: '“nhưng” đối lập dùng -지만.',
       },
     ],
   },
@@ -214,6 +276,26 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         translation: 'Hãy thử ăn xem.',
       },
     ],
+    exercises: [
+      {
+        prompt: '여기 이름을 써 ___.',
+        options: ['주세요', '주시요', '줬어요', '줘'],
+        correctIndex: 0,
+        explanation: 'Đề nghị lịch sự dùng -아/어 주세요.',
+      },
+      {
+        prompt: '내일 친구를 만날 ___.',
+        options: ['거예요', '가요', '했어요', '했다'],
+        correctIndex: 0,
+        explanation: 'Tương lai: -(으)ㄹ 거예요.',
+      },
+      {
+        prompt: '이 음식을 한번 ___.',
+        options: ['먹어 보세요', '먹다', '먹으세요', '먹겠다'],
+        correctIndex: 0,
+        explanation: '“Thử” dùng -아/어 보다 + 세요.',
+      },
+    ],
   },
   {
     level: 'BEGINNER_2',
@@ -233,6 +315,20 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         translation: 'Đừng đi.',
       },
     ],
+    exercises: [
+      {
+        prompt: '배가 고프___ 밥을 먹어요.',
+        options: ['니까', '으니까', '서', '는데'],
+        correctIndex: 0,
+        explanation: 'Gốc 고프 kết thúc bằng nguyên âm → dùng 니까 (không 으).',
+      },
+      {
+        prompt: '교실에서 담배를 피우___ 마세요.',
+        options: ['지', '는', '고', '아'],
+        correctIndex: 0,
+        explanation: 'Cấu trúc -지 말다: V + 지 말다.',
+      },
+    ],
   },
   {
     level: 'BEGINNER_2',
@@ -245,6 +341,20 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         structure: 'V+는 (hiện tại) · V+(으)ㄴ (quá khứ) · V+(으)ㄹ (tương lai)',
         example: '먹는 사람, 먹은 사람, 먹을 사람',
         translation: 'Người đang ăn / đã ăn / sẽ ăn.',
+      },
+    ],
+    exercises: [
+      {
+        prompt: '지금 먹___ 음식은 무엇이에요?',
+        options: ['는', '은', '을', '던'],
+        correctIndex: 0,
+        explanation: 'Định ngữ hiện tại của động từ dùng -는.',
+      },
+      {
+        prompt: '어제 먹___ 음식이 맛있었어요.',
+        options: ['은', '는', '을', '아'],
+        correctIndex: 0,
+        explanation: 'Định ngữ quá khứ của động từ dùng -(으)ㄴ.',
       },
     ],
   },
@@ -268,6 +378,20 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         translation: 'Tiếng Hàn thuộc loại dễ.',
       },
     ],
+    exercises: [
+      {
+        prompt: '밥을 먹___ TV를 봐요.',
+        options: ['으면서', '면서', '고', '지만'],
+        correctIndex: 0,
+        explanation: 'Gốc 먹 kết thúc bằng phụ âm → dùng 으면서.',
+      },
+      {
+        prompt: '한국어는 쉬운 ___.',
+        options: ['편이에요', '거예요', '것이에요', '때예요'],
+        correctIndex: 0,
+        explanation: 'Cấu trúc “thuộc loại”: -(으)ㄴ/는 편이다.',
+      },
+    ],
   },
   {
     level: 'INTERMEDIATE_1',
@@ -287,6 +411,20 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         translation: 'Ngày mai phải dậy sớm.',
       },
     ],
+    exercises: [
+      {
+        prompt: '여기에서 사진을 찍___ 돼요.',
+        options: ['어도', '아도', '으면', '도'],
+        correctIndex: 0,
+        explanation: '찍다 → gốc 찍, nguyên âm gốc là ㅣ → 어도.',
+      },
+      {
+        prompt: '학생은 숙제를 ___ 돼요.',
+        options: ['해야', '하야', '하아야', '하어야'],
+        correctIndex: 0,
+        explanation: '하다 → 해야 돼요 (dạng “phải làm”).',
+      },
+    ],
   },
   {
     level: 'INTERMEDIATE_1',
@@ -298,6 +436,14 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         meaning: 'Để (mục đích).',
         example: '건강을 위해서 운동해요.',
         translation: 'Tập thể dục để khỏe.',
+      },
+    ],
+    exercises: [
+      {
+        prompt: '한국어를 배우___ 한국에 왔어요.',
+        options: ['기 위해서', '기 때문에', '러', '고'],
+        correctIndex: 0,
+        explanation: 'Mục đích dài lâu dùng -기 위해(서).',
       },
     ],
   },
@@ -321,6 +467,20 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         translation: 'Nói cũng vô ích.',
       },
     ],
+    exercises: [
+      {
+        prompt: '집에 도착하___ 연락할게요.',
+        options: ['는 대로', '면', '자마자', '고 나서'],
+        correctIndex: 0,
+        explanation: '“Ngay khi” (tức thời sau khi làm xong) dùng -는 대로.',
+      },
+      {
+        prompt: '말해 ___ 아무 소용없어요.',
+        options: ['봤자', '보니까', '보고', '봤지만'],
+        correctIndex: 0,
+        explanation: '-아/어 봤자: dù có… cũng vô ích.',
+      },
+    ],
   },
   {
     level: 'INTERMEDIATE_2',
@@ -338,6 +498,20 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         meaning: 'Dù gì đi nữa.',
         example: '비가 오든지 눈이 오든지 가야 해요.',
         translation: 'Dù mưa hay tuyết vẫn phải đi.',
+      },
+    ],
+    exercises: [
+      {
+        prompt: '아시___ 한국의 겨울은 춥습니다.',
+        options: ['다시피', '기 때문에', '고', '으니까'],
+        correctIndex: 0,
+        explanation: '“Như ai đó đã biết/thấy” dùng -다시피.',
+      },
+      {
+        prompt: '비가 오___ 눈이 오___ 갈 거예요.',
+        options: ['든지 든지', '지만 지만', '으면 으면', '는지 는지'],
+        correctIndex: 0,
+        explanation: '-든지 -든지 diễn đạt “dù là…hay là…cũng”.',
       },
     ],
   },
@@ -361,6 +535,20 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         translation: 'Vì lỡ xe buýt nên đến trễ.',
       },
     ],
+    exercises: [
+      {
+        prompt: '도와주셔서 감사___ 따름입니다.',
+        options: ['할', '한', '하는', '하기'],
+        correctIndex: 0,
+        explanation: '-(으)ㄹ 따름이다 → V-(으)ㄹ (định ngữ tương lai).',
+      },
+      {
+        prompt: '차가 막히___ 바람에 늦었어요.',
+        options: ['는', '은', '을', '아서'],
+        correctIndex: 0,
+        explanation: '-는 바람에 dùng với định ngữ hiện tại -는.',
+      },
+    ],
   },
   {
     level: 'ADVANCED_1',
@@ -372,6 +560,14 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         meaning: 'Chừng nào, bấy nhiêu.',
         example: '노력한 만큼 성공할 거예요.',
         translation: 'Cố gắng bao nhiêu sẽ thành công bấy nhiêu.',
+      },
+    ],
+    exercises: [
+      {
+        prompt: '노력한 ___ 결과가 나와요.',
+        options: ['만큼', '때문에', '후에', '동안'],
+        correctIndex: 0,
+        explanation: '-(으)ㄴ/는 만큼 thể hiện tỉ lệ tương ứng.',
       },
     ],
   },
@@ -395,6 +591,20 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         translation: 'Không chỉ thông minh mà tính cách cũng tốt.',
       },
     ],
+    exercises: [
+      {
+        prompt: '일이 거의 끝난 ___.',
+        options: ['셈이에요', '까닭이에요', '만이에요', '뿐이에요'],
+        correctIndex: 0,
+        explanation: '-(으)ㄴ/는 셈이다 = xem như là.',
+      },
+      {
+        prompt: '그녀는 예쁠___ 똑똑하기도 해요.',
+        options: ['뿐더러', '뿐만', '지만', '때문에'],
+        correctIndex: 0,
+        explanation: '-(으)ㄹ뿐더러 = không chỉ… mà còn…',
+      },
+    ],
   },
   {
     level: 'ADVANCED_2',
@@ -406,6 +616,14 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
         meaning: 'Lẽ tự nhiên.',
         example: '사람은 늙기 마련이에요.',
         translation: 'Con người già đi là lẽ tự nhiên.',
+      },
+    ],
+    exercises: [
+      {
+        prompt: '사람은 실수___ 마련이에요.',
+        options: ['하기', '하는', '한', '할'],
+        correctIndex: 0,
+        explanation: '-기 마련이다 = V-기 + 마련이다.',
       },
     ],
   },
@@ -443,42 +661,85 @@ async function seedTopics() {
 }
 
 async function seedGrammar() {
-  const existing = await prisma.grammarLesson.count();
-  if (existing > 0) {
+  const lessonCount = await prisma.grammarLesson.count();
+
+  if (lessonCount === 0) {
+    let totalPoints = 0;
+    let totalExercises = 0;
+    const perLevelCounter: Record<string, number> = {};
+    for (const lesson of SEED_GRAMMAR_LESSONS) {
+      const lessonOrder = perLevelCounter[lesson.level] ?? 0;
+      perLevelCounter[lesson.level] = lessonOrder + 1;
+      const created = await prisma.grammarLesson.create({
+        data: {
+          level: lesson.level,
+          title: lesson.title,
+          summary: lesson.summary,
+          sortOrder: lessonOrder,
+          points: {
+            create: lesson.points.map((p, i) => ({
+              title: p.title,
+              meaning: p.meaning,
+              structure: p.structure,
+              example: p.example,
+              translation: p.translation,
+              note: p.note,
+              sortOrder: i,
+            })),
+          },
+        },
+      });
+      totalPoints += lesson.points.length;
+
+      if (lesson.exercises && lesson.exercises.length > 0) {
+        await prisma.grammarExercise.createMany({
+          data: lesson.exercises.map((e, i) => ({
+            lessonId: created.id,
+            prompt: e.prompt,
+            options: e.options,
+            correctIndex: e.correctIndex,
+            explanation: e.explanation,
+            sortOrder: i,
+          })),
+        });
+        totalExercises += lesson.exercises.length;
+      }
+    }
     console.log(
-      `Đã có ${existing} bài ngữ pháp, bỏ qua seed ngữ pháp.`,
+      `Đã seed ${SEED_GRAMMAR_LESSONS.length} bài (${totalPoints} điểm, ${totalExercises} bài tập).`,
     );
     return;
   }
 
-  let totalPoints = 0;
-  const perLevelCounter: Record<string, number> = {};
-  for (const lesson of SEED_GRAMMAR_LESSONS) {
-    const lessonOrder = perLevelCounter[lesson.level] ?? 0;
-    perLevelCounter[lesson.level] = lessonOrder + 1;
-    await prisma.grammarLesson.create({
-      data: {
-        level: lesson.level,
-        title: lesson.title,
-        summary: lesson.summary,
-        sortOrder: lessonOrder,
-        points: {
-          create: lesson.points.map((p, i) => ({
-            title: p.title,
-            meaning: p.meaning,
-            structure: p.structure,
-            example: p.example,
-            translation: p.translation,
-            note: p.note,
-            sortOrder: i,
-          })),
-        },
-      },
+  const exerciseCount = await prisma.grammarExercise.count();
+  if (exerciseCount > 0) {
+    console.log(
+      `Đã có ${lessonCount} bài và ${exerciseCount} bài tập, bỏ qua seed.`,
+    );
+    return;
+  }
+
+  let attached = 0;
+  for (const seedLesson of SEED_GRAMMAR_LESSONS) {
+    if (!seedLesson.exercises || seedLesson.exercises.length === 0) continue;
+    const lesson = await prisma.grammarLesson.findFirst({
+      where: { level: seedLesson.level, title: seedLesson.title },
     });
-    totalPoints += lesson.points.length;
+    if (!lesson) continue;
+    await prisma.grammarExercise.createMany({
+      data: seedLesson.exercises.map((e, i) => ({
+        lessonId: lesson.id,
+        prompt: e.prompt,
+        options: e.options,
+        correctIndex: e.correctIndex,
+        explanation: e.explanation,
+        sortOrder: i,
+      })),
+    });
+    attached += seedLesson.exercises.length;
   }
   console.log(
-    `Đã seed ${SEED_GRAMMAR_LESSONS.length} bài ngữ pháp (${totalPoints} điểm).`,
+    `Đã có ${lessonCount} bài ngữ pháp; gắn thêm ${attached} bài tập vào các bài có sẵn.`,
   );
 }
 

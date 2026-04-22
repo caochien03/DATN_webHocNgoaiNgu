@@ -115,6 +115,9 @@ function GrammarContent() {
                     ) : null}
                     <p className="mt-1 text-xs text-zinc-500">
                       {l._count.points} điểm ngữ pháp
+                      {l._count.exercises > 0
+                        ? ` · ${l._count.exercises} bài tập`
+                        : ""}
                     </p>
                   </div>
                   <span className="self-center text-zinc-400">›</span>
