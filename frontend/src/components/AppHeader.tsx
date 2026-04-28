@@ -70,6 +70,12 @@ export function AppHeader() {
                 Bộ từ
               </Link>
               <Link
+                href="/tests"
+                className="text-zinc-700 hover:underline dark:text-zinc-300"
+              >
+                Kiểm tra
+              </Link>
+              <Link
                 href="/me"
                 className="max-w-[140px] truncate text-zinc-700 hover:underline dark:text-zinc-300"
               >

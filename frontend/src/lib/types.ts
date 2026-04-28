@@ -175,3 +175,17 @@ export type LearningPathDetail = {
   } | null;
   steps: LearningPathStep[];
 };
+
+export type QuizSourceType = "DECK" | "TOPIC" | "LESSON" | "PATH";
+
+export type QuizAttempt = {
+  id: string;
+  userId: string;
+  sourceType: QuizSourceType;
+  sourceId: string;
+  sourceTitle: string;
+  totalQuestions: number;
+  correctAnswers: number;
+  scorePercent: number;
+  createdAt: string;
+};

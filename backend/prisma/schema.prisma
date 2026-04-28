@@ -17,6 +17,7 @@ model User {
   updatedAt    DateTime @updatedAt
   decks        Deck[]
   pathProgress UserPathProgress[]
+  quizAttempts QuizAttempt[]
 }
 
 model Deck {
@@ -209,4 +210,27 @@ model Card {
   updatedAt      DateTime  @updatedAt
 
   @@index([deckId])
+}
+
+enum QuizSourceType {
+  DECK
+  TOPIC
+  LESSON
+  PATH
+}
+
+model QuizAttempt {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceType     QuizSourceType
+  sourceId       String
+  sourceTitle    String
+  totalQuestions Int
+  correctAnswers Int
+  scorePercent   Int
+  createdAt      DateTime       @default(now())
+
+  @@index([userId, createdAt])
+  @@index([sourceType, sourceId])
 }

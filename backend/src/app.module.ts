@@ -8,6 +8,7 @@ import { GrammarModule } from './grammar/grammar.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { PathsModule } from './paths/paths.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { QuizAttemptsModule } from './quiz-attempts/quiz-attempts.module';
 import { TopicsModule } from './topics/topics.module';
 import { UsersModule } from './users/users.module';
 
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     GrammarModule,
     LessonsModule,
     PathsModule,
+    QuizAttemptsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
