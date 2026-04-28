@@ -76,6 +76,12 @@ export function AppHeader() {
                 Kiểm tra
               </Link>
               <Link
+                href="/review/today"
+                className="text-zinc-700 hover:underline dark:text-zinc-300"
+              >
+                Ôn hôm nay
+              </Link>
+              <Link
                 href="/me"
                 className="max-w-[140px] truncate text-zinc-700 hover:underline dark:text-zinc-300"
               >

@@ -6,8 +6,10 @@ export type CardRow = {
   sortOrder: number;
   correctCount: number;
   wrongCount: number;
+  streak: number;
   lastResult: boolean | null;
   lastReviewedAt: string | null;
+  nextReviewAt: string | null;
 };
 
 export type DeckDetail = {

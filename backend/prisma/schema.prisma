@@ -204,12 +204,15 @@ model Card {
   sortOrder      Int       @default(0)
   correctCount   Int       @default(0)
   wrongCount     Int       @default(0)
+  streak         Int       @default(0)
   lastResult     Boolean?
   lastReviewedAt DateTime?
+  nextReviewAt   DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
   @@index([deckId])
+  @@index([nextReviewAt])
 }
 
 enum QuizSourceType {

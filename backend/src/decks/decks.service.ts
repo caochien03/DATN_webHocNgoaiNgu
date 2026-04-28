@@ -13,6 +13,18 @@ import { UpdateDeckDto } from './dto/update-deck.dto';
 export class DecksService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private static nextIntervalDays(streak: number) {
+    if (streak <= 1) return 2;
+    if (streak === 2) return 4;
+    if (streak === 3) return 7;
+    if (streak === 4) return 14;
+    return 30;
+  }
+
+  private static addDays(from: Date, days: number) {
+    return new Date(from.getTime() + days * 24 * 60 * 60 * 1000);
+  }
+
   async listDecks(userId: string) {
     const decks = await this.prisma.deck.findMany({
       where: { userId, sourceTopicId: null },
@@ -189,16 +201,75 @@ export class DecksService {
     if (card.deck.userId !== userId) {
       throw new ForbiddenException();
     }
+    const now = new Date();
+    const nextStreak = isCorrect ? card.streak + 1 : 0;
+    const nextReviewAt = isCorrect
+      ? DecksService.addDays(now, DecksService.nextIntervalDays(nextStreak))
+      : DecksService.addDays(now, 1);
     return this.prisma.card.update({
       where: { id: cardId },
       data: {
         ...(isCorrect
           ? { correctCount: { increment: 1 } }
           : { wrongCount: { increment: 1 } }),
+        streak: nextStreak,
         lastResult: isCorrect,
-        lastReviewedAt: new Date(),
+        lastReviewedAt: now,
+        nextReviewAt,
       },
     });
+  }
+
+  async listReviewToday(userId: string, limit = 20) {
+    const safeLimit = Number.isFinite(limit)
+      ? Math.min(Math.max(limit, 1), 100)
+      : 20;
+    const now = new Date();
+    const cards = await this.prisma.card.findMany({
+      where: {
+        deck: { userId, sourceTopicId: null },
+        OR: [{ nextReviewAt: null }, { nextReviewAt: { lte: now } }],
+      },
+      include: { deck: { select: { id: true, title: true } } },
+      orderBy: [{ nextReviewAt: 'asc' }, { updatedAt: 'asc' }],
+      take: safeLimit * 4,
+    });
+
+    const prioritized = cards.sort((a, b) => {
+      const aPriority = a.lastResult === false ? 0 : a.nextReviewAt ? 1 : 2;
+      const bPriority = b.lastResult === false ? 0 : b.nextReviewAt ? 1 : 2;
+      if (aPriority !== bPriority) return aPriority - bPriority;
+      const aAt = a.nextReviewAt?.getTime() ?? 0;
+      const bAt = b.nextReviewAt?.getTime() ?? 0;
+      if (aAt !== bAt) return aAt - bAt;
+      return b.wrongCount - a.wrongCount;
+    });
+
+    return prioritized.slice(0, safeLimit).map((c) => ({
+      id: c.id,
+      deckId: c.deckId,
+      deckTitle: c.deck.title,
+      frontText: c.frontText,
+      backText: c.backText,
+      note: c.note,
+      streak: c.streak,
+      correctCount: c.correctCount,
+      wrongCount: c.wrongCount,
+      lastResult: c.lastResult,
+      lastReviewedAt: c.lastReviewedAt,
+      nextReviewAt: c.nextReviewAt,
+    }));
+  }
+
+  async getReviewTodaySummary(userId: string) {
+    const now = new Date();
+    const dueCount = await this.prisma.card.count({
+      where: {
+        deck: { userId, sourceTopicId: null },
+        OR: [{ nextReviewAt: null }, { nextReviewAt: { lte: now } }],
+      },
+    });
+    return { dueCount };
   }
 
   private async ensureDeckOwned(deckId: string, userId: string) {
