@@ -52,10 +52,10 @@ export function AppHeader() {
                 Chủ đề
               </Link>
               <Link
-                href="/grammar"
+                href="/lessons"
                 className="text-zinc-700 hover:underline dark:text-zinc-300"
               >
-                Ngữ pháp
+                Bài học
               </Link>
               <Link
                 href="/decks"

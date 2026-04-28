@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
-import type { GrammarLessonRow, GrammarLevel } from "@/lib/types";
+import type { GrammarLevel, LessonRow } from "@/lib/types";
 
 const LEVELS: { code: GrammarLevel; label: string }[] = [
   { code: "BEGINNER_1", label: "Sơ cấp 1" },
@@ -15,22 +15,22 @@ const LEVELS: { code: GrammarLevel; label: string }[] = [
   { code: "ADVANCED_2", label: "Cao cấp 2" },
 ];
 
-function GrammarContent() {
-  const [lessons, setLessons] = useState<GrammarLessonRow[] | null>(null);
+function LessonsContent() {
+  const [lessons, setLessons] = useState<LessonRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [level, setLevel] = useState<GrammarLevel>("BEGINNER_1");
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetchWithAuth("/grammar/lessons");
+      const res = await fetchWithAuth("/lessons");
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
       }
-      setLessons((await res.json()) as GrammarLessonRow[]);
+      setLessons((await res.json()) as LessonRow[]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Không tải được ngữ pháp");
+      setError(e instanceof Error ? e.message : "Không tải được bài học");
     }
   }, []);
 
@@ -52,10 +52,10 @@ function GrammarContent() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
       <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-        Ngữ pháp tiếng Hàn
+        Bài học tiếng Hàn
       </h1>
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-        Chọn cấp độ, sau đó chọn bài để xem các điểm ngữ pháp trong bài.
+        Mỗi bài gồm từ vựng, điểm ngữ pháp và bài tập luyện tập.
       </p>
 
       {error ? (
@@ -101,7 +101,7 @@ function GrammarContent() {
             {filtered.map((l) => (
               <li key={l.id}>
                 <Link
-                  href={`/grammar/lessons/${l.id}`}
+                  href={`/lessons/${l.id}`}
                   className="flex items-start justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
                 >
                   <div className="min-w-0">
@@ -114,7 +114,7 @@ function GrammarContent() {
                       </p>
                     ) : null}
                     <p className="mt-1 text-xs text-zinc-500">
-                      {l._count.points} điểm ngữ pháp
+                      {l._count.vocabulary} từ · {l._count.points} ngữ pháp
                       {l._count.exercises > 0
                         ? ` · ${l._count.exercises} bài tập`
                         : ""}
@@ -131,10 +131,10 @@ function GrammarContent() {
   );
 }
 
-export default function GrammarPage() {
+export default function LessonsPage() {
   return (
     <AuthGate>
-      <GrammarContent />
+      <LessonsContent />
     </AuthGate>
   );
 }

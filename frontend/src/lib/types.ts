@@ -81,24 +81,37 @@ export type GrammarPoint = {
   sortOrder: number;
 };
 
-export type GrammarLessonRow = {
+export type LessonVocabulary = {
   id: string;
-  level: GrammarLevel;
-  title: string;
-  summary: string | null;
+  lessonId: string;
+  frontText: string;
+  backText: string;
+  note: string | null;
   sortOrder: number;
-  _count: { points: number; exercises: number };
 };
 
-export type GrammarLessonDetail = {
+export type LessonRow = {
   id: string;
   level: GrammarLevel;
   title: string;
   summary: string | null;
   sortOrder: number;
+  _count: { vocabulary: number; points: number; exercises: number };
+};
+
+export type LessonDetail = {
+  id: string;
+  level: GrammarLevel;
+  title: string;
+  summary: string | null;
+  sortOrder: number;
+  vocabulary: LessonVocabulary[];
   points: GrammarPoint[];
   _count: { exercises: number };
 };
+
+export type GrammarLessonRow = LessonRow;
+export type GrammarLessonDetail = LessonDetail;
 
 export type GrammarExercise = {
   id: string;

@@ -24,13 +24,12 @@ function PracticeContent() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetchWithAuth(`/grammar/lessons/${id}/exercises`);
+      const res = await fetchWithAuth(`/lessons/${id}/exercises`);
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
       }
-      const data = (await res.json()) as GrammarExercise[];
-      setExercises(data);
+      setExercises((await res.json()) as GrammarExercise[]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được bài tập");
     }
@@ -60,9 +59,7 @@ function PracticeContent() {
     if (ok) {
       setScore((s) => s + 1);
     } else {
-      setWrongList((w) =>
-        w.some((x) => x.id === q.id) ? w : [...w, q],
-      );
+      setWrongList((w) => (w.some((x) => x.id === q.id) ? w : [...w, q]));
     }
   }
 
@@ -87,7 +84,7 @@ function PracticeContent() {
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-8">
       <Link
-        href={`/grammar/lessons/${id}`}
+        href={`/lessons/${id}`}
         className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
       >
         ← Quay lại bài
@@ -198,7 +195,7 @@ function PracticeContent() {
   );
 }
 
-export default function PracticePage() {
+export default function LessonPracticePage() {
   return (
     <AuthGate>
       <PracticeContent />

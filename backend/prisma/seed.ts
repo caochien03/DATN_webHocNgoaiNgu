@@ -629,6 +629,114 @@ const SEED_GRAMMAR_LESSONS: SeedGrammarLesson[] = [
   },
 ];
 
+const LESSON_VOCABULARY: Record<string, SeedWord[]> = {
+  'Bài 1: Câu giới thiệu bản thân': [
+    { frontText: '이름', backText: 'Tên', note: 'i-reum' },
+    { frontText: '학생', backText: 'Học sinh', note: 'hak-saeng' },
+    { frontText: '선생님', backText: 'Giáo viên', note: 'seon-saeng-nim' },
+    { frontText: '친구', backText: 'Bạn bè', note: 'chin-gu' },
+    { frontText: '사람', backText: 'Người', note: 'sa-ram' },
+  ],
+  'Bài 2: Hành động hàng ngày': [
+    { frontText: '먹다', backText: 'Ăn', note: 'meok-da' },
+    { frontText: '마시다', backText: 'Uống', note: 'ma-si-da' },
+    { frontText: '가다', backText: 'Đi', note: 'ga-da' },
+    { frontText: '오다', backText: 'Đến', note: 'o-da' },
+    { frontText: '공부하다', backText: 'Học', note: 'gong-bu-ha-da' },
+  ],
+  'Bài 3: Liên kết câu': [
+    { frontText: '그리고', backText: 'Và', note: 'geu-ri-go' },
+    { frontText: '하지만', backText: 'Nhưng', note: 'ha-ji-man' },
+    { frontText: '맛있다', backText: 'Ngon', note: 'ma-sit-da' },
+    { frontText: '맵다', backText: 'Cay', note: 'maep-da' },
+    { frontText: '자다', backText: 'Ngủ', note: 'ja-da' },
+  ],
+  'Bài 1: Đề nghị và mong muốn': [
+    { frontText: '도와주다', backText: 'Giúp đỡ', note: 'do-wa-ju-da' },
+    { frontText: '쓰다', backText: 'Viết', note: 'sseu-da' },
+    { frontText: '내일', backText: 'Ngày mai', note: 'nae-il' },
+    { frontText: '만나다', backText: 'Gặp', note: 'man-na-da' },
+    { frontText: '한번', backText: 'Một lần/thử', note: 'han-beon' },
+  ],
+  'Bài 2: Lý do và ngăn cấm': [
+    { frontText: '비', backText: 'Mưa', note: 'bi' },
+    { frontText: '우산', backText: 'Ô/dù', note: 'u-san' },
+    { frontText: '배고프다', backText: 'Đói', note: 'bae-go-peu-da' },
+    { frontText: '교실', backText: 'Phòng học', note: 'gyo-sil' },
+    { frontText: '담배', backText: 'Thuốc lá', note: 'dam-bae' },
+  ],
+  'Bài 3: Định ngữ': [
+    { frontText: '음식', backText: 'Món ăn', note: 'eum-sik' },
+    { frontText: '사람', backText: 'Người', note: 'sa-ram' },
+    { frontText: '어제', backText: 'Hôm qua', note: 'eo-je' },
+    { frontText: '지금', backText: 'Bây giờ', note: 'ji-geum' },
+    { frontText: '내일', backText: 'Ngày mai', note: 'nae-il' },
+  ],
+  'Bài 1: Đồng thời và xu hướng': [
+    { frontText: '음악', backText: 'Âm nhạc', note: 'eum-ak' },
+    { frontText: '듣다', backText: 'Nghe', note: 'deut-da' },
+    { frontText: '운동하다', backText: 'Tập thể dục', note: 'un-dong-ha-da' },
+    { frontText: '쉬운', backText: 'Dễ', note: 'swi-un' },
+    { frontText: '편', backText: 'Loại/phía', note: 'pyeon' },
+  ],
+  'Bài 2: Phép và nghĩa vụ': [
+    { frontText: '앉다', backText: 'Ngồi', note: 'an-da' },
+    { frontText: '숙제', backText: 'Bài tập về nhà', note: 'suk-je' },
+    { frontText: '일찍', backText: 'Sớm', note: 'il-jjik' },
+    { frontText: '일어나다', backText: 'Thức dậy', note: 'il-eo-na-da' },
+    { frontText: '사진', backText: 'Ảnh', note: 'sa-jin' },
+  ],
+  'Bài 3: Mục đích': [
+    { frontText: '건강', backText: 'Sức khỏe', note: 'geon-gang' },
+    { frontText: '위하다', backText: 'Vì/cho', note: 'wi-ha-da' },
+    { frontText: '배우다', backText: 'Học', note: 'bae-u-da' },
+    { frontText: '한국', backText: 'Hàn Quốc', note: 'han-guk' },
+    { frontText: '목적', backText: 'Mục đích', note: 'mok-jeok' },
+  ],
+  'Bài 1: Thời điểm và dự đoán': [
+    { frontText: '도착하다', backText: 'Đến nơi', note: 'do-chak-ha-da' },
+    { frontText: '전화하다', backText: 'Gọi điện', note: 'jeon-hwa-ha-da' },
+    { frontText: '소용없다', backText: 'Vô ích', note: 'so-yong-eop-da' },
+    { frontText: '말하다', backText: 'Nói', note: 'mal-ha-da' },
+    { frontText: '연락하다', backText: 'Liên lạc', note: 'yeon-rak-ha-da' },
+  ],
+  'Bài 2: Tham chiếu và lựa chọn': [
+    { frontText: '사계절', backText: 'Bốn mùa', note: 'sa-gye-jeol' },
+    { frontText: '겨울', backText: 'Mùa đông', note: 'gyeo-ul' },
+    { frontText: '눈', backText: 'Tuyết', note: 'nun' },
+    { frontText: '선택', backText: 'Lựa chọn', note: 'seon-taek' },
+    { frontText: '알다', backText: 'Biết', note: 'al-da' },
+  ],
+  'Bài 1: Diễn đạt cảm xúc và kết quả': [
+    { frontText: '감사드리다', backText: 'Cảm ơn (kính ngữ)', note: 'gam-sa-deu-ri-da' },
+    { frontText: '지각하다', backText: 'Đến muộn', note: 'ji-gak-ha-da' },
+    { frontText: '놓치다', backText: 'Lỡ/missed', note: 'not-chi-da' },
+    { frontText: '버스', backText: 'Xe buýt', note: 'beo-seu' },
+    { frontText: '결과', backText: 'Kết quả', note: 'gyeol-gwa' },
+  ],
+  'Bài 2: So sánh tỉ lệ': [
+    { frontText: '노력', backText: 'Nỗ lực', note: 'no-ryeok' },
+    { frontText: '성공하다', backText: 'Thành công', note: 'seong-gong-ha-da' },
+    { frontText: '결과', backText: 'Kết quả', note: 'gyeol-gwa' },
+    { frontText: '만큼', backText: 'Bằng/chừng', note: 'man-keum' },
+    { frontText: '비교', backText: 'So sánh', note: 'bi-gyo' },
+  ],
+  'Bài 1: Khái quát và bổ sung': [
+    { frontText: '거의', backText: 'Gần như', note: 'geo-ui' },
+    { frontText: '끝나다', backText: 'Kết thúc', note: 'kkeut-na-da' },
+    { frontText: '똑똑하다', backText: 'Thông minh', note: 'ttok-ttok-ha-da' },
+    { frontText: '성격', backText: 'Tính cách', note: 'seong-gyeok' },
+    { frontText: '뿐더러', backText: 'Không chỉ', note: 'ppun-deo-reo' },
+  ],
+  'Bài 2: Lẽ tự nhiên': [
+    { frontText: '사람', backText: 'Con người', note: 'sa-ram' },
+    { frontText: '늙다', backText: 'Già đi', note: 'neuk-da' },
+    { frontText: '실수하다', backText: 'Mắc lỗi', note: 'sil-su-ha-da' },
+    { frontText: '마련', backText: 'Lẽ tự nhiên/sự chuẩn bị', note: 'ma-ryeon' },
+    { frontText: '자연스럽다', backText: 'Tự nhiên', note: 'ja-yeon-seu-reop-da' },
+  ],
+};
+
 async function seedTopics() {
   const existing = await prisma.vocabularyTopic.count();
   if (existing > 0) {
@@ -743,9 +851,39 @@ async function seedGrammar() {
   );
 }
 
+async function seedLessonVocabulary() {
+  const existing = await prisma.lessonVocabulary.count();
+  if (existing > 0) {
+    console.log(
+      `Đã có ${existing} từ vựng theo bài, bỏ qua seed từ vựng bài học.`,
+    );
+    return;
+  }
+
+  let total = 0;
+  for (const [lessonTitle, words] of Object.entries(LESSON_VOCABULARY)) {
+    const lesson = await prisma.grammarLesson.findFirst({
+      where: { title: lessonTitle },
+    });
+    if (!lesson) continue;
+    await prisma.lessonVocabulary.createMany({
+      data: words.map((word, i) => ({
+        lessonId: lesson.id,
+        frontText: word.frontText,
+        backText: word.backText,
+        note: word.note,
+        sortOrder: i,
+      })),
+    });
+    total += words.length;
+  }
+  console.log(`Đã seed ${total} từ vựng theo bài học.`);
+}
+
 async function main() {
   await seedTopics();
   await seedGrammar();
+  await seedLessonVocabulary();
 }
 
 main()

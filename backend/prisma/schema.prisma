@@ -81,10 +81,25 @@ model GrammarLesson {
   sortOrder Int               @default(0)
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
+  vocabulary LessonVocabulary[]
   points    GrammarPoint[]
   exercises GrammarExercise[]
 
   @@index([level])
+}
+
+model LessonVocabulary {
+  id        String        @id @default(cuid())
+  lessonId  String
+  lesson    GrammarLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  frontText String
+  backText  String
+  note      String?
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([lessonId])
 }
 
 model GrammarPoint {
