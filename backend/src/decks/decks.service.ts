@@ -25,6 +25,14 @@ export class DecksService {
     return new Date(from.getTime() + days * 24 * 60 * 60 * 1000);
   }
 
+  private static toVnDayStart(date: Date) {
+    const tzOffsetMs = 7 * 60 * 60 * 1000;
+    const vn = new Date(date.getTime() + tzOffsetMs);
+    return new Date(
+      Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - tzOffsetMs,
+    );
+  }
+
   async listDecks(userId: string) {
     const decks = await this.prisma.deck.findMany({
       where: { userId, sourceTopicId: null },
@@ -202,22 +210,51 @@ export class DecksService {
       throw new ForbiddenException();
     }
     const now = new Date();
+    const day = DecksService.toVnDayStart(now);
+    const setting = await this.prisma.userGoalSetting.findUnique({
+      where: { userId },
+      select: { dailyCardTarget: true },
+    });
+    const goalTarget = setting?.dailyCardTarget ?? 20;
     const nextStreak = isCorrect ? card.streak + 1 : 0;
     const nextReviewAt = isCorrect
       ? DecksService.addDays(now, DecksService.nextIntervalDays(nextStreak))
       : DecksService.addDays(now, 1);
-    return this.prisma.card.update({
-      where: { id: cardId },
-      data: {
-        ...(isCorrect
-          ? { correctCount: { increment: 1 } }
-          : { wrongCount: { increment: 1 } }),
-        streak: nextStreak,
-        lastResult: isCorrect,
-        lastReviewedAt: now,
-        nextReviewAt,
-      },
-    });
+    const [progress, updatedCard] = await this.prisma.$transaction([
+      this.prisma.userDailyProgress.upsert({
+        where: { userId_date: { userId, date: day } },
+        update: {
+          reviewedCards: { increment: 1 },
+          goalTarget,
+        },
+        create: {
+          userId,
+          date: day,
+          reviewedCards: 1,
+          goalTarget,
+          goalAchieved: goalTarget <= 1,
+        },
+      }),
+      this.prisma.card.update({
+        where: { id: cardId },
+        data: {
+          ...(isCorrect
+            ? { correctCount: { increment: 1 } }
+            : { wrongCount: { increment: 1 } }),
+          streak: nextStreak,
+          lastResult: isCorrect,
+          lastReviewedAt: now,
+          nextReviewAt,
+        },
+      }),
+    ]);
+    if (progress && !progress.goalAchieved && progress.reviewedCards >= goalTarget) {
+      await this.prisma.userDailyProgress.update({
+        where: { id: progress.id },
+        data: { goalAchieved: true },
+      });
+    }
+    return updatedCard;
   }
 
   async listReviewToday(userId: string, limit = 20) {

@@ -191,3 +191,23 @@ export type QuizAttempt = {
   scorePercent: number;
   createdAt: string;
 };
+
+export type GoalMeResponse = {
+  dailyCardTarget: number;
+  timezone: string;
+  today: {
+    reviewedCards: number;
+    target: number;
+    percent: number;
+    achieved: boolean;
+  };
+  streak: number;
+  bestStreak: number;
+};
+
+export type GoalHistoryRow = {
+  date: string;
+  reviewedCards: number;
+  goalTarget: number;
+  goalAchieved: boolean;
+};

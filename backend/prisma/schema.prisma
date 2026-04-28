@@ -18,6 +18,34 @@ model User {
   decks        Deck[]
   pathProgress UserPathProgress[]
   quizAttempts QuizAttempt[]
+  goalSetting  UserGoalSetting?
+  dailyProgress UserDailyProgress[]
+}
+
+model UserGoalSetting {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyCardTarget Int      @default(20)
+  timezone        String   @default("Asia/Ho_Chi_Minh")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UserDailyProgress {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date         DateTime
+  reviewedCards Int     @default(0)
+  quizAttempts Int      @default(0)
+  goalTarget   Int      @default(20)
+  goalAchieved Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId, date])
 }
 
 model Deck {

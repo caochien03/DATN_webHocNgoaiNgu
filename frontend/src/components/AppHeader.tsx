@@ -82,6 +82,12 @@ export function AppHeader() {
                 Ôn hôm nay
               </Link>
               <Link
+                href="/goals"
+                className="text-zinc-700 hover:underline dark:text-zinc-300"
+              >
+                Mục tiêu
+              </Link>
+              <Link
                 href="/me"
                 className="max-w-[140px] truncate text-zinc-700 hover:underline dark:text-zinc-300"
               >

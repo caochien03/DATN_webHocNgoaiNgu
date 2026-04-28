@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { DecksModule } from './decks/decks.module';
+import { GoalsModule } from './goals/goals.module';
 import { GrammarModule } from './grammar/grammar.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { PathsModule } from './paths/paths.module';
@@ -19,6 +20,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     AuthModule,
     DecksModule,
+    GoalsModule,
     TopicsModule,
     GrammarModule,
     LessonsModule,
