@@ -16,6 +16,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   decks        Deck[]
+  pathProgress UserPathProgress[]
 }
 
 model Deck {
@@ -45,6 +46,7 @@ model VocabularyTopic {
   updatedAt    DateTime         @updatedAt
   words        VocabularyWord[]
   derivedDecks Deck[]
+  pathSteps    LearningPathStep[]
 
   @@index([languageCode])
   @@index([level])
@@ -84,8 +86,65 @@ model GrammarLesson {
   vocabulary LessonVocabulary[]
   points    GrammarPoint[]
   exercises GrammarExercise[]
+  pathSteps LearningPathStep[]
 
   @@index([level])
+}
+
+enum LearningPathStepType {
+  TOPIC
+  LESSON
+}
+
+model LearningPath {
+  id          String              @id @default(cuid())
+  title       String
+  description String?
+  languageCode String            @default("ko")
+  level       String?
+  sortOrder   Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  steps       LearningPathStep[]
+  progress    UserPathProgress[]
+
+  @@index([languageCode])
+  @@index([level])
+}
+
+model LearningPathStep {
+  id        String               @id @default(cuid())
+  pathId    String
+  path      LearningPath         @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  type      LearningPathStepType
+  title     String
+  summary   String?
+  topicId   String?
+  topic     VocabularyTopic?     @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  lessonId  String?
+  lesson    GrammarLesson?       @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  sortOrder Int                  @default(0)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@index([pathId])
+  @@index([topicId])
+  @@index([lessonId])
+}
+
+model UserPathProgress {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pathId            String
+  path              LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  completedStepIds  String[]     @default([])
+  startedAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@unique([userId, pathId])
+  @@index([userId])
+  @@index([pathId])
 }
 
 model LessonVocabulary {

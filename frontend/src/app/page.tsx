@@ -22,6 +22,12 @@ export default function Home() {
             Chủ đề từ vựng
           </Link>
           <Link
+            href="/paths"
+            className="rounded-md border border-zinc-300 px-4 py-2.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
+          >
+            Lộ trình
+          </Link>
+          <Link
             href="/lessons"
             className="rounded-md border border-zinc-300 px-4 py-2.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
           >

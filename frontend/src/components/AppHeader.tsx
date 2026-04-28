@@ -52,6 +52,12 @@ export function AppHeader() {
                 Chủ đề
               </Link>
               <Link
+                href="/paths"
+                className="text-zinc-700 hover:underline dark:text-zinc-300"
+              >
+                Lộ trình
+              </Link>
+              <Link
                 href="/lessons"
                 className="text-zinc-700 hover:underline dark:text-zinc-300"
               >

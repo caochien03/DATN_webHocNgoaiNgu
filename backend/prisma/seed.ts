@@ -880,10 +880,121 @@ async function seedLessonVocabulary() {
   console.log(`Đã seed ${total} từ vựng theo bài học.`);
 }
 
+async function seedLearningPaths() {
+  const existing = await prisma.learningPath.count();
+  if (existing > 0) {
+    console.log(`Đã có ${existing} lộ trình, bỏ qua seed lộ trình.`);
+    return;
+  }
+
+  const [
+    greetingsTopic,
+    familyTopic,
+    numberTopic,
+    colorTopic,
+    introLesson,
+    dailyLesson,
+    connectorLesson,
+  ] = await Promise.all([
+    prisma.vocabularyTopic.findFirst({ where: { title: 'Chào hỏi cơ bản' } }),
+    prisma.vocabularyTopic.findFirst({ where: { title: 'Gia đình' } }),
+    prisma.vocabularyTopic.findFirst({
+      where: { title: 'Số đếm 1 – 10 (Hán Hàn)' },
+    }),
+    prisma.vocabularyTopic.findFirst({ where: { title: 'Màu sắc' } }),
+    prisma.grammarLesson.findFirst({
+      where: { title: 'Bài 1: Câu giới thiệu bản thân' },
+    }),
+    prisma.grammarLesson.findFirst({
+      where: { title: 'Bài 2: Hành động hàng ngày' },
+    }),
+    prisma.grammarLesson.findFirst({ where: { title: 'Bài 3: Liên kết câu' } }),
+  ]);
+
+  type PathStepSeed =
+    | {
+        type: 'TOPIC';
+        title: string;
+        summary: string;
+        topicId: string;
+      }
+    | {
+        type: 'LESSON';
+        title: string;
+        summary: string;
+        lessonId: string;
+      };
+
+  const stepSeeds = [
+    greetingsTopic && {
+      type: 'TOPIC' as const,
+      title: 'Chủ đề: Chào hỏi cơ bản',
+      summary: 'Làm quen các câu chào hỏi và đáp lễ.',
+      topicId: greetingsTopic.id,
+    },
+    introLesson && {
+      type: 'LESSON' as const,
+      title: introLesson.title,
+      summary: 'Từ vựng và ngữ pháp giới thiệu bản thân.',
+      lessonId: introLesson.id,
+    },
+    familyTopic && {
+      type: 'TOPIC' as const,
+      title: 'Chủ đề: Gia đình',
+      summary: 'Từ vựng các thành viên gia đình.',
+      topicId: familyTopic.id,
+    },
+    dailyLesson && {
+      type: 'LESSON' as const,
+      title: dailyLesson.title,
+      summary: 'Hành động hàng ngày và trợ từ tân ngữ.',
+      lessonId: dailyLesson.id,
+    },
+    numberTopic && {
+      type: 'TOPIC' as const,
+      title: 'Chủ đề: Số đếm Hán Hàn',
+      summary: 'Các số cơ bản dùng trong ngày tháng, số điện thoại.',
+      topicId: numberTopic.id,
+    },
+    connectorLesson && {
+      type: 'LESSON' as const,
+      title: connectorLesson.title,
+      summary: 'Nối câu bằng -고 và -지만.',
+      lessonId: connectorLesson.id,
+    },
+    colorTopic && {
+      type: 'TOPIC' as const,
+      title: 'Chủ đề: Màu sắc',
+      summary: 'Các màu thường gặp trong TOPIK sơ cấp.',
+      topicId: colorTopic.id,
+    },
+  ].filter((step): step is PathStepSeed => Boolean(step));
+
+  await prisma.learningPath.create({
+    data: {
+      title: 'TOPIK 1 - Sơ cấp 1',
+      description:
+        'Lộ trình mẫu kết hợp từ vựng theo chủ đề và bài học ngữ pháp nền tảng.',
+      languageCode: 'ko',
+      level: 'TOPIK 1',
+      sortOrder: 1,
+      steps: {
+        create: stepSeeds.map((step, i) => ({
+          ...step,
+          sortOrder: i,
+        })),
+      },
+    },
+  });
+
+  console.log(`Đã seed 1 lộ trình TOPIK 1 (${stepSeeds.length} bước).`);
+}
+
 async function main() {
   await seedTopics();
   await seedGrammar();
   await seedLessonVocabulary();
+  await seedLearningPaths();
 }
 
 main()

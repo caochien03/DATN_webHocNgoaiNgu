@@ -132,3 +132,46 @@ export type TopicDetail = {
   sortOrder: number;
   words: VocabWord[];
 };
+
+export type LearningPathRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  languageCode: string;
+  level: string | null;
+  totalSteps: number;
+  completedSteps: number;
+  started: boolean;
+  percent: number;
+};
+
+export type LearningPathStep = {
+  id: string;
+  type: "TOPIC" | "LESSON";
+  title: string;
+  summary: string | null;
+  sortOrder: number;
+  topicId: string | null;
+  lessonId: string | null;
+  topic: { id: string; title: string; _count: { words: number } } | null;
+  lesson: {
+    id: string;
+    title: string;
+    _count: { vocabulary: number; points: number; exercises: number };
+  } | null;
+  completed: boolean;
+};
+
+export type LearningPathDetail = {
+  id: string;
+  title: string;
+  description: string | null;
+  languageCode: string;
+  level: string | null;
+  progress: {
+    completedStepIds: string[];
+    startedAt: string;
+    updatedAt: string;
+  } | null;
+  steps: LearningPathStep[];
+};
