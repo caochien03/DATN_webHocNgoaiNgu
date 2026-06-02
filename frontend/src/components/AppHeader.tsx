@@ -57,23 +57,8 @@ export function AppHeader() {
               >
                 Lộ trình
               </Link>
-              <Link
-                href="/lessons"
-                className="text-zinc-700 hover:underline dark:text-zinc-300"
-              >
-                Bài học
-              </Link>
-              <Link
-                href="/decks"
-                className="text-zinc-700 hover:underline dark:text-zinc-300"
-              >
+              <Link href="/decks" className="text-zinc-700 hover:underline dark:text-zinc-300">
                 Bộ từ
-              </Link>
-              <Link
-                href="/tests"
-                className="text-zinc-700 hover:underline dark:text-zinc-300"
-              >
-                Kiểm tra
               </Link>
               <Link
                 href="/review/today"
@@ -81,12 +66,31 @@ export function AppHeader() {
               >
                 Ôn hôm nay
               </Link>
-              <Link
-                href="/goals"
-                className="text-zinc-700 hover:underline dark:text-zinc-300"
-              >
-                Mục tiêu
-              </Link>
+              <details className="relative">
+                <summary className="cursor-pointer list-none text-zinc-700 hover:underline dark:text-zinc-300">
+                  Thêm
+                </summary>
+                <div className="absolute right-0 z-20 mt-2 w-40 rounded-md border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+                  <Link
+                    href="/lessons"
+                    className="block rounded px-2 py-1.5 text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    Bài học
+                  </Link>
+                  <Link
+                    href="/tests"
+                    className="block rounded px-2 py-1.5 text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    Kiểm tra
+                  </Link>
+                  <Link
+                    href="/goals"
+                    className="block rounded px-2 py-1.5 text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    Mục tiêu
+                  </Link>
+                </div>
+              </details>
               <Link
                 href="/me"
                 className="max-w-[140px] truncate text-zinc-700 hover:underline dark:text-zinc-300"
