@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getApiUrl } from "@/lib/api-url";
-import { setStoredAuth } from "@/lib/auth-storage";
+import { setStoredAuth, type AuthUser } from "@/lib/auth-storage";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,14 +32,7 @@ export default function RegisterPage() {
       });
       const data = (await res.json()) as {
         accessToken?: string;
-        user?: {
-          id: string;
-          email: string;
-          name: string | null;
-          avatarUrl: string | null;
-          createdAt: string;
-          updatedAt: string;
-        };
+        user?: AuthUser;
         message?: string | string[];
       };
       if (!res.ok) {

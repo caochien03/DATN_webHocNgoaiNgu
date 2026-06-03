@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import {
   clearStoredAuth,
   getStoredAuth,
+  isAdminUser,
   type AuthUser,
 } from "@/lib/auth-storage";
 
@@ -89,6 +90,14 @@ export function AppHeader() {
                   >
                     Mục tiêu
                   </Link>
+                  {isAdminUser(user) ? (
+                    <Link
+                      href="/admin/lessons"
+                      className="block rounded px-2 py-1.5 text-amber-800 hover:bg-zinc-50 dark:text-amber-300 dark:hover:bg-zinc-800"
+                    >
+                      Quản trị bài học
+                    </Link>
+                  ) : null}
                 </div>
               </details>
               <Link
