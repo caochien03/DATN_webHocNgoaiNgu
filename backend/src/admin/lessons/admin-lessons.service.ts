@@ -2,6 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { LessonsService } from '../../lessons/lessons.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
+import {
+  CreateLessonVocabularyDto,
+  UpdateLessonVocabularyDto,
+} from './dto/lesson-vocabulary.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 
 @Injectable()
@@ -49,6 +53,42 @@ export class AdminLessonsService {
     return { ok: true };
   }
 
+  async createVocabulary(lessonId: string, dto: CreateLessonVocabularyDto) {
+    await this.ensureLesson(lessonId);
+    return this.prisma.lessonVocabulary.create({
+      data: {
+        lessonId,
+        frontText: dto.frontText,
+        backText: dto.backText,
+        note: dto.note,
+        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
+      },
+    });
+  }
+
+  async updateVocabulary(
+    lessonId: string,
+    vocabId: string,
+    dto: UpdateLessonVocabularyDto,
+  ) {
+    await this.ensureVocabulary(lessonId, vocabId);
+    return this.prisma.lessonVocabulary.update({
+      where: { id: vocabId },
+      data: {
+        ...(dto.frontText !== undefined && { frontText: dto.frontText }),
+        ...(dto.backText !== undefined && { backText: dto.backText }),
+        ...(dto.note !== undefined && { note: dto.note }),
+        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
+      },
+    });
+  }
+
+  async removeVocabulary(lessonId: string, vocabId: string) {
+    await this.ensureVocabulary(lessonId, vocabId);
+    await this.prisma.lessonVocabulary.delete({ where: { id: vocabId } });
+    return { ok: true };
+  }
+
   private async ensureLesson(id: string) {
     const lesson = await this.prisma.grammarLesson.findUnique({
       where: { id },
@@ -56,6 +96,15 @@ export class AdminLessonsService {
     });
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
+    }
+  }
+
+  private async ensureVocabulary(lessonId: string, vocabId: string) {
+    const row = await this.prisma.lessonVocabulary.findFirst({
+      where: { id: vocabId, lessonId },
+    });
+    if (!row) {
+      throw new NotFoundException('Vocabulary not found');
     }
   }
 }
