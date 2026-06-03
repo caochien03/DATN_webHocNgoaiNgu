@@ -13,6 +13,10 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AdminLessonsService } from './admin-lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import {
+  CreateGrammarPointDto,
+  UpdateGrammarPointDto,
+} from './dto/grammar-point.dto';
+import {
   CreateLessonVocabularyDto,
   UpdateLessonVocabularyDto,
 } from './dto/lesson-vocabulary.dto';
@@ -71,5 +75,30 @@ export class AdminLessonsController {
     @Param('vocabId') vocabId: string,
   ) {
     return this.adminLessonsService.removeVocabulary(lessonId, vocabId);
+  }
+
+  @Post(':id/points')
+  createPoint(
+    @Param('id') lessonId: string,
+    @Body() dto: CreateGrammarPointDto,
+  ) {
+    return this.adminLessonsService.createPoint(lessonId, dto);
+  }
+
+  @Patch(':id/points/:pointId')
+  updatePoint(
+    @Param('id') lessonId: string,
+    @Param('pointId') pointId: string,
+    @Body() dto: UpdateGrammarPointDto,
+  ) {
+    return this.adminLessonsService.updatePoint(lessonId, pointId, dto);
+  }
+
+  @Delete(':id/points/:pointId')
+  removePoint(
+    @Param('id') lessonId: string,
+    @Param('pointId') pointId: string,
+  ) {
+    return this.adminLessonsService.removePoint(lessonId, pointId);
   }
 }

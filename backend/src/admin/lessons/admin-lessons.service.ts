@@ -3,6 +3,10 @@ import { LessonsService } from '../../lessons/lessons.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import {
+  CreateGrammarPointDto,
+  UpdateGrammarPointDto,
+} from './dto/grammar-point.dto';
+import {
   CreateLessonVocabularyDto,
   UpdateLessonVocabularyDto,
 } from './dto/lesson-vocabulary.dto';
@@ -89,6 +93,48 @@ export class AdminLessonsService {
     return { ok: true };
   }
 
+  async createPoint(lessonId: string, dto: CreateGrammarPointDto) {
+    await this.ensureLesson(lessonId);
+    return this.prisma.grammarPoint.create({
+      data: {
+        lessonId,
+        title: dto.title,
+        meaning: dto.meaning,
+        structure: dto.structure,
+        example: dto.example,
+        translation: dto.translation,
+        note: dto.note,
+        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
+      },
+    });
+  }
+
+  async updatePoint(
+    lessonId: string,
+    pointId: string,
+    dto: UpdateGrammarPointDto,
+  ) {
+    await this.ensurePoint(lessonId, pointId);
+    return this.prisma.grammarPoint.update({
+      where: { id: pointId },
+      data: {
+        ...(dto.title !== undefined && { title: dto.title }),
+        ...(dto.meaning !== undefined && { meaning: dto.meaning }),
+        ...(dto.structure !== undefined && { structure: dto.structure }),
+        ...(dto.example !== undefined && { example: dto.example }),
+        ...(dto.translation !== undefined && { translation: dto.translation }),
+        ...(dto.note !== undefined && { note: dto.note }),
+        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
+      },
+    });
+  }
+
+  async removePoint(lessonId: string, pointId: string) {
+    await this.ensurePoint(lessonId, pointId);
+    await this.prisma.grammarPoint.delete({ where: { id: pointId } });
+    return { ok: true };
+  }
+
   private async ensureLesson(id: string) {
     const lesson = await this.prisma.grammarLesson.findUnique({
       where: { id },
@@ -105,6 +151,15 @@ export class AdminLessonsService {
     });
     if (!row) {
       throw new NotFoundException('Vocabulary not found');
+    }
+  }
+
+  private async ensurePoint(lessonId: string, pointId: string) {
+    const row = await this.prisma.grammarPoint.findFirst({
+      where: { id: pointId, lessonId },
+    });
+    if (!row) {
+      throw new NotFoundException('Grammar point not found');
     }
   }
 }
