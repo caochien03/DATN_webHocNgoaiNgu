@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { DecksModule } from './decks/decks.module';
 import { GoalsModule } from './goals/goals.module';
@@ -18,6 +19,7 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     UsersModule,
     AuthModule,
+    AdminModule,
     DecksModule,
     GoalsModule,
     TopicsModule,

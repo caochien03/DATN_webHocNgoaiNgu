@@ -1,6 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { GrammarLevel, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  EXERCISE_LIST_ORDER,
+  LESSON_LIST_COUNTS_INCLUDE,
+  LESSON_LIST_ORDER,
+  lessonDetailInclude,
+} from './lesson-queries';
 
 const VALID_LEVELS = new Set<string>([
   'BEGINNER_1',
@@ -22,27 +28,15 @@ export class LessonsService {
     }
     return this.prisma.grammarLesson.findMany({
       where,
-      orderBy: [{ level: 'asc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }],
-      include: {
-        _count: {
-          select: { vocabulary: true, points: true, exercises: true },
-        },
-      },
+      orderBy: LESSON_LIST_ORDER,
+      include: LESSON_LIST_COUNTS_INCLUDE,
     });
   }
 
   async get(id: string) {
     const lesson = await this.prisma.grammarLesson.findUnique({
       where: { id },
-      include: {
-        vocabulary: {
-          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
-        },
-        points: {
-          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
-        },
-        _count: { select: { exercises: true } },
-      },
+      include: lessonDetailInclude,
     });
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
@@ -60,7 +54,7 @@ export class LessonsService {
     }
     return this.prisma.grammarExercise.findMany({
       where: { lessonId },
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+      orderBy: EXERCISE_LIST_ORDER,
     });
   }
 }
