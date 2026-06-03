@@ -5,6 +5,7 @@ import {
   EXERCISE_LIST_ORDER,
   LESSON_LIST_COUNTS_INCLUDE,
   LESSON_LIST_ORDER,
+  lessonAdminDetailInclude,
   lessonDetailInclude,
 } from './lesson-queries';
 
@@ -37,6 +38,17 @@ export class LessonsService {
     const lesson = await this.prisma.grammarLesson.findUnique({
       where: { id },
       include: lessonDetailInclude,
+    });
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+    return lesson;
+  }
+
+  async getForAdmin(id: string) {
+    const lesson = await this.prisma.grammarLesson.findUnique({
+      where: { id },
+      include: lessonAdminDetailInclude,
     });
     if (!lesson) {
       throw new NotFoundException('Lesson not found');

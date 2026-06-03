@@ -30,3 +30,10 @@ export const lessonDetailInclude = {
   points: { orderBy: POINTS_ORDER },
   _count: { select: { exercises: true } },
 } satisfies Prisma.GrammarLessonInclude;
+
+/** Admin edit — includes exercises (user loads via GET :id/exercises). */
+export const lessonAdminDetailInclude = {
+  vocabulary: { orderBy: VOCAB_ORDER },
+  points: { orderBy: POINTS_ORDER },
+  exercises: { orderBy: EXERCISE_LIST_ORDER },
+} satisfies Prisma.GrammarLessonInclude;

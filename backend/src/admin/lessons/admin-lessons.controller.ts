@@ -13,6 +13,10 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AdminLessonsService } from './admin-lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import {
+  CreateGrammarExerciseDto,
+  UpdateGrammarExerciseDto,
+} from './dto/grammar-exercise.dto';
+import {
   CreateGrammarPointDto,
   UpdateGrammarPointDto,
 } from './dto/grammar-point.dto';
@@ -100,5 +104,30 @@ export class AdminLessonsController {
     @Param('pointId') pointId: string,
   ) {
     return this.adminLessonsService.removePoint(lessonId, pointId);
+  }
+
+  @Post(':id/exercises')
+  createExercise(
+    @Param('id') lessonId: string,
+    @Body() dto: CreateGrammarExerciseDto,
+  ) {
+    return this.adminLessonsService.createExercise(lessonId, dto);
+  }
+
+  @Patch(':id/exercises/:exerciseId')
+  updateExercise(
+    @Param('id') lessonId: string,
+    @Param('exerciseId') exerciseId: string,
+    @Body() dto: UpdateGrammarExerciseDto,
+  ) {
+    return this.adminLessonsService.updateExercise(lessonId, exerciseId, dto);
+  }
+
+  @Delete(':id/exercises/:exerciseId')
+  removeExercise(
+    @Param('id') lessonId: string,
+    @Param('exerciseId') exerciseId: string,
+  ) {
+    return this.adminLessonsService.removeExercise(lessonId, exerciseId);
   }
 }

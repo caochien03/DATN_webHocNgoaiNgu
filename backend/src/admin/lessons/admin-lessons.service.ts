@@ -1,7 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { LessonsService } from '../../lessons/lessons.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
+import {
+  CreateGrammarExerciseDto,
+  UpdateGrammarExerciseDto,
+} from './dto/grammar-exercise.dto';
 import {
   CreateGrammarPointDto,
   UpdateGrammarPointDto,
@@ -24,7 +32,7 @@ export class AdminLessonsService {
   }
 
   get(id: string) {
-    return this.lessonsService.get(id);
+    return this.lessonsService.getForAdmin(id);
   }
 
   create(dto: CreateLessonDto) {
@@ -135,6 +143,56 @@ export class AdminLessonsService {
     return { ok: true };
   }
 
+  async createExercise(lessonId: string, dto: CreateGrammarExerciseDto) {
+    await this.ensureLesson(lessonId);
+    this.validateExerciseOptions(dto.options, dto.correctIndex);
+    return this.prisma.grammarExercise.create({
+      data: {
+        lessonId,
+        prompt: dto.prompt,
+        options: dto.options,
+        correctIndex: dto.correctIndex,
+        explanation: dto.explanation,
+        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
+      },
+    });
+  }
+
+  async updateExercise(
+    lessonId: string,
+    exerciseId: string,
+    dto: UpdateGrammarExerciseDto,
+  ) {
+    const existing = await this.ensureExercise(lessonId, exerciseId);
+    const options = dto.options ?? existing.options;
+    const correctIndex = dto.correctIndex ?? existing.correctIndex;
+    this.validateExerciseOptions(options, correctIndex);
+    return this.prisma.grammarExercise.update({
+      where: { id: exerciseId },
+      data: {
+        ...(dto.prompt !== undefined && { prompt: dto.prompt }),
+        ...(dto.options !== undefined && { options: dto.options }),
+        ...(dto.correctIndex !== undefined && { correctIndex: dto.correctIndex }),
+        ...(dto.explanation !== undefined && { explanation: dto.explanation }),
+        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
+      },
+    });
+  }
+
+  async removeExercise(lessonId: string, exerciseId: string) {
+    await this.ensureExercise(lessonId, exerciseId);
+    await this.prisma.grammarExercise.delete({ where: { id: exerciseId } });
+    return { ok: true };
+  }
+
+  private validateExerciseOptions(options: string[], correctIndex: number) {
+    if (correctIndex < 0 || correctIndex >= options.length) {
+      throw new BadRequestException(
+        'correctIndex is out of range for options',
+      );
+    }
+  }
+
   private async ensureLesson(id: string) {
     const lesson = await this.prisma.grammarLesson.findUnique({
       where: { id },
@@ -161,5 +219,15 @@ export class AdminLessonsService {
     if (!row) {
       throw new NotFoundException('Grammar point not found');
     }
+  }
+
+  private async ensureExercise(lessonId: string, exerciseId: string) {
+    const row = await this.prisma.grammarExercise.findFirst({
+      where: { id: exerciseId, lessonId },
+    });
+    if (!row) {
+      throw new NotFoundException('Exercise not found');
+    }
+    return row;
   }
 }
