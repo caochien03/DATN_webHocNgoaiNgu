@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   clearStoredAuth,
   getStoredAuth,
@@ -10,9 +10,14 @@ import {
   type AuthUser,
 } from "@/lib/auth-storage";
 
+const moreLinkClass =
+  "block rounded px-2 py-1.5 text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800";
+
 export function AppHeader() {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function sync() {
@@ -27,7 +32,18 @@ export function AppHeader() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!moreOpen) return;
+    function onPointerDown(e: PointerEvent) {
+      if (moreRef.current?.contains(e.target as Node)) return;
+      setMoreOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [moreOpen]);
+
   function logout() {
+    setMoreOpen(false);
     clearStoredAuth();
     setUser(null);
     router.push("/");
@@ -67,39 +83,58 @@ export function AppHeader() {
               >
                 Ôn hôm nay
               </Link>
-              <details className="relative">
-                <summary className="cursor-pointer list-none text-zinc-700 hover:underline dark:text-zinc-300">
+              <div className="relative" ref={moreRef}>
+                <button
+                  type="button"
+                  onClick={() => setMoreOpen((o) => !o)}
+                  className="text-zinc-700 hover:underline dark:text-zinc-300"
+                  aria-expanded={moreOpen}
+                  aria-haspopup="menu"
+                >
                   Thêm
-                </summary>
-                <div className="absolute right-0 z-20 mt-2 w-40 rounded-md border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                  <Link
-                    href="/lessons"
-                    className="block rounded px-2 py-1.5 text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                </button>
+                {moreOpen ? (
+                  <div
+                    role="menu"
+                    className="absolute right-0 z-20 mt-2 w-44 rounded-md border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
                   >
-                    Bài học
-                  </Link>
-                  <Link
-                    href="/tests"
-                    className="block rounded px-2 py-1.5 text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    Kiểm tra
-                  </Link>
-                  <Link
-                    href="/goals"
-                    className="block rounded px-2 py-1.5 text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    Mục tiêu
-                  </Link>
-                  {isAdminUser(user) ? (
                     <Link
-                      href="/admin/lessons"
-                      className="block rounded px-2 py-1.5 text-amber-800 hover:bg-zinc-50 dark:text-amber-300 dark:hover:bg-zinc-800"
+                      href="/lessons"
+                      role="menuitem"
+                      className={moreLinkClass}
+                      onClick={() => setMoreOpen(false)}
                     >
-                      Quản trị bài học
+                      Bài học
                     </Link>
-                  ) : null}
-                </div>
-              </details>
+                    <Link
+                      href="/tests"
+                      role="menuitem"
+                      className={moreLinkClass}
+                      onClick={() => setMoreOpen(false)}
+                    >
+                      Kiểm tra
+                    </Link>
+                    <Link
+                      href="/goals"
+                      role="menuitem"
+                      className={moreLinkClass}
+                      onClick={() => setMoreOpen(false)}
+                    >
+                      Mục tiêu
+                    </Link>
+                    {isAdminUser(user) ? (
+                      <Link
+                        href="/admin/lessons"
+                        role="menuitem"
+                        className={`${moreLinkClass} text-amber-800 dark:text-amber-300`}
+                        onClick={() => setMoreOpen(false)}
+                      >
+                        Quản trị bài học
+                      </Link>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
               <Link
                 href="/me"
                 className="max-w-[140px] truncate text-zinc-700 hover:underline dark:text-zinc-300"

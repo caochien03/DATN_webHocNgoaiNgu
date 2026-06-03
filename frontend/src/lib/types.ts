@@ -115,6 +115,11 @@ export type LessonDetail = {
 export type GrammarLessonRow = LessonRow;
 export type GrammarLessonDetail = LessonDetail;
 
+/** Admin GET /admin/lessons/:id includes exercises array. */
+export type AdminLessonDetail = LessonDetail & {
+  exercises: GrammarExercise[];
+};
+
 export type GrammarExercise = {
   id: string;
   lessonId: string;
