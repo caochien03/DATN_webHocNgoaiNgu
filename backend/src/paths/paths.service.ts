@@ -1,9 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  PATH_LIST_COUNTS_INCLUDE,
+  PATH_LIST_ORDER,
+  pathAdminDetailInclude,
+} from './path-queries';
 
 @Injectable()
 export class PathsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  listCatalog() {
+    return this.prisma.learningPath.findMany({
+      orderBy: PATH_LIST_ORDER,
+      include: PATH_LIST_COUNTS_INCLUDE,
+    });
+  }
+
+  async getForAdmin(pathId: string) {
+    const path = await this.prisma.learningPath.findUnique({
+      where: { id: pathId },
+      include: pathAdminDetailInclude,
+    });
+    if (!path) {
+      throw new NotFoundException('Learning path not found');
+    }
+    return path;
+  }
 
   async list(userId: string) {
     const paths = await this.prisma.learningPath.findMany({
