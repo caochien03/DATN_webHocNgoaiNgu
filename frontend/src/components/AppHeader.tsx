@@ -96,7 +96,7 @@ export function AppHeader() {
                 {moreOpen ? (
                   <div
                     role="menu"
-                    className="absolute right-0 z-20 mt-2 w-44 rounded-md border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
+                    className="absolute right-0 z-20 mt-2 w-52 rounded-md border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
                   >
                     <Link
                       href="/lessons"
@@ -123,14 +123,24 @@ export function AppHeader() {
                       Mục tiêu
                     </Link>
                     {isAdminUser(user) ? (
-                      <Link
-                        href="/admin/lessons"
-                        role="menuitem"
-                        className={`${moreLinkClass} text-amber-800 dark:text-amber-300`}
-                        onClick={() => setMoreOpen(false)}
-                      >
-                        Quản trị bài học
-                      </Link>
+                      <>
+                        <Link
+                          href="/admin/lessons"
+                          role="menuitem"
+                          className={`${moreLinkClass} text-amber-800 dark:text-amber-300`}
+                          onClick={() => setMoreOpen(false)}
+                        >
+                          Quản trị bài học
+                        </Link>
+                        <Link
+                          href="/admin/topics"
+                          role="menuitem"
+                          className={`${moreLinkClass} text-amber-800 dark:text-amber-300`}
+                          onClick={() => setMoreOpen(false)}
+                        >
+                          Quản trị chủ đề
+                        </Link>
+                      </>
                     ) : null}
                   </div>
                 ) : null}
