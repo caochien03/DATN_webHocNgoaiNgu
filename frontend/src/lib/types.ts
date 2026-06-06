@@ -140,6 +140,39 @@ export type TopicDetail = {
   words: VocabWord[];
 };
 
+export type AdminPathCatalogRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  languageCode: string;
+  level: string | null;
+  sortOrder: number;
+  _count: { steps: number };
+};
+
+export type AdminPathStep = {
+  id: string;
+  pathId: string;
+  type: "TOPIC" | "LESSON";
+  title: string;
+  summary: string | null;
+  sortOrder: number;
+  topicId: string | null;
+  lessonId: string | null;
+  topic: { id: string; title: string } | null;
+  lesson: { id: string; title: string } | null;
+};
+
+export type AdminPathDetail = {
+  id: string;
+  title: string;
+  description: string | null;
+  languageCode: string;
+  level: string | null;
+  sortOrder: number;
+  steps: AdminPathStep[];
+};
+
 export type LearningPathRow = {
   id: string;
   title: string;
