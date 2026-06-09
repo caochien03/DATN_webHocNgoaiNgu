@@ -23,9 +23,10 @@ model User {
   updatedAt    DateTime @updatedAt
   decks        Deck[]
   pathProgress UserPathProgress[]
-  quizAttempts QuizAttempt[]
-  goalSetting  UserGoalSetting?
-  dailyProgress UserDailyProgress[]
+  quizAttempts     QuizAttempt[]
+  topikAttempts    TopikExamAttempt[]
+  goalSetting      UserGoalSetting?
+  dailyProgress    UserDailyProgress[]
 }
 
 model UserGoalSetting {
@@ -270,4 +271,111 @@ model QuizAttempt {
 
   @@index([userId, createdAt])
   @@index([sourceType, sourceId])
+}
+
+enum TopikTier {
+  TOPIK_I
+  TOPIK_II
+}
+
+enum TopikSection {
+  LISTENING
+  READING
+  WRITING
+}
+
+enum TopikAttemptMode {
+  FULL_EXAM
+  PRACTICE
+}
+
+/// Dạng bài theo khoảng số câu trong đề TOPIK (vd. nghe TOPIK I câu 4–8).
+model TopikQuestionFormat {
+  id          String       @id @default(cuid())
+  tier        TopikTier
+  section     TopikSection
+  fromNo      Int
+  toNo        Int
+  title       String
+  titleKo     String?
+  description String?
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([tier, section, fromNo, toNo])
+  @@index([tier, section, sortOrder])
+}
+
+/// Ngân hàng câu — questionNo = số câu trong phần (nghe 1–30, đọc 1–40).
+model TopikQuestion {
+  id           String              @id @default(cuid())
+  tier         TopikTier
+  section      TopikSection
+  questionNo   Int
+  prompt       String
+  passage      String?
+  options      String[]
+  correctIndex Int
+  explanation  String?
+  audioUrl     String?
+  points       Int                 @default(2)
+  isPublished  Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  examSlots    TopikExamQuestion[]
+
+  @@index([tier, section, questionNo])
+  @@index([isPublished])
+}
+
+model TopikExam {
+  id              String              @id @default(cuid())
+  title           String
+  description     String?
+  tier            TopikTier
+  durationMinutes Int                 @default(100)
+  isPublished     Boolean             @default(true)
+  sortOrder       Int                 @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  questions       TopikExamQuestion[]
+  attempts        TopikExamAttempt[]
+
+  @@index([tier, isPublished])
+}
+
+model TopikExamQuestion {
+  id         String        @id @default(cuid())
+  examId     String
+  exam       TopikExam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  questionId String
+  question   TopikQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  sortOrder  Int
+
+  @@unique([examId, questionId])
+  @@unique([examId, sortOrder])
+  @@index([examId])
+}
+
+model TopikExamAttempt {
+  id             String           @id @default(cuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode           TopikAttemptMode
+  examId         String?
+  exam           TopikExam?       @relation(fields: [examId], references: [id], onDelete: SetNull)
+  tier           TopikTier
+  section        TopikSection?
+  formatFromNo   Int?
+  formatToNo     Int?
+  answers        Json
+  correctCount   Int
+  totalQuestions Int
+  scorePercent   Int
+  startedAt      DateTime         @default(now())
+  finishedAt     DateTime?
+
+  @@index([userId, finishedAt])
+  @@index([examId])
 }
