@@ -10,14 +10,16 @@ import {
   type AuthUser,
 } from "@/lib/auth-storage";
 
-const moreLinkClass =
+const menuLinkClass =
   "block rounded px-2 py-1.5 text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800";
 
 export function AppHeader() {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [topikOpen, setTopikOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
+  const topikRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function sync() {
@@ -52,7 +54,7 @@ export function AppHeader() {
 
   return (
     <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3">
+      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3">
         <Link
           href="/"
           className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
@@ -83,6 +85,42 @@ export function AppHeader() {
               >
                 Ôn hôm nay
               </Link>
+              <div
+                className="relative"
+                ref={topikRef}
+                onMouseEnter={() => setTopikOpen(true)}
+                onMouseLeave={() => setTopikOpen(false)}
+              >
+                <button
+                  type="button"
+                  className="text-zinc-700 hover:underline dark:text-zinc-300"
+                  aria-expanded={topikOpen}
+                  aria-haspopup="menu"
+                >
+                  TOPIK
+                </button>
+                {topikOpen ? (
+                  <div
+                    role="menu"
+                    className="absolute left-0 z-20 mt-1 w-40 rounded-md border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
+                  >
+                    <Link
+                      href="/topik/TOPIK_I"
+                      role="menuitem"
+                      className={menuLinkClass}
+                    >
+                      TOPIK I
+                    </Link>
+                    <Link
+                      href="/topik/TOPIK_II"
+                      role="menuitem"
+                      className={menuLinkClass}
+                    >
+                      TOPIK II
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
               <div className="relative" ref={moreRef}>
                 <button
                   type="button"
@@ -101,7 +139,7 @@ export function AppHeader() {
                     <Link
                       href="/lessons"
                       role="menuitem"
-                      className={moreLinkClass}
+                      className={menuLinkClass}
                       onClick={() => setMoreOpen(false)}
                     >
                       Bài học
@@ -109,7 +147,7 @@ export function AppHeader() {
                     <Link
                       href="/tests"
                       role="menuitem"
-                      className={moreLinkClass}
+                      className={menuLinkClass}
                       onClick={() => setMoreOpen(false)}
                     >
                       Kiểm tra
@@ -117,7 +155,7 @@ export function AppHeader() {
                     <Link
                       href="/goals"
                       role="menuitem"
-                      className={moreLinkClass}
+                      className={menuLinkClass}
                       onClick={() => setMoreOpen(false)}
                     >
                       Mục tiêu
@@ -127,7 +165,7 @@ export function AppHeader() {
                         <Link
                           href="/admin/lessons"
                           role="menuitem"
-                          className={`${moreLinkClass} text-amber-800 dark:text-amber-300`}
+                          className={`${menuLinkClass} text-amber-800 dark:text-amber-300`}
                           onClick={() => setMoreOpen(false)}
                         >
                           Quản trị bài học
@@ -135,7 +173,7 @@ export function AppHeader() {
                         <Link
                           href="/admin/topics"
                           role="menuitem"
-                          className={`${moreLinkClass} text-amber-800 dark:text-amber-300`}
+                          className={`${menuLinkClass} text-amber-800 dark:text-amber-300`}
                           onClick={() => setMoreOpen(false)}
                         >
                           Quản trị chủ đề
@@ -143,7 +181,7 @@ export function AppHeader() {
                         <Link
                           href="/admin/paths"
                           role="menuitem"
-                          className={`${moreLinkClass} text-amber-800 dark:text-amber-300`}
+                          className={`${menuLinkClass} text-amber-800 dark:text-amber-300`}
                           onClick={() => setMoreOpen(false)}
                         >
                           Quản trị lộ trình

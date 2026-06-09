@@ -216,6 +216,95 @@ export type LearningPathDetail = {
   steps: LearningPathStep[];
 };
 
+export type TopikTier = "TOPIK_I" | "TOPIK_II";
+export type TopikSection = "LISTENING" | "READING" | "WRITING";
+export type TopikAttemptMode = "FULL_EXAM" | "PRACTICE";
+
+export type TopikQuestionFormat = {
+  id: string;
+  tier: TopikTier;
+  section: TopikSection;
+  fromNo: number;
+  toNo: number;
+  title: string;
+  titleKo: string | null;
+  description: string | null;
+  sortOrder: number;
+};
+
+export type TopikQuestion = {
+  id: string;
+  tier: TopikTier;
+  section: TopikSection;
+  questionNo: number;
+  prompt: string;
+  passage: string | null;
+  options: string[];
+  audioUrl: string | null;
+  points: number;
+};
+
+export type TopikExamRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  tier: TopikTier;
+  durationMinutes: number;
+  sortOrder: number;
+  _count: { questions: number };
+};
+
+export type TopikExamDetail = {
+  id: string;
+  title: string;
+  description: string | null;
+  tier: TopikTier;
+  durationMinutes: number;
+  questionCount: number;
+  questions: TopikQuestion[];
+};
+
+export type GradedTopikAnswer = {
+  questionId: string;
+  questionNo: number;
+  section: TopikSection;
+  selectedIndex: number;
+  correctIndex: number;
+  isCorrect: boolean;
+  explanation: string | null;
+};
+
+export type TopikSubmitResult = {
+  attemptId: string;
+  mode: TopikAttemptMode;
+  tier: TopikTier;
+  section?: TopikSection;
+  formatFromNo?: number;
+  formatToNo?: number;
+  examId?: string;
+  examTitle?: string;
+  correctCount: number;
+  totalQuestions: number;
+  scorePercent: number;
+  answers: GradedTopikAnswer[];
+};
+
+export type TopikAttemptRow = {
+  id: string;
+  mode: TopikAttemptMode;
+  tier: TopikTier;
+  section: TopikSection | null;
+  formatFromNo: number | null;
+  formatToNo: number | null;
+  examId: string | null;
+  correctCount: number;
+  totalQuestions: number;
+  scorePercent: number;
+  startedAt: string;
+  finishedAt: string | null;
+  exam: { id: string; title: string } | null;
+};
+
 export type QuizSourceType = "DECK" | "TOPIC" | "LESSON" | "PATH";
 
 export type QuizAttempt = {
