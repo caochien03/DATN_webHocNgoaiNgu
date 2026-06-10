@@ -186,6 +186,14 @@ export function AppHeader() {
                         >
                           Quản trị lộ trình
                         </Link>
+                        <Link
+                          href="/admin/topik/questions"
+                          role="menuitem"
+                          className={`${menuLinkClass} text-amber-800 dark:text-amber-300`}
+                          onClick={() => setMoreOpen(false)}
+                        >
+                          Quản trị TOPIK
+                        </Link>
                       </>
                     ) : null}
                   </div>

@@ -244,6 +244,24 @@ export type TopikQuestion = {
   points: number;
 };
 
+/** Full question row from admin API (includes answers and metadata). */
+export type TopikQuestionAdminRow = {
+  id: string;
+  tier: TopikTier;
+  section: TopikSection;
+  questionNo: number;
+  prompt: string;
+  passage: string | null;
+  options: string[];
+  correctIndex: number;
+  explanation: string | null;
+  audioUrl: string | null;
+  points: number;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type TopikExamRow = {
   id: string;
   title: string;
