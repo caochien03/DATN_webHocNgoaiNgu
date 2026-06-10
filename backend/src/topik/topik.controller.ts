@@ -40,24 +40,40 @@ export class TopikController {
     return this.topikService.getExamForTake(id);
   }
 
+  @Post('exams/:id/start')
+  startExam(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.topikService.startExam(userId, id);
+  }
+
   @Get('practice')
   async practice(
     @Query('tier') tier: TopikTier = TopikTier.TOPIK_I,
     @Query('section') section: TopikSection,
     @Query('fromNo', ParseIntPipe) fromNo: number,
     @Query('toNo', ParseIntPipe) toNo: number,
-    @Query('limit') limit?: string,
+    @Query('count') count?: string,
   ) {
     await this.topikService.getFormatOrThrow(tier, section, fromNo, toNo);
-    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
-    const questions = await this.topikService.getPracticeQuestions({
+    const parsedCount =
+      count !== undefined && count !== '' ? parseInt(count, 10) : undefined;
+    const questionCount = this.topikService.resolvePracticeCount(parsedCount);
+    const { questions, requestedCount } =
+      await this.topikService.getPracticeQuestions({
+        tier,
+        section,
+        fromNo,
+        toNo,
+        count: questionCount,
+      });
+    return {
       tier,
       section,
       fromNo,
       toNo,
-      limit: parsedLimit,
-    });
-    return { tier, section, fromNo, toNo, questions };
+      requestedCount,
+      count: questions.length,
+      questions,
+    };
   }
 
   @Post('practice/submit')

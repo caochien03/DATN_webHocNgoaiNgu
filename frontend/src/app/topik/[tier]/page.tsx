@@ -174,7 +174,7 @@ function TierPracticeContent() {
                       {exam.title}
                     </p>
                     <p className="mt-2 text-xs text-zinc-500">
-                      {exam._count.questions} câu · {exam.durationMinutes} phút
+                      {exam.questionCount} câu · {exam.durationMinutes} phút
                     </p>
                   </Link>
                 </li>

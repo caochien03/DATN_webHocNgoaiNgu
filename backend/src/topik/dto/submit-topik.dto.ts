@@ -42,6 +42,9 @@ export class SubmitTopikPracticeDto {
 }
 
 export class SubmitTopikExamDto {
+  @IsString()
+  attemptId: string;
+
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })

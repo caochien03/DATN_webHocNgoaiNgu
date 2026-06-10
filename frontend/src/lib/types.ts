@@ -269,7 +269,7 @@ export type TopikExamRow = {
   tier: TopikTier;
   durationMinutes: number;
   sortOrder: number;
-  _count: { questions: number };
+  questionCount: number;
 };
 
 export type TopikExamDetail = {
@@ -279,7 +279,12 @@ export type TopikExamDetail = {
   tier: TopikTier;
   durationMinutes: number;
   questionCount: number;
+};
+
+export type TopikExamStartResult = TopikExamDetail & {
+  attemptId: string;
   questions: TopikQuestion[];
+  resumed: boolean;
 };
 
 export type GradedTopikAnswer = {

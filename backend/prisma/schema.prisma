@@ -369,10 +369,12 @@ model TopikExamAttempt {
   section        TopikSection?
   formatFromNo   Int?
   formatToNo     Int?
+  /// Snapshot câu đã random khi bắt đầu thi thử (giữ thứ tự làm bài).
+  questionIds    String[]         @default([])
   answers        Json
-  correctCount   Int
-  totalQuestions Int
-  scorePercent   Int
+  correctCount   Int              @default(0)
+  totalQuestions Int              @default(0)
+  scorePercent   Int              @default(0)
   startedAt      DateTime         @default(now())
   finishedAt     DateTime?
 
