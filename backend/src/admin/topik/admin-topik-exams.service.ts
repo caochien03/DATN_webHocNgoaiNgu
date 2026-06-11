@@ -3,10 +3,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
+  createQuestionsForExam,
+  examWithQuestionsInclude,
+  replaceExamQuestions,
+  validateExamQuestions,
+} from './admin-topik-exam-questions.helper';
+import {
   AddTopikExamQuestionDto,
-  CreateTopikExamDto,
+  CreateTopikExamWithQuestionsDto,
   UpdateTopikExamDto,
   UpdateTopikExamQuestionDto,
 } from './dto/topik-exam.dto';
@@ -27,12 +35,7 @@ export class AdminTopikExamsService {
   async get(id: string) {
     const exam = await this.prisma.topikExam.findUnique({
       where: { id },
-      include: {
-        questions: {
-          orderBy: { sortOrder: 'asc' },
-          include: { question: true },
-        },
-      },
+      include: examWithQuestionsInclude,
     });
     if (!exam) {
       throw new NotFoundException('Exam not found');
@@ -40,41 +43,109 @@ export class AdminTopikExamsService {
     return exam;
   }
 
-  create(dto: CreateTopikExamDto) {
-    return this.prisma.topikExam.create({
-      data: {
-        title: dto.title,
-        description: dto.description,
-        tier: dto.tier,
-        ...(dto.durationMinutes !== undefined && {
-          durationMinutes: dto.durationMinutes,
-        }),
-        ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
-        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
-      },
+  async createWithQuestions(dto: CreateTopikExamWithQuestionsDto) {
+    validateExamQuestions(dto.tier, dto.questions);
+
+    return this.prisma.$transaction(async (tx) => {
+      const exam = await tx.topikExam.create({
+        data: {
+          title: dto.title,
+          description: dto.description,
+          tier: dto.tier,
+          ...(dto.durationMinutes !== undefined && {
+            durationMinutes: dto.durationMinutes,
+          }),
+          ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
+          ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
+        },
+      });
+
+      await createQuestionsForExam(tx, exam.id, exam.tier, dto.questions);
+
+      return tx.topikExam.findUniqueOrThrow({
+        where: { id: exam.id },
+        include: examWithQuestionsInclude,
+      });
     });
   }
 
+  async importFromJson(file: Express.Multer.File) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('JSON file is required');
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(file.buffer.toString('utf8'));
+    } catch {
+      throw new BadRequestException('Invalid JSON file');
+    }
+
+    const dto = plainToInstance(CreateTopikExamWithQuestionsDto, parsed);
+    const errors = await validate(dto, {
+      whitelist: true,
+      forbidNonWhitelisted: false,
+    });
+    if (errors.length > 0) {
+      throw new BadRequestException(this.formatValidationErrors(errors));
+    }
+
+    return this.createWithQuestions(dto);
+  }
+
   async update(id: string, dto: UpdateTopikExamDto) {
-    await this.ensureExam(id);
-    return this.prisma.topikExam.update({
-      where: { id },
-      data: {
-        ...(dto.title !== undefined && { title: dto.title }),
-        ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.tier !== undefined && { tier: dto.tier }),
-        ...(dto.durationMinutes !== undefined && {
-          durationMinutes: dto.durationMinutes,
-        }),
-        ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
-        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
-      },
+    const existing = await this.ensureExam(id);
+    const tier = dto.tier ?? existing.tier;
+
+    if (dto.questions) {
+      validateExamQuestions(tier, dto.questions);
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.topikExam.update({
+        where: { id },
+        data: {
+          ...(dto.title !== undefined && { title: dto.title }),
+          ...(dto.description !== undefined && { description: dto.description }),
+          ...(dto.tier !== undefined && { tier: dto.tier }),
+          ...(dto.durationMinutes !== undefined && {
+            durationMinutes: dto.durationMinutes,
+          }),
+          ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
+          ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
+        },
+      });
+
+      if (dto.questions) {
+        await replaceExamQuestions(tx, id, tier, dto.questions);
+      }
+
+      return tx.topikExam.findUniqueOrThrow({
+        where: { id },
+        include: examWithQuestionsInclude,
+      });
     });
   }
 
   async remove(id: string) {
     await this.ensureExam(id);
-    await this.prisma.topikExam.delete({ where: { id } });
+
+    await this.prisma.$transaction(async (tx) => {
+      const slots = await tx.topikExamQuestion.findMany({
+        where: { examId: id },
+        select: { questionId: true },
+      });
+      const questionIds = slots.map((s) => s.questionId);
+
+      await tx.topikExam.delete({ where: { id } });
+
+      if (questionIds.length > 0) {
+        await tx.topikQuestion.deleteMany({
+          where: { id: { in: questionIds } },
+        });
+      }
+    });
+
     return { ok: true };
   }
 
@@ -119,8 +190,11 @@ export class AdminTopikExamsService {
   }
 
   async removeQuestion(examId: string, slotId: string) {
-    await this.ensureSlot(examId, slotId);
-    await this.prisma.topikExamQuestion.delete({ where: { id: slotId } });
+    const slot = await this.ensureSlot(examId, slotId);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.topikExamQuestion.delete({ where: { id: slotId } });
+      await tx.topikQuestion.delete({ where: { id: slot.questionId } });
+    });
     return { ok: true };
   }
 
@@ -140,5 +214,28 @@ export class AdminTopikExamsService {
       throw new NotFoundException('Exam question slot not found');
     }
     return slot;
+  }
+
+  private formatValidationErrors(
+    errors: Awaited<ReturnType<typeof validate>>,
+  ): string {
+    const messages: string[] = [];
+    const walk = (errs: typeof errors, prefix = '') => {
+      for (const err of errs) {
+        const path = prefix
+          ? `${prefix}.${err.property}`
+          : err.property;
+        if (err.constraints) {
+          messages.push(
+            ...Object.values(err.constraints).map((m) => `${path}: ${m}`),
+          );
+        }
+        if (err.children?.length) {
+          walk(err.children, path);
+        }
+      }
+    };
+    walk(errors);
+    return messages.join('; ') || 'Validation failed';
   }
 }

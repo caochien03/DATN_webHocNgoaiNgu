@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,14 +7,17 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AdminGuard } from '../../auth/guards/admin.guard';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AdminTopikExamsService } from './admin-topik-exams.service';
 import {
   AddTopikExamQuestionDto,
-  CreateTopikExamDto,
+  CreateTopikExamWithQuestionsDto,
   UpdateTopikExamDto,
   UpdateTopikExamQuestionDto,
 } from './dto/topik-exam.dto';
@@ -28,9 +32,18 @@ export class AdminTopikExamsController {
     return this.adminTopikExamsService.list();
   }
 
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  importExam(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('file field is required');
+    }
+    return this.adminTopikExamsService.importFromJson(file);
+  }
+
   @Post()
-  create(@Body() dto: CreateTopikExamDto) {
-    return this.adminTopikExamsService.create(dto);
+  create(@Body() dto: CreateTopikExamWithQuestionsDto) {
+    return this.adminTopikExamsService.createWithQuestions(dto);
   }
 
   @Get(':id')

@@ -1,5 +1,8 @@
 import { TopikTier } from '@prisma/client';
+import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -8,7 +11,9 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { ExamQuestionInputDto } from './exam-question-input.dto';
 
 export class CreateTopikExamDto {
   @IsString()
@@ -37,6 +42,15 @@ export class CreateTopikExamDto {
   @IsInt()
   @Min(0)
   sortOrder?: number;
+}
+
+/** Tạo đề kèm toàn bộ câu hỏi (POST /admin/topik/exams, import JSON). */
+export class CreateTopikExamWithQuestionsDto extends CreateTopikExamDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => ExamQuestionInputDto)
+  questions: ExamQuestionInputDto[];
 }
 
 export class UpdateTopikExamDto {
@@ -68,6 +82,14 @@ export class UpdateTopikExamDto {
   @IsInt()
   @Min(0)
   sortOrder?: number;
+
+  /** Nếu gửi — thay thế toàn bộ câu trong đề. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => ExamQuestionInputDto)
+  questions?: ExamQuestionInputDto[];
 }
 
 export class AddTopikExamQuestionDto {
