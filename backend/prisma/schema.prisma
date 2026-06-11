@@ -307,7 +307,7 @@ model TopikQuestionFormat {
   @@index([tier, section, sortOrder])
 }
 
-/// Ngân hàng câu — questionNo = số câu trong phần (nghe 1–30, đọc 1–40).
+/// Câu hỏi thuộc đề TOPIK — questionNo = số câu trong phần (nghe 1–30, đọc 1–40).
 model TopikQuestion {
   id           String              @id @default(cuid())
   tier         TopikTier

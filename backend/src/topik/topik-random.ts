@@ -104,4 +104,3 @@ export async function loadFixedExamQuestions(
   return slots.map((slot) => slot.question);
 }
 
-export { questionForClient };

@@ -16,7 +16,6 @@ import {
   AddTopikExamQuestionDto,
   CreateTopikExamWithQuestionsDto,
   UpdateTopikExamDto,
-  UpdateTopikExamQuestionDto,
 } from './dto/topik-exam.dto';
 
 @Injectable()
@@ -176,44 +175,12 @@ export class AdminTopikExamsService {
     });
   }
 
-  async updateQuestionSlot(
-    examId: string,
-    slotId: string,
-    dto: UpdateTopikExamQuestionDto,
-  ) {
-    await this.ensureSlot(examId, slotId);
-    return this.prisma.topikExamQuestion.update({
-      where: { id: slotId },
-      data: { sortOrder: dto.sortOrder },
-      include: { question: true },
-    });
-  }
-
-  async removeQuestion(examId: string, slotId: string) {
-    const slot = await this.ensureSlot(examId, slotId);
-    await this.prisma.$transaction(async (tx) => {
-      await tx.topikExamQuestion.delete({ where: { id: slotId } });
-      await tx.topikQuestion.delete({ where: { id: slot.questionId } });
-    });
-    return { ok: true };
-  }
-
   private async ensureExam(id: string) {
     const exam = await this.prisma.topikExam.findUnique({ where: { id } });
     if (!exam) {
       throw new NotFoundException('Exam not found');
     }
     return exam;
-  }
-
-  private async ensureSlot(examId: string, slotId: string) {
-    const slot = await this.prisma.topikExamQuestion.findFirst({
-      where: { id: slotId, examId },
-    });
-    if (!slot) {
-      throw new NotFoundException('Exam question slot not found');
-    }
-    return slot;
   }
 
   private formatValidationErrors(

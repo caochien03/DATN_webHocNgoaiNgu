@@ -49,17 +49,17 @@ function PracticeContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const slotCount = useMemo(() => {
+  const formatRangeSize = useMemo(() => {
     if (!fromNo || !toNo) return null;
     return parseInt(toNo, 10) - parseInt(fromNo, 10) + 1;
   }, [fromNo, toNo]);
 
   const countOptions = useMemo(() => {
     const set = new Set<number>(COUNT_PRESETS);
-    if (slotCount && slotCount > 0) set.add(slotCount);
+    if (formatRangeSize && formatRangeSize > 0) set.add(formatRangeSize);
     if (selectedCount > 0) set.add(selectedCount);
     return [...set].sort((a, b) => a - b);
-  }, [slotCount, selectedCount]);
+  }, [formatRangeSize, selectedCount]);
 
   useEffect(() => {
     if (!section || !fromNo || !toNo) return;
@@ -170,7 +170,7 @@ function PracticeContent() {
       <div className="mx-auto w-full max-w-2xl px-4 py-8">
         {requestedCount !== null && activeCount < requestedCount ? (
           <p className="mb-4 text-sm text-amber-800 dark:text-amber-300">
-            Ngân hàng chỉ có {activeCount} câu cho dạng này (bạn chọn{" "}
+            Pool đề đã công bố chỉ có {activeCount} câu cho dạng này (bạn chọn{" "}
             {requestedCount}).
           </p>
         ) : null}
@@ -216,11 +216,12 @@ function PracticeContent() {
           Số câu muốn làm
         </p>
         <p className="mt-1 text-xs text-zinc-500">
-          Random {selectedCount} câu khác nhau từ ngân hàng câu {rangeLabel}
-          {slotCount
-            ? ` (dạng này có ${slotCount} số câu trong đề thật)`
+          Random {selectedCount} câu khác nhau từ các đề đã công bố (dạng câu{" "}
+          {rangeLabel}
+          {formatRangeSize
+            ? ` · mỗi đề thật có ${formatRangeSize} vị trí số câu trong dạng này`
             : null}
-          .
+          ).
         </p>
 
         <div className="mt-3 flex flex-wrap gap-2">

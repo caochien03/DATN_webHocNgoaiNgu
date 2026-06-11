@@ -101,9 +101,3 @@ export class AddTopikExamQuestionDto {
   @Min(0)
   sortOrder?: number;
 }
-
-export class UpdateTopikExamQuestionDto {
-  @IsInt()
-  @Min(0)
-  sortOrder: number;
-}

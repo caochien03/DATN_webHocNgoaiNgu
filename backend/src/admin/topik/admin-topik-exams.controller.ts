@@ -19,7 +19,6 @@ import {
   AddTopikExamQuestionDto,
   CreateTopikExamWithQuestionsDto,
   UpdateTopikExamDto,
-  UpdateTopikExamQuestionDto,
 } from './dto/topik-exam.dto';
 
 @Controller('admin/topik/exams')
@@ -67,22 +66,5 @@ export class AdminTopikExamsController {
     @Body() dto: AddTopikExamQuestionDto,
   ) {
     return this.adminTopikExamsService.addQuestion(examId, dto);
-  }
-
-  @Patch(':id/questions/:slotId')
-  updateQuestionSlot(
-    @Param('id') examId: string,
-    @Param('slotId') slotId: string,
-    @Body() dto: UpdateTopikExamQuestionDto,
-  ) {
-    return this.adminTopikExamsService.updateQuestionSlot(examId, slotId, dto);
-  }
-
-  @Delete(':id/questions/:slotId')
-  removeQuestion(
-    @Param('id') examId: string,
-    @Param('slotId') slotId: string,
-  ) {
-    return this.adminTopikExamsService.removeQuestion(examId, slotId);
   }
 }
