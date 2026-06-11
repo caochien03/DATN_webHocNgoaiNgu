@@ -113,6 +113,10 @@ function PracticeContent() {
         count: number;
         requestedCount: number;
       };
+      if (data.questions.length === 0) {
+        setError("Không lấy được câu hỏi cho lượt luyện này.");
+        return;
+      }
       setQuestions(data.questions);
       setActiveCount(data.count);
       setRequestedCount(data.requestedCount);

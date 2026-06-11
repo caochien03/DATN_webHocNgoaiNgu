@@ -86,6 +86,11 @@ export async function randomQuestionsForPractice(
       selected.push(...unit);
     }
   }
+  if (selected.length === 0) {
+    throw new BadRequestException(
+      'Không ghép được số câu yêu cầu với pool hiện có (có thể do cặp bundle) — hãy tăng số câu hoặc thêm câu đơn',
+    );
+  }
   return { questions: selected, requestedCount: params.count };
 }
 

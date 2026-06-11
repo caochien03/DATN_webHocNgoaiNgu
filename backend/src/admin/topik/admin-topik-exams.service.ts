@@ -96,6 +96,17 @@ export class AdminTopikExamsService {
     const existing = await this.ensureExam(id);
     const tier = dto.tier ?? existing.tier;
 
+    if (dto.tier && dto.tier !== existing.tier && !dto.questions) {
+      const slotCount = await this.prisma.topikExamQuestion.count({
+        where: { examId: id },
+      });
+      if (slotCount > 0) {
+        throw new BadRequestException(
+          'Không đổi cấp độ khi đề đã có câu — gửi kèm questions để thay thế hoặc tạo đề mới',
+        );
+      }
+    }
+
     if (dto.questions) {
       validateExamQuestions(tier, dto.questions);
     }

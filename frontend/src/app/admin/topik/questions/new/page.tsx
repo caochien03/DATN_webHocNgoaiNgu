@@ -63,6 +63,13 @@ function NewTopikQuestionContent() {
       <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
         Tạo câu hỏi TOPIK
       </h1>
+      <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
+        Câu tạo ở đây chưa gắn đề — không vào pool luyện dạng. Nên tạo qua{" "}
+        <Link href="/admin/topik/exams" className="underline">
+          quản trị đề
+        </Link>{" "}
+        hoặc thêm vào đề sau.
+      </p>
 
       {error ? (
         <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
