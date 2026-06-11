@@ -226,6 +226,11 @@ function EditTopikExamContent() {
                         #{slot.sortOrder + 1} ·{" "}
                         {topikSectionLabel(slot.question.section)} · câu{" "}
                         {slot.question.questionNo}
+                        {slot.question.bundleId ? (
+                          <span className="ml-2 text-xs font-normal text-sky-700 dark:text-sky-400">
+                            bundle: {slot.question.bundleId}
+                          </span>
+                        ) : null}
                       </p>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400">
                         {truncate(slot.question.prompt)}

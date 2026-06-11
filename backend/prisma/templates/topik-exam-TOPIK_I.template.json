@@ -26,6 +26,26 @@
     },
     {
       "sortOrder": 2,
+      "section": "LISTENING",
+      "questionNo": 25,
+      "prompt": "다음을 듣고 물음에 맞는 대답을 고르십시오. (1)",
+      "options": ["네", "아니요", "모르겠어요", "글쎄요"],
+      "correctIndex": 0,
+      "bundleId": "demo-listen-25-26",
+      "audioUrl": "https://example.com/audio/pair.mp3"
+    },
+    {
+      "sortOrder": 3,
+      "section": "LISTENING",
+      "questionNo": 26,
+      "prompt": "다음을 듣고 물음에 맞는 대답을 고르십시오. (2)",
+      "options": ["월요일", "화요일", "수요일", "목요일"],
+      "correctIndex": 1,
+      "bundleId": "demo-listen-25-26",
+      "audioUrl": "https://example.com/audio/pair.mp3"
+    },
+    {
+      "sortOrder": 4,
       "section": "READING",
       "questionNo": 1,
       "prompt": "다음 글의 내용과 같은 것을 고르십시오.",

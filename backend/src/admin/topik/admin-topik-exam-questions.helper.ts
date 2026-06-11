@@ -58,6 +58,7 @@ export async function createQuestionsForExam(
         correctIndex: q.correctIndex,
         explanation: q.explanation,
         audioUrl: q.audioUrl,
+        bundleId: q.bundleId,
         points: q.points ?? 2,
         isPublished: true,
       },

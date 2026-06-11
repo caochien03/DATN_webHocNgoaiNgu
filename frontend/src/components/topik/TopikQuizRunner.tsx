@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import type { GradedTopikAnswer, TopikQuestion, TopikSubmitResult } from "@/lib/types";
+import { useMemo, useState } from "react";
+import {
+  groupTopikQuestionsIntoPages,
+  pageLabel,
+  sharedAudioUrl,
+} from "@/lib/group-topik-pages";
 import { topikSectionLabel } from "@/lib/topik-labels";
+import type { GradedTopikAnswer, TopikQuestion, TopikSubmitResult } from "@/lib/types";
 
 type TopikQuizRunnerProps = {
   title: string;
@@ -22,18 +27,24 @@ export function TopikQuizRunner({
   backHref,
   onSubmit,
 }: TopikQuizRunnerProps) {
-  const [index, setIndex] = useState(0);
+  const pages = useMemo(
+    () => groupTopikQuestionsIntoPages(questions),
+    [questions],
+  );
+  const [pageIndex, setPageIndex] = useState(0);
   const [selections, setSelections] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TopikSubmitResult | null>(null);
 
-  const current = questions[index] ?? null;
+  const currentPage = pages[pageIndex] ?? [];
   const allAnswered = questions.every((q) => selections[q.id] !== undefined);
+  const pageAnswered = currentPage.every((q) => selections[q.id] !== undefined);
+  const audio = sharedAudioUrl(currentPage);
 
-  function pick(optionIndex: number) {
-    if (!current || result) return;
-    setSelections((prev) => ({ ...prev, [current.id]: optionIndex }));
+  function pick(questionId: string, optionIndex: number) {
+    if (result) return;
+    setSelections((prev) => ({ ...prev, [questionId]: optionIndex }));
   }
 
   async function finish() {
@@ -93,61 +104,55 @@ export function TopikQuizRunner({
         </p>
       ) : null}
 
-      {current ? (
+      {currentPage.length > 0 ? (
         <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
           <p className="text-xs text-zinc-500">
-            Câu {index + 1}/{questions.length} ·{" "}
-            {topikSectionLabel(current.section)} #{current.questionNo}
+            {pageLabel(currentPage, pageIndex)} · Trang {pageIndex + 1}/
+            {pages.length}
+            {currentPage.length === 1 ? (
+              <>
+                {" "}
+                · {topikSectionLabel(currentPage[0].section)} #
+                {currentPage[0].questionNo}
+              </>
+            ) : null}
           </p>
-          {current.passage ? (
-            <p className="mt-3 whitespace-pre-wrap rounded-md bg-zinc-50 p-3 text-sm leading-relaxed text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
-              {current.passage}
-            </p>
-          ) : null}
-          {current.audioUrl ? (
-            <audio className="mt-3 w-full" controls src={current.audioUrl}>
+
+          {audio ? (
+            <audio className="mt-3 w-full" controls src={audio}>
               <track kind="captions" />
             </audio>
           ) : null}
-          <h2 className="mt-3 text-base font-medium text-zinc-900 dark:text-zinc-100">
-            {current.prompt}
-          </h2>
-          <div className="mt-4 grid gap-2">
-            {current.options.map((opt, i) => {
-              const selected = selections[current.id] === i;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => pick(i)}
-                  className={`rounded-md border px-3 py-2 text-left text-sm transition ${
-                    selected
-                      ? "border-zinc-900 bg-zinc-100 dark:border-zinc-300 dark:bg-zinc-800"
-                      : "border-zinc-300 text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
-                  }`}
-                >
-                  {i + 1}. {opt}
-                </button>
-              );
-            })}
+
+          <div className="mt-4 flex flex-col gap-6">
+            {currentPage.map((q) => (
+              <QuestionBlock
+                key={q.id}
+                question={q}
+                showAudio={!audio}
+                selectedIndex={selections[q.id]}
+                onPick={(i) => pick(q.id, i)}
+              />
+            ))}
           </div>
+
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               type="button"
-              disabled={index === 0}
-              onClick={() => setIndex((x) => x - 1)}
+              disabled={pageIndex === 0}
+              onClick={() => setPageIndex((x) => x - 1)}
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-50 dark:border-zinc-700"
             >
-              Câu trước
+              Trang trước
             </button>
-            {index + 1 < questions.length ? (
+            {pageIndex + 1 < pages.length ? (
               <button
                 type="button"
-                disabled={selections[current.id] === undefined}
-                onClick={() => setIndex((x) => x + 1)}
+                disabled={!pageAnswered}
+                onClick={() => setPageIndex((x) => x + 1)}
                 className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
               >
-                Câu sau
+                Trang sau
               </button>
             ) : (
               <button
@@ -162,6 +167,58 @@ export function TopikQuizRunner({
           </div>
         </section>
       ) : null}
+    </div>
+  );
+}
+
+function QuestionBlock({
+  question,
+  showAudio,
+  selectedIndex,
+  onPick,
+}: {
+  question: TopikQuestion;
+  showAudio: boolean;
+  selectedIndex: number | undefined;
+  onPick: (index: number) => void;
+}) {
+  return (
+    <div className="border-t border-zinc-100 pt-4 first:border-t-0 first:pt-0 dark:border-zinc-800">
+      <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+        {topikSectionLabel(question.section)} · câu {question.questionNo}
+      </p>
+      {question.passage ? (
+        <p className="mt-2 whitespace-pre-wrap rounded-md bg-zinc-50 p-3 text-sm leading-relaxed text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+          {question.passage}
+        </p>
+      ) : null}
+      {showAudio && question.audioUrl ? (
+        <audio className="mt-2 w-full" controls src={question.audioUrl}>
+          <track kind="captions" />
+        </audio>
+      ) : null}
+      <h2 className="mt-2 text-base font-medium text-zinc-900 dark:text-zinc-100">
+        {question.prompt}
+      </h2>
+      <div className="mt-3 grid gap-2">
+        {question.options.map((opt, i) => {
+          const selected = selectedIndex === i;
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onPick(i)}
+              className={`rounded-md border px-3 py-2 text-left text-sm transition ${
+                selected
+                  ? "border-zinc-900 bg-zinc-100 dark:border-zinc-300 dark:bg-zinc-800"
+                  : "border-zinc-300 text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              }`}
+            >
+              {i + 1}. {opt}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

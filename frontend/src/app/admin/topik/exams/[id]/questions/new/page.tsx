@@ -67,6 +67,7 @@ function AddExamQuestionContent() {
           correctIndex: normalized.correctIndex,
           explanation: normalized.explanation ?? null,
           audioUrl: normalized.audioUrl ?? null,
+          bundleId: normalized.bundleId ?? null,
           points: normalized.points ?? 2,
           isPublished: true,
         }),

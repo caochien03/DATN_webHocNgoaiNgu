@@ -55,6 +55,11 @@ export class ExamQuestionInputDto {
   audioUrl?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  bundleId?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(1)
   points?: number;

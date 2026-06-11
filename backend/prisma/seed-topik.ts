@@ -15,6 +15,7 @@ type QuestionSeed = {
   correctIndex: number;
   explanation?: string;
   audioUrl?: string;
+  bundleId?: string;
   points?: number;
 };
 
@@ -129,6 +130,26 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
     correctIndex: 0,
     points: 3,
   },
+  {
+    tier: TopikTier.TOPIK_I,
+    section: TopikSection.LISTENING,
+    questionNo: 25,
+    prompt: '다음을 듣고 물음에 맞는 대답을 고르십시오. (1)',
+    options: ['네', '아니요', '모르겠어요', '글쎄요'],
+    correctIndex: 0,
+    bundleId: 'seed-listen-25-26',
+    points: 3,
+  },
+  {
+    tier: TopikTier.TOPIK_I,
+    section: TopikSection.LISTENING,
+    questionNo: 26,
+    prompt: '다음을 듣고 물음에 맞는 대답을 고르십시오. (2)',
+    options: ['월요일', '화요일', '수요일', '목요일'],
+    correctIndex: 1,
+    bundleId: 'seed-listen-25-26',
+    points: 3,
+  },
 ];
 
 const EXAM_TITLE = 'TOPIK I — Đề thi thử #1';
@@ -194,6 +215,7 @@ export async function seedTopik(prisma: PrismaClient) {
           correctIndex: q.correctIndex,
           explanation: q.explanation,
           audioUrl: q.audioUrl,
+          bundleId: q.bundleId,
           points: q.points ?? 2,
           isPublished: true,
         },

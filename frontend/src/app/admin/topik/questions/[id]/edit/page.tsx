@@ -87,6 +87,7 @@ function EditTopikQuestionContent() {
         correctIndex: question.correctIndex,
         explanation: question.explanation,
         audioUrl: question.audioUrl,
+        bundleId: question.bundleId,
         points: question.points,
         isPublished: question.isPublished,
       }

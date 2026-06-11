@@ -18,6 +18,7 @@ export type TopikQuestionFormValues = {
   correctIndex: number;
   explanation: string | null;
   audioUrl: string | null;
+  bundleId: string | null;
   points: number;
   isPublished: boolean;
 };
@@ -48,6 +49,7 @@ export function TopikQuestionForm({
   const [correctIndex, setCorrectIndex] = useState(initial.correctIndex);
   const [explanation, setExplanation] = useState(initial.explanation ?? "");
   const [audioUrl, setAudioUrl] = useState(initial.audioUrl ?? "");
+  const [bundleId, setBundleId] = useState(initial.bundleId ?? "");
   const [points, setPoints] = useState(String(initial.points));
   const [isPublished, setIsPublished] = useState(initial.isPublished);
 
@@ -87,6 +89,7 @@ export function TopikQuestionForm({
       explanation: explanation.trim() || null,
       audioUrl:
         section === "LISTENING" && audioUrl.trim() ? audioUrl.trim() : null,
+      bundleId: bundleId.trim() || null,
       points: parseInt(points, 10) || 2,
       isPublished,
     });
@@ -184,6 +187,20 @@ export function TopikQuestionForm({
           )}
         </div>
       ) : null}
+
+      <label className="flex flex-col gap-1 text-sm">
+        <span>Bundle ID (tùy chọn)</span>
+        <input
+          value={bundleId}
+          onChange={(e) => setBundleId(e.target.value)}
+          placeholder="vd. listen-25-26 — cùng ID cho cặp câu 25–26"
+          className={inputClass}
+        />
+        <span className="text-xs text-zinc-500">
+          Hai câu cùng bundleId (liền kề trong đề) hiển thị chung một trang và
+          một audio.
+        </span>
+      </label>
 
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">Đáp án</legend>

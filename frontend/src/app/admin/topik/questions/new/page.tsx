@@ -20,6 +20,7 @@ const defaultValues: TopikQuestionFormValues = {
   correctIndex: 0,
   explanation: null,
   audioUrl: null,
+  bundleId: null,
   points: 2,
   isPublished: true,
 };

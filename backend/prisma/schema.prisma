@@ -319,6 +319,8 @@ model TopikQuestion {
   correctIndex Int
   explanation  String?
   audioUrl     String?
+  /// Nhóm cặp câu (vd. nghe 25–26): cùng bundleId → hiển thị chung 1 trang + audio.
+  bundleId     String?
   points       Int                 @default(2)
   isPublished  Boolean             @default(true)
   createdAt    DateTime            @default(now())
@@ -327,6 +329,7 @@ model TopikQuestion {
 
   @@index([tier, section, questionNo])
   @@index([isPublished])
+  @@index([bundleId])
 }
 
 model TopikExam {

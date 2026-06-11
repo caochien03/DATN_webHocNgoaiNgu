@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Prisma, TopikSection, TopikTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { partitionPoolIntoUnits } from './topik-question-bundles';
 
 /** Câu thuộc ít nhất một đề TOPIK đã công bố (pool luyện dạng). */
 export function practicePoolQuestionWhere(params: {
@@ -30,6 +31,7 @@ const questionForClient = {
   passage: true,
   options: true,
   audioUrl: true,
+  bundleId: true,
   points: true,
 } as const;
 
@@ -42,6 +44,7 @@ type ClientQuestion = {
   passage: string | null;
   options: string[];
   audioUrl: string | null;
+  bundleId: string | null;
   points: number;
 };
 
@@ -74,9 +77,16 @@ export async function randomQuestionsForPractice(
       'Chưa có câu hỏi trong đề đã công bố cho dạng bài này',
     );
   }
-  const take = Math.min(params.count, pool.length);
-  const questions = shuffle(pool).slice(0, take);
-  return { questions, requestedCount: params.count };
+  const units = partitionPoolIntoUnits(pool);
+  const shuffled = shuffle(units);
+  const selected: ClientQuestion[] = [];
+  for (const unit of shuffled) {
+    if (selected.length >= params.count) break;
+    if (selected.length + unit.length <= params.count) {
+      selected.push(...unit);
+    }
+  }
+  return { questions: selected, requestedCount: params.count };
 }
 
 /** Thi thử: câu cố định theo sortOrder trong đề (không random). */

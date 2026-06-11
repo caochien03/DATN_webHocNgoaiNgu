@@ -55,6 +55,11 @@ export class CreateTopikQuestionDto {
   audioUrl?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  bundleId?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(1)
   points?: number;
@@ -110,6 +115,11 @@ export class UpdateTopikQuestionDto {
   @IsUrl()
   @MaxLength(500)
   audioUrl?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  bundleId?: string | null;
 
   @IsOptional()
   @IsInt()

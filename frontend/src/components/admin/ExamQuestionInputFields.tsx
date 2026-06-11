@@ -185,6 +185,18 @@ export function ExamQuestionInputFields({
             </label>
           ) : null}
 
+          <label className="flex flex-col gap-1 text-sm">
+            <span>Bundle ID (tùy chọn)</span>
+            <input
+              value={value.bundleId ?? ""}
+              onChange={(e) =>
+                patch({ bundleId: e.target.value.trim() || undefined })
+              }
+              placeholder="Cùng ID cho cặp câu 25–26"
+              className={inputClass}
+            />
+          </label>
+
           <fieldset className="flex flex-col gap-2">
             <legend className="text-sm font-medium">Đáp án</legend>
             {value.options.map((opt, i) => (
@@ -265,5 +277,6 @@ export function normalizeExamQuestions(
       q.section === "LISTENING" && q.audioUrl?.trim()
         ? q.audioUrl.trim()
         : undefined,
+    bundleId: q.bundleId?.trim() || undefined,
   }));
 }
