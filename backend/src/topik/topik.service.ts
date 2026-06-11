@@ -16,7 +16,6 @@ import {
 } from './topik-grading';
 import {
   loadFixedExamQuestions,
-  loadQuestionsByIds,
   practicePoolQuestionWhere,
   randomQuestionsForPractice,
 } from './topik-random';
@@ -56,76 +55,15 @@ export class TopikService {
   async getExamForTake(examId: string) {
     const exam = await this.prisma.topikExam.findFirst({
       where: { id: examId, isPublished: true },
-      include: { _count: { select: { questions: true } } },
     });
     if (!exam) throw new NotFoundException('Không tìm thấy đề thi');
-    const { _count, ...meta } = exam;
-    return {
-      id: meta.id,
-      title: meta.title,
-      description: meta.description,
-      tier: meta.tier,
-      durationMinutes: meta.durationMinutes,
-      questionCount: _count.questions,
-    };
-  }
-
-  async startExam(userId: string, examId: string) {
-    const exam = await this.prisma.topikExam.findFirst({
-      where: { id: examId, isPublished: true },
-    });
-    if (!exam) {
-      throw new NotFoundException('Không tìm thấy đề thi');
-    }
-
-    const inProgress = await this.prisma.topikExamAttempt.findFirst({
-      where: {
-        userId,
-        examId,
-        mode: TopikAttemptMode.FULL_EXAM,
-        finishedAt: null,
-      },
-      orderBy: { startedAt: 'desc' },
-    });
-
-    if (inProgress && inProgress.questionIds.length > 0) {
-      const questions = await loadQuestionsByIds(
-        this.prisma,
-        inProgress.questionIds,
-      );
-      return {
-        attemptId: inProgress.id,
-        id: exam.id,
-        title: exam.title,
-        description: exam.description,
-        tier: exam.tier,
-        durationMinutes: exam.durationMinutes,
-        questionCount: questions.length,
-        questions,
-        resumed: true,
-      };
-    }
 
     const questions = await loadFixedExamQuestions(this.prisma, exam.id);
     if (questions.length === 0) {
       throw new BadRequestException('Đề thi chưa có câu hỏi');
     }
 
-    const questionIds = questions.map((q) => q.id);
-    const attempt = await this.prisma.topikExamAttempt.create({
-      data: {
-        userId,
-        mode: TopikAttemptMode.FULL_EXAM,
-        examId: exam.id,
-        tier: exam.tier,
-        questionIds,
-        answers: [],
-        totalQuestions: questionIds.length,
-      },
-    });
-
     return {
-      attemptId: attempt.id,
       id: exam.id,
       title: exam.title,
       description: exam.description,
@@ -133,7 +71,6 @@ export class TopikService {
       durationMinutes: exam.durationMinutes,
       questionCount: questions.length,
       questions,
-      resumed: false,
     };
   }
 
@@ -257,26 +194,19 @@ export class TopikService {
   async submitExam(userId: string, examId: string, dto: SubmitTopikExamDto) {
     assertUniqueAnswers(dto.answers);
 
-    const attempt = await this.prisma.topikExamAttempt.findFirst({
-      where: {
-        id: dto.attemptId,
-        userId,
-        examId,
-        mode: TopikAttemptMode.FULL_EXAM,
-        finishedAt: null,
-      },
-      include: {
-        exam: true,
-      },
+    const exam = await this.prisma.topikExam.findFirst({
+      where: { id: examId, isPublished: true },
     });
-    if (!attempt || !attempt.exam?.isPublished) {
-      throw new NotFoundException('Không tìm thấy phiên thi hoặc đã nộp bài');
+    if (!exam) {
+      throw new NotFoundException('Không tìm thấy đề thi');
     }
 
-    const allowedIds = new Set(attempt.questionIds);
-    if (allowedIds.size === 0) {
-      throw new BadRequestException('Phiên thi không có câu hỏi');
+    const examQuestions = await loadFixedExamQuestions(this.prisma, examId);
+    if (examQuestions.length === 0) {
+      throw new BadRequestException('Đề thi chưa có câu hỏi');
     }
+
+    const allowedIds = new Set(examQuestions.map((q) => q.id));
 
     for (const answer of dto.answers) {
       if (!allowedIds.has(answer.questionId)) {
@@ -298,9 +228,13 @@ export class TopikService {
     const totalQuestions = dto.answers.length;
     const now = new Date();
 
-    const finished = await this.prisma.topikExamAttempt.update({
-      where: { id: attempt.id },
+    const attempt = await this.prisma.topikExamAttempt.create({
       data: {
+        userId,
+        mode: TopikAttemptMode.FULL_EXAM,
+        examId: exam.id,
+        tier: exam.tier,
+        questionIds: examQuestions.map((q) => q.id),
         answers: graded,
         correctCount,
         totalQuestions,
@@ -310,14 +244,14 @@ export class TopikService {
     });
 
     return {
-      attemptId: finished.id,
-      mode: finished.mode,
-      examId: attempt.examId,
-      examTitle: attempt.exam.title,
-      tier: finished.tier,
+      attemptId: attempt.id,
+      mode: attempt.mode,
+      examId: exam.id,
+      examTitle: exam.title,
+      tier: attempt.tier,
       correctCount,
       totalQuestions,
-      scorePercent: finished.scorePercent,
+      scorePercent: attempt.scorePercent,
       answers: graded,
     };
   }

@@ -94,18 +94,4 @@ export async function loadFixedExamQuestions(
   return slots.map((slot) => slot.question);
 }
 
-export async function loadQuestionsByIds(
-  prisma: PrismaService,
-  questionIds: string[],
-): Promise<ClientQuestion[]> {
-  const rows = await prisma.topikQuestion.findMany({
-    where: { id: { in: questionIds } },
-    select: questionForClient,
-  });
-  const byId = new Map(rows.map((q) => [q.id, q]));
-  return questionIds
-    .map((id) => byId.get(id))
-    .filter((q): q is ClientQuestion => q !== undefined);
-}
-
 export { questionForClient };

@@ -5,25 +5,23 @@ import { useCallback, useEffect, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
 import { TopikQuizRunner } from "@/components/topik/TopikQuizRunner";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
-import type { TopikExamStartResult, TopikSubmitResult } from "@/lib/types";
+import type { TopikExamTake, TopikSubmitResult } from "@/lib/types";
 
 function ExamTakeContent() {
   const params = useParams();
   const id = params.id as string;
-  const [session, setSession] = useState<TopikExamStartResult | null>(null);
+  const [exam, setExam] = useState<TopikExamTake | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetchWithAuth(`/topik/exams/${id}/start`, {
-        method: "POST",
-      });
+      const res = await fetchWithAuth(`/topik/exams/${id}`);
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
       }
-      setSession((await res.json()) as TopikExamStartResult);
+      setExam((await res.json()) as TopikExamTake);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được đề thi");
     }
@@ -36,10 +34,9 @@ function ExamTakeContent() {
   async function submit(
     answers: { questionId: string; selectedIndex: number }[],
   ): Promise<TopikSubmitResult> {
-    if (!session) throw new Error("Chưa có phiên thi");
     const res = await fetchWithAuth(`/topik/exams/${id}/submit`, {
       method: "POST",
-      body: JSON.stringify({ attemptId: session.attemptId, answers }),
+      body: JSON.stringify({ answers }),
     });
     if (!res.ok) throw new Error(await parseApiError(res));
     return (await res.json()) as TopikSubmitResult;
@@ -49,22 +46,17 @@ function ExamTakeContent() {
     return <p className="px-4 py-8 text-sm text-red-600">{error}</p>;
   }
 
-  if (!session) {
+  if (!exam) {
     return <p className="px-4 py-8 text-sm text-zinc-500">Đang tải đề thi…</p>;
   }
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      {session.resumed ? (
-        <p className="mb-4 text-sm text-amber-800 dark:text-amber-300">
-          Tiếp tục phiên thi đang làm dở.
-        </p>
-      ) : null}
       <TopikQuizRunner
-        title={session.title}
-        subtitle={`${session.questionCount} câu · ${session.durationMinutes} phút`}
-        questions={session.questions}
-        backHref={`/topik/${session.tier}`}
+        title={exam.title}
+        subtitle={`${exam.questionCount} câu · ${exam.durationMinutes} phút`}
+        questions={exam.questions}
+        backHref={`/topik/${exam.tier}`}
         onSubmit={submit}
       />
     </div>

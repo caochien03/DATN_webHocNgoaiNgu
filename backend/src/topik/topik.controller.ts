@@ -40,11 +40,6 @@ export class TopikController {
     return this.topikService.getExamForTake(id);
   }
 
-  @Post('exams/:id/start')
-  startExam(@CurrentUser('id') userId: string, @Param('id') id: string) {
-    return this.topikService.startExam(userId, id);
-  }
-
   @Get('practice')
   async practice(
     @Query('tier') tier: TopikTier = TopikTier.TOPIK_I,

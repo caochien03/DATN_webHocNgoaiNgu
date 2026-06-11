@@ -281,10 +281,9 @@ export type TopikExamDetail = {
   questionCount: number;
 };
 
-export type TopikExamStartResult = TopikExamDetail & {
-  attemptId: string;
+/** Đề thi thử kèm câu hỏi cố định (GET /topik/exams/:id). */
+export type TopikExamTake = TopikExamDetail & {
   questions: TopikQuestion[];
-  resumed: boolean;
 };
 
 export type GradedTopikAnswer = {
