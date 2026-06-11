@@ -9,17 +9,14 @@ import {
   SubmitTopikExamDto,
   SubmitTopikPracticeDto,
 } from './dto/submit-topik.dto';
-import { topikExamQuestionCount } from './topik-exam-blueprint';
 import {
   assertUniqueAnswers,
   gradeTopikAnswers,
   scorePercent,
 } from './topik-grading';
 import {
-  assertNoMissingSlots,
+  loadFixedExamQuestions,
   loadQuestionsByIds,
-  questionForClient,
-  randomQuestionsForExam,
   randomQuestionsForPractice,
 } from './topik-random';
 
@@ -47,25 +44,28 @@ export class TopikService {
         ...(tier && { tier }),
       },
       orderBy: { sortOrder: 'asc' },
+      include: { _count: { select: { questions: true } } },
     });
-    return exams.map((exam) => ({
+    return exams.map(({ _count, ...exam }) => ({
       ...exam,
-      questionCount: topikExamQuestionCount(exam.tier),
+      questionCount: _count.questions,
     }));
   }
 
   async getExamForTake(examId: string) {
     const exam = await this.prisma.topikExam.findFirst({
       where: { id: examId, isPublished: true },
+      include: { _count: { select: { questions: true } } },
     });
     if (!exam) throw new NotFoundException('Không tìm thấy đề thi');
+    const { _count, ...meta } = exam;
     return {
-      id: exam.id,
-      title: exam.title,
-      description: exam.description,
-      tier: exam.tier,
-      durationMinutes: exam.durationMinutes,
-      questionCount: topikExamQuestionCount(exam.tier),
+      id: meta.id,
+      title: meta.title,
+      description: meta.description,
+      tier: meta.tier,
+      durationMinutes: meta.durationMinutes,
+      questionCount: _count.questions,
     };
   }
 
@@ -105,14 +105,10 @@ export class TopikService {
       };
     }
 
-    const { questions, missingSlots } = await randomQuestionsForExam(
-      this.prisma,
-      exam.tier,
-    );
-    assertNoMissingSlots(
-      missingSlots,
-      'Không đủ câu trong ngân hàng để tạo đề thi',
-    );
+    const questions = await loadFixedExamQuestions(this.prisma, exam.id);
+    if (questions.length === 0) {
+      throw new BadRequestException('Đề thi chưa có câu hỏi');
+    }
 
     const questionIds = questions.map((q) => q.id);
     const attempt = await this.prisma.topikExamAttempt.create({

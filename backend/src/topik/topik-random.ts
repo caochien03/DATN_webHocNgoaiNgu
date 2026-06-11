@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { TopikSection, TopikTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { TOPIK_EXAM_BLUEPRINT } from './topik-exam-blueprint';
 
 const questionForClient = {
   id: true,
@@ -26,11 +25,6 @@ type ClientQuestion = {
   audioUrl: string | null;
   points: number;
 };
-
-function pickRandom<T>(items: T[]): T | null {
-  if (items.length === 0) return null;
-  return items[Math.floor(Math.random() * items.length)] ?? null;
-}
 
 function shuffle<T>(items: T[]): T[] {
   const arr = [...items];
@@ -71,72 +65,19 @@ export async function randomQuestionsForPractice(
   return { questions, requestedCount: params.count };
 }
 
-export async function randomQuestionsForRange(
+/** Thi thử: câu cố định theo sortOrder trong đề (không random). */
+export async function loadFixedExamQuestions(
   prisma: PrismaService,
-  params: {
-    tier: TopikTier;
-    section: TopikSection;
-    fromNo: number;
-    toNo: number;
-  },
-): Promise<{ questions: ClientQuestion[]; missingSlots: number[] }> {
-  const questions: ClientQuestion[] = [];
-  const missingSlots: number[] = [];
-
-  for (let questionNo = params.fromNo; questionNo <= params.toNo; questionNo++) {
-    const pool = await prisma.topikQuestion.findMany({
-      where: {
-        tier: params.tier,
-        section: params.section,
-        questionNo,
-        isPublished: true,
-      },
-      select: questionForClient,
-    });
-    const picked = pickRandom(pool);
-    if (!picked) {
-      missingSlots.push(questionNo);
-    } else {
-      questions.push(picked);
-    }
-  }
-
-  return { questions, missingSlots };
-}
-
-export async function randomQuestionsForExam(
-  prisma: PrismaService,
-  tier: TopikTier,
-): Promise<{ questions: ClientQuestion[]; missingSlots: number[] }> {
-  const blueprint = TOPIK_EXAM_BLUEPRINT[tier];
-  const questions: ClientQuestion[] = [];
-  const missingSlots: number[] = [];
-
-  for (const range of blueprint) {
-    const result = await randomQuestionsForRange(prisma, {
-      tier,
-      section: range.section,
-      fromNo: range.fromNo,
-      toNo: range.toNo,
-    });
-    questions.push(...result.questions);
-    missingSlots.push(...result.missingSlots);
-  }
-
-  return { questions, missingSlots };
-}
-
-export function assertNoMissingSlots(
-  missingSlots: number[],
-  context: string,
-) {
-  if (missingSlots.length === 0) return;
-  const preview = missingSlots.slice(0, 8).join(', ');
-  const suffix =
-    missingSlots.length > 8 ? ` … (+${missingSlots.length - 8})` : '';
-  throw new BadRequestException(
-    `${context}: thiếu câu hỏi cho số câu ${preview}${suffix}. Admin cần bổ sung ngân hàng.`,
-  );
+  examId: string,
+): Promise<ClientQuestion[]> {
+  const slots = await prisma.topikExamQuestion.findMany({
+    where: { examId },
+    orderBy: { sortOrder: 'asc' },
+    include: {
+      question: { select: questionForClient },
+    },
+  });
+  return slots.map((slot) => slot.question);
 }
 
 export async function loadQuestionsByIds(
