@@ -262,6 +262,53 @@ export type TopikQuestionAdminRow = {
   updatedAt: string;
 };
 
+export type ExamQuestionInput = {
+  sortOrder: number;
+  section: TopikSection;
+  questionNo: number;
+  prompt: string;
+  passage?: string;
+  options: string[];
+  correctIndex: number;
+  explanation?: string;
+  audioUrl?: string;
+  points?: number;
+};
+
+export type AdminTopikExamListRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  tier: TopikTier;
+  durationMinutes: number;
+  isPublished: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  _count: { questions: number };
+};
+
+export type AdminTopikExamSlot = {
+  id: string;
+  examId: string;
+  questionId: string;
+  sortOrder: number;
+  question: TopikQuestionAdminRow;
+};
+
+export type AdminTopikExamDetail = {
+  id: string;
+  title: string;
+  description: string | null;
+  tier: TopikTier;
+  durationMinutes: number;
+  isPublished: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  questions: AdminTopikExamSlot[];
+};
+
 export type TopikExamRow = {
   id: string;
   title: string;

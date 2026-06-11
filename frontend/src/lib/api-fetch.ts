@@ -28,6 +28,24 @@ export function recordAttempt(cardId: string, isCorrect: boolean): void {
   });
 }
 
+export async function uploadWithAuth(
+  path: string,
+  formData: FormData,
+  init: RequestInit = {},
+): Promise<Response> {
+  const auth = getStoredAuth();
+  if (!auth) {
+    throw new Error("Chưa đăng nhập");
+  }
+  const headers = new Headers(init.headers);
+  headers.set("Authorization", `Bearer ${auth.accessToken}`);
+  const base = getApiUrl();
+  const url = path.startsWith("http")
+    ? path
+    : `${base}${path.startsWith("/") ? "" : "/"}${path}`;
+  return fetch(url, { ...init, headers, body: formData });
+}
+
 export async function parseApiError(res: Response): Promise<string> {
   try {
     const data = (await res.json()) as { message?: string | string[] };

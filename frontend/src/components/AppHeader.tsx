@@ -187,12 +187,12 @@ export function AppHeader() {
                           Quản trị lộ trình
                         </Link>
                         <Link
-                          href="/admin/topik/questions"
+                          href="/admin/topik/exams"
                           role="menuitem"
                           className={`${menuLinkClass} text-amber-800 dark:text-amber-300`}
                           onClick={() => setMoreOpen(false)}
                         >
-                          Quản trị TOPIK
+                          Quản trị đề TOPIK
                         </Link>
                       </>
                     ) : null}

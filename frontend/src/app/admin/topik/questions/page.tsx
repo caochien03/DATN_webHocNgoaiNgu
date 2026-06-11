@@ -67,7 +67,11 @@ function AdminTopikQuestionsContent() {
             Quản trị câu hỏi TOPIK
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Ngân hàng câu hỏi — đề và luyện dạng sẽ rút ngẫu nhiên sau.
+            Sửa từng câu đã gắn trong đề. Tạo đề mới tại{" "}
+            <Link href="/admin/topik/exams" className="underline">
+              quản trị đề TOPIK
+            </Link>
+            .
           </p>
         </div>
         <Link
