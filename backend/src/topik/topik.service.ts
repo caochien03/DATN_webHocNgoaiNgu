@@ -17,6 +17,7 @@ import {
 import {
   loadFixedExamQuestions,
   loadQuestionsByIds,
+  practicePoolQuestionWhere,
   randomQuestionsForPractice,
 } from './topik-random';
 
@@ -203,13 +204,13 @@ export class TopikService {
 
     const questionIds = dto.answers.map((a) => a.questionId);
     const questions = await this.prisma.topikQuestion.findMany({
-      where: {
-        id: { in: questionIds },
-        isPublished: true,
+      where: practicePoolQuestionWhere({
         tier: dto.tier,
         section: dto.section,
-        questionNo: { gte: dto.fromNo, lte: dto.toNo },
-      },
+        fromNo: dto.fromNo,
+        toNo: dto.toNo,
+        questionIds,
+      }),
     });
 
     if (questions.length !== questionIds.length) {

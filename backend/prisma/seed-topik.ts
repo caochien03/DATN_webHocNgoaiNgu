@@ -19,7 +19,6 @@ type QuestionSeed = {
 };
 
 const SAMPLE_QUESTIONS: QuestionSeed[] = [
-  // Nghe — câu 1 (dạng 1–4)
   {
     tier: TopikTier.TOPIK_I,
     section: TopikSection.LISTENING,
@@ -32,10 +31,10 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
       '아니요, 공책이 커요.',
     ],
     correctIndex: 0,
-    explanation: 'Câu hỏi xác nhận “Đây là vở phải không?” — đáp án khẳng định phù hợp.',
+    explanation:
+      'Câu hỏi xác nhận “Đây là vở phải không?” — đáp án khẳng định phù hợp.',
     points: 4,
   },
-  // Nghe — câu 7 (dạng 7–10)
   {
     tier: TopikTier.TOPIK_I,
     section: TopikSection.LISTENING,
@@ -46,7 +45,6 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
     explanation: 'Nghe hội thoại và xác định địa điểm (thư viện).',
     points: 3,
   },
-  // Nghe — câu 17 (dạng 17–21)
   {
     tier: TopikTier.TOPIK_I,
     section: TopikSection.LISTENING,
@@ -62,7 +60,6 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
     correctIndex: 0,
     points: 3,
   },
-  // Đọc — câu 1 (dạng 1–3)
   {
     tier: TopikTier.TOPIK_I,
     section: TopikSection.READING,
@@ -74,7 +71,6 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
     explanation: 'Nói về nghề nghiệp (dạy tiếng Hàn).',
     points: 2,
   },
-  // Đọc — câu 5 (dạng 4–9)
   {
     tier: TopikTier.TOPIK_I,
     section: TopikSection.READING,
@@ -85,7 +81,6 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
     correctIndex: 0,
     points: 2,
   },
-  // Đọc — câu 10 (dạng 10–12)
   {
     tier: TopikTier.TOPIK_I,
     section: TopikSection.READING,
@@ -95,14 +90,13 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
       '월요일부터 금요일까지 도서관은 아침 9시에 열립니다. 토요일에는 10시에 엽니다. 일요일에는 문을 닫습니다.',
     options: [
       '도서관은 월요일에 9시에 열립니다.',
-      '토요일에는 10시에 열립니다.',
+      '토요일에는 10시에 엽니다.',
       '일요일에도 도서관을 이용할 수 있습니다.',
       '평일에는 아침 9시에 열립니다.',
     ],
     correctIndex: 2,
     points: 3,
   },
-  // Đọc — câu 16 (dạng 16–18)
   {
     tier: TopikTier.TOPIK_I,
     section: TopikSection.READING,
@@ -119,7 +113,6 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
     correctIndex: 1,
     points: 3,
   },
-  // Đọc — câu 27 (dạng 27–28)
   {
     tier: TopikTier.TOPIK_I,
     section: TopikSection.READING,
@@ -137,6 +130,8 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
     points: 3,
   },
 ];
+
+const EXAM_TITLE = 'TOPIK I — Đề thi thử #1';
 
 export async function seedTopik(prisma: PrismaClient) {
   for (const fmt of TOPIK_I_FORMATS) {
@@ -159,68 +154,61 @@ export async function seedTopik(prisma: PrismaClient) {
     });
   }
 
-  const questionIds: string[] = [];
-  for (const q of SAMPLE_QUESTIONS) {
-    const existing = await prisma.topikQuestion.findFirst({
-      where: {
-        tier: q.tier,
-        section: q.section,
-        questionNo: q.questionNo,
-        prompt: q.prompt,
-      },
-      select: { id: true },
-    });
-    if (existing) {
-      questionIds.push(existing.id);
-      continue;
-    }
-    const created = await prisma.topikQuestion.create({
-      data: {
-        tier: q.tier,
-        section: q.section,
-        questionNo: q.questionNo,
-        prompt: q.prompt,
-        passage: q.passage,
-        options: q.options,
-        correctIndex: q.correctIndex,
-        explanation: q.explanation,
-        audioUrl: q.audioUrl,
-        points: q.points ?? 2,
-      },
-    });
-    questionIds.push(created.id);
-  }
-
-  const examTitle = 'TOPIK I — Đề thi thử #1';
   let exam = await prisma.topikExam.findFirst({
-    where: { title: examTitle },
+    where: { title: EXAM_TITLE },
   });
   if (!exam) {
     exam = await prisma.topikExam.create({
       data: {
-        title: examTitle,
-        description: 'Đề mẫu: nghe + đọc (câu seed, mở rộng sau).',
+        title: EXAM_TITLE,
+        description:
+          'Đề mẫu TOPIK I: câu hỏi gắn với đề (pool luyện dạng + thi thử).',
         tier: TopikTier.TOPIK_I,
         durationMinutes: 100,
+        isPublished: true,
         sortOrder: 1,
       },
+    });
+  } else if (!exam.isPublished) {
+    exam = await prisma.topikExam.update({
+      where: { id: exam.id },
+      data: { isPublished: true },
     });
   }
 
   const existingSlots = await prisma.topikExamQuestion.count({
     where: { examId: exam.id },
   });
+
   if (existingSlots === 0) {
-    await prisma.topikExamQuestion.createMany({
-      data: questionIds.map((questionId, i) => ({
-        examId: exam.id,
-        questionId,
-        sortOrder: i + 1,
-      })),
-    });
+    for (let i = 0; i < SAMPLE_QUESTIONS.length; i++) {
+      const q = SAMPLE_QUESTIONS[i];
+      const question = await prisma.topikQuestion.create({
+        data: {
+          tier: q.tier,
+          section: q.section,
+          questionNo: q.questionNo,
+          prompt: q.prompt,
+          passage: q.passage,
+          options: q.options,
+          correctIndex: q.correctIndex,
+          explanation: q.explanation,
+          audioUrl: q.audioUrl,
+          points: q.points ?? 2,
+          isPublished: true,
+        },
+      });
+      await prisma.topikExamQuestion.create({
+        data: {
+          examId: exam.id,
+          questionId: question.id,
+          sortOrder: i,
+        },
+      });
+    }
   }
 
   console.log(
-    `Đã seed TOPIK I: ${TOPIK_I_FORMATS.length} dạng bài, ${SAMPLE_QUESTIONS.length} câu mẫu, 1 đề thi thử.`,
+    `Đã seed TOPIK I: ${TOPIK_I_FORMATS.length} dạng bài, ${SAMPLE_QUESTIONS.length} câu trong đề đã công bố.`,
   );
 }

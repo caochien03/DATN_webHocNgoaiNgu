@@ -1,6 +1,25 @@
 import { BadRequestException } from '@nestjs/common';
-import { TopikSection, TopikTier } from '@prisma/client';
+import { Prisma, TopikSection, TopikTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
+/** Câu thuộc ít nhất một đề TOPIK đã công bố (pool luyện dạng). */
+export function practicePoolQuestionWhere(params: {
+  tier: TopikTier;
+  section: TopikSection;
+  fromNo: number;
+  toNo: number;
+  questionIds?: string[];
+}): Prisma.TopikQuestionWhereInput {
+  return {
+    ...(params.questionIds && { id: { in: params.questionIds } }),
+    tier: params.tier,
+    section: params.section,
+    questionNo: { gte: params.fromNo, lte: params.toNo },
+    examSlots: {
+      some: { exam: { isPublished: true } },
+    },
+  };
+}
 
 const questionForClient = {
   id: true,
@@ -35,7 +54,7 @@ function shuffle<T>(items: T[]): T[] {
   return arr;
 }
 
-/** Luyện dạng: random `count` câu khác nhau từ ngân hàng trong khoảng (không trùng questionId). */
+/** Luyện dạng: random `count` câu khác nhau từ đề đã công bố (không trùng questionId). */
 export async function randomQuestionsForPractice(
   prisma: PrismaService,
   params: {
@@ -47,17 +66,12 @@ export async function randomQuestionsForPractice(
   },
 ): Promise<{ questions: ClientQuestion[]; requestedCount: number }> {
   const pool = await prisma.topikQuestion.findMany({
-    where: {
-      tier: params.tier,
-      section: params.section,
-      questionNo: { gte: params.fromNo, lte: params.toNo },
-      isPublished: true,
-    },
+    where: practicePoolQuestionWhere(params),
     select: questionForClient,
   });
   if (pool.length === 0) {
     throw new BadRequestException(
-      'Chưa có câu hỏi trong ngân hàng cho dạng bài này',
+      'Chưa có câu hỏi trong đề đã công bố cho dạng bài này',
     );
   }
   const take = Math.min(params.count, pool.length);
@@ -85,7 +99,7 @@ export async function loadQuestionsByIds(
   questionIds: string[],
 ): Promise<ClientQuestion[]> {
   const rows = await prisma.topikQuestion.findMany({
-    where: { id: { in: questionIds }, isPublished: true },
+    where: { id: { in: questionIds } },
     select: questionForClient,
   });
   const byId = new Map(rows.map((q) => [q.id, q]));
