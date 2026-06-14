@@ -31,6 +31,8 @@ const questionForClient = {
   passage: true,
   options: true,
   audioUrl: true,
+  imageUrl: true,
+  optionImageUrls: true,
   bundleId: true,
   points: true,
 } as const;
@@ -44,6 +46,8 @@ type ClientQuestion = {
   passage: string | null;
   options: string[];
   audioUrl: string | null;
+  imageUrl: string | null;
+  optionImageUrls: string[];
   bundleId: string | null;
   points: number;
 };

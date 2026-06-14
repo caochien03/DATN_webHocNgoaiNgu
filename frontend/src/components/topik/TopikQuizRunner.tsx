@@ -182,6 +182,8 @@ function QuestionBlock({
   selectedIndex: number | undefined;
   onPick: (index: number) => void;
 }) {
+  const imageOptions = usesImageOptions(question);
+
   return (
     <div className="border-t border-zinc-100 pt-4 first:border-t-0 first:pt-0 dark:border-zinc-800">
       <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
@@ -192,6 +194,14 @@ function QuestionBlock({
           {question.passage}
         </p>
       ) : null}
+      {question.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={question.imageUrl}
+          alt=""
+          className="mt-2 max-h-80 w-full rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
+        />
+      ) : null}
       {showAudio && question.audioUrl ? (
         <audio className="mt-2 w-full" controls src={question.audioUrl}>
           <track kind="captions" />
@@ -200,9 +210,12 @@ function QuestionBlock({
       <h2 className="mt-2 text-base font-medium text-zinc-900 dark:text-zinc-100">
         {question.prompt}
       </h2>
-      <div className="mt-3 grid gap-2">
+      <div
+        className={`mt-3 gap-2 ${imageOptions ? "grid grid-cols-2" : "grid grid-cols-1"}`}
+      >
         {question.options.map((opt, i) => {
           const selected = selectedIndex === i;
+          const optionImage = optionImageAt(question, i);
           return (
             <button
               key={i}
@@ -214,13 +227,32 @@ function QuestionBlock({
                   : "border-zinc-300 text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
               }`}
             >
-              {i + 1}. {opt}
+              {optionImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={optionImage}
+                  alt={opt || `Đáp án ${i + 1}`}
+                  className="mx-auto max-h-36 w-full object-contain"
+                />
+              ) : null}
+              <span className={optionImage ? "mt-2 block text-center" : ""}>
+                {opt ? `${i + 1}. ${opt}` : `${i + 1}`}
+              </span>
             </button>
           );
         })}
       </div>
     </div>
   );
+}
+
+function optionImageAt(question: TopikQuestion, index: number): string | null {
+  const url = question.optionImageUrls?.[index]?.trim();
+  return url || null;
+}
+
+function usesImageOptions(question: TopikQuestion): boolean {
+  return question.options.some((_, i) => optionImageAt(question, i) != null);
 }
 
 function ResultView({

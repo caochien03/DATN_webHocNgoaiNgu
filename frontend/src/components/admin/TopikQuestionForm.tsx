@@ -18,6 +18,8 @@ export type TopikQuestionFormValues = {
   correctIndex: number;
   explanation: string | null;
   audioUrl: string | null;
+  imageUrl: string | null;
+  optionImageUrls: string[];
   bundleId: string | null;
   points: number;
   isPublished: boolean;
@@ -49,6 +51,10 @@ export function TopikQuestionForm({
   const [correctIndex, setCorrectIndex] = useState(initial.correctIndex);
   const [explanation, setExplanation] = useState(initial.explanation ?? "");
   const [audioUrl, setAudioUrl] = useState(initial.audioUrl ?? "");
+  const [imageUrl, setImageUrl] = useState(initial.imageUrl ?? "");
+  const [optionImageUrls, setOptionImageUrls] = useState<string[]>(() =>
+    padOptionImageUrls(initial.optionImageUrls, initial.options.length),
+  );
   const [bundleId, setBundleId] = useState(initial.bundleId ?? "");
   const [points, setPoints] = useState(String(initial.points));
   const [isPublished, setIsPublished] = useState(initial.isPublished);
@@ -62,13 +68,25 @@ export function TopikQuestionForm({
     setOptions((prev) => prev.map((o, i) => (i === index ? value : o)));
   }
 
+  function updateOptionImage(index: number, value: string) {
+    setOptionImageUrls((prev) => {
+      const next = padOptionImageUrls(prev, options.length);
+      next[index] = value;
+      return next;
+    });
+  }
+
   function addOption() {
     setOptions((prev) => [...prev, ""]);
+    setOptionImageUrls((prev) => [...padOptionImageUrls(prev, options.length), ""]);
   }
 
   function removeOption(index: number) {
     if (options.length <= 2) return;
     setOptions((prev) => prev.filter((_, i) => i !== index));
+    setOptionImageUrls((prev) =>
+      padOptionImageUrls(prev, options.length).filter((_, i) => i !== index),
+    );
     setCorrectIndex((prev) => {
       if (prev === index) return 0;
       if (prev > index) return prev - 1;
@@ -89,6 +107,10 @@ export function TopikQuestionForm({
       explanation: explanation.trim() || null,
       audioUrl:
         section === "LISTENING" && audioUrl.trim() ? audioUrl.trim() : null,
+      imageUrl: imageUrl.trim() || null,
+      optionImageUrls: padOptionImageUrls(optionImageUrls, options.length)
+        .map((url) => url.trim())
+        .filter(Boolean),
       bundleId: bundleId.trim() || null,
       points: parseInt(points, 10) || 2,
       isPublished,
@@ -188,6 +210,31 @@ export function TopikQuestionForm({
         </div>
       ) : null}
 
+      <div className="flex flex-col gap-2 rounded-md border border-dashed border-zinc-300 p-3 dark:border-zinc-700">
+        <label className="flex flex-col gap-1 text-sm">
+          <span>URL ảnh đề bài / đoạn văn</span>
+          <input
+            type="url"
+            placeholder="https://... (bảng, thông báo, biểu đồ)"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            className={inputClass}
+          />
+        </label>
+        {imageUrl.trim() ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageUrl.trim()}
+            alt="Xem trước ảnh đề"
+            className="max-h-64 w-full rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
+          />
+        ) : (
+          <p className="text-xs text-zinc-500">
+            Dùng cho đoạn đọc có bảng/hình hoặc minh họa trên câu hỏi.
+          </p>
+        )}
+      </div>
+
       <label className="flex flex-col gap-1 text-sm">
         <span>Bundle ID (tùy chọn)</span>
         <input
@@ -205,29 +252,46 @@ export function TopikQuestionForm({
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">Đáp án</legend>
         {options.map((opt, i) => (
-          <div key={i} className="flex items-center gap-2">
+          <div key={i} className="flex flex-col gap-2 rounded-md border border-zinc-100 p-2 dark:border-zinc-800">
+            <div className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="correctIndex"
+                checked={correctIndex === i}
+                onChange={() => setCorrectIndex(i)}
+                className="shrink-0"
+              />
+              <input
+                required
+                value={opt}
+                onChange={(e) => updateOption(i, e.target.value)}
+                placeholder={`Đáp án ${i + 1}`}
+                className={`${inputClass} min-w-0 flex-1`}
+              />
+              {options.length > 2 ? (
+                <button
+                  type="button"
+                  onClick={() => removeOption(i)}
+                  className="shrink-0 text-xs text-red-600 hover:underline"
+                >
+                  Xóa
+                </button>
+              ) : null}
+            </div>
             <input
-              type="radio"
-              name="correctIndex"
-              checked={correctIndex === i}
-              onChange={() => setCorrectIndex(i)}
-              className="shrink-0"
+              type="url"
+              value={padOptionImageUrls(optionImageUrls, options.length)[i] ?? ""}
+              onChange={(e) => updateOptionImage(i, e.target.value)}
+              placeholder={`URL ảnh đáp án ${i + 1} (tùy chọn)`}
+              className={inputClass}
             />
-            <input
-              required
-              value={opt}
-              onChange={(e) => updateOption(i, e.target.value)}
-              placeholder={`Đáp án ${i + 1}`}
-              className={`${inputClass} min-w-0 flex-1`}
-            />
-            {options.length > 2 ? (
-              <button
-                type="button"
-                onClick={() => removeOption(i)}
-                className="shrink-0 text-xs text-red-600 hover:underline"
-              >
-                Xóa
-              </button>
+            {padOptionImageUrls(optionImageUrls, options.length)[i]?.trim() ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={padOptionImageUrls(optionImageUrls, options.length)[i].trim()}
+                alt={`Xem trước đáp án ${i + 1}`}
+                className="max-h-32 rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
+              />
             ) : null}
           </div>
         ))}
@@ -283,4 +347,8 @@ export function TopikQuestionForm({
       </div>
     </form>
   );
+}
+
+function padOptionImageUrls(urls: string[] | undefined, length: number): string[] {
+  return Array.from({ length: Math.max(length, 2) }, (_, i) => urls?.[i] ?? "");
 }

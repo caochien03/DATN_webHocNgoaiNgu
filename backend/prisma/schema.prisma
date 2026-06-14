@@ -319,6 +319,10 @@ model TopikQuestion {
   correctIndex Int
   explanation  String?
   audioUrl     String?
+  /// Ảnh đề bài / đoạn văn (bảng, thông báo…) — URL public.
+  imageUrl     String?
+  /// URL ảnh từng đáp án (câu chọn hình), index khớp `options`.
+  optionImageUrls String[]         @default([])
   /// Nhóm cặp câu (vd. nghe 25–26): cùng bundleId → hiển thị chung 1 trang + audio.
   bundleId     String?
   points       Int                 @default(2)

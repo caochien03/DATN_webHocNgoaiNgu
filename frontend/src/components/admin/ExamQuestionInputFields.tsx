@@ -53,17 +53,29 @@ export function ExamQuestionInputFields({
     });
   }
 
+  function updateOptionImage(i: number, url: string) {
+    const urls = padUrls(value.optionImageUrls, value.options.length);
+    urls[i] = url;
+    patch({ optionImageUrls: urls });
+  }
+
   function addOption() {
-    patch({ options: [...value.options, ""] });
+    patch({
+      options: [...value.options, ""],
+      optionImageUrls: [...padUrls(value.optionImageUrls, value.options.length), ""],
+    });
   }
 
   function removeOption(i: number) {
     if (value.options.length <= 2) return;
     const options = value.options.filter((_, idx) => idx !== i);
+    const optionImageUrls = padUrls(value.optionImageUrls, value.options.length).filter(
+      (_, idx) => idx !== i,
+    );
     let correctIndex = value.correctIndex;
     if (correctIndex === i) correctIndex = 0;
     else if (correctIndex > i) correctIndex -= 1;
-    patch({ options, correctIndex });
+    patch({ options, optionImageUrls, correctIndex });
   }
 
   const summary = value.prompt.trim()
@@ -186,6 +198,19 @@ export function ExamQuestionInputFields({
           ) : null}
 
           <label className="flex flex-col gap-1 text-sm">
+            <span>URL ảnh đề bài / đoạn văn</span>
+            <input
+              type="url"
+              value={value.imageUrl ?? ""}
+              onChange={(e) =>
+                patch({ imageUrl: e.target.value.trim() || undefined })
+              }
+              placeholder="https://..."
+              className={inputClass}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
             <span>Bundle ID (tùy chọn)</span>
             <input
               value={value.bundleId ?? ""}
@@ -200,28 +225,40 @@ export function ExamQuestionInputFields({
           <fieldset className="flex flex-col gap-2">
             <legend className="text-sm font-medium">Đáp án</legend>
             {value.options.map((opt, i) => (
-              <div key={i} className="flex items-center gap-2">
+              <div
+                key={i}
+                className="flex flex-col gap-2 rounded-md border border-zinc-100 p-2 dark:border-zinc-800"
+              >
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`correct-${index}`}
+                    checked={value.correctIndex === i}
+                    onChange={() => patch({ correctIndex: i })}
+                  />
+                  <input
+                    required
+                    value={opt}
+                    onChange={(e) => updateOption(i, e.target.value)}
+                    className={`${inputClass} min-w-0 flex-1`}
+                  />
+                  {value.options.length > 2 ? (
+                    <button
+                      type="button"
+                      onClick={() => removeOption(i)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Xóa
+                    </button>
+                  ) : null}
+                </div>
                 <input
-                  type="radio"
-                  name={`correct-${index}`}
-                  checked={value.correctIndex === i}
-                  onChange={() => patch({ correctIndex: i })}
+                  type="url"
+                  value={padUrls(value.optionImageUrls, value.options.length)[i] ?? ""}
+                  onChange={(e) => updateOptionImage(i, e.target.value)}
+                  placeholder={`URL ảnh đáp án ${i + 1}`}
+                  className={inputClass}
                 />
-                <input
-                  required
-                  value={opt}
-                  onChange={(e) => updateOption(i, e.target.value)}
-                  className={`${inputClass} min-w-0 flex-1`}
-                />
-                {value.options.length > 2 ? (
-                  <button
-                    type="button"
-                    onClick={() => removeOption(i)}
-                    className="text-xs text-red-600 hover:underline"
-                  >
-                    Xóa
-                  </button>
-                ) : null}
               </div>
             ))}
             <button
@@ -277,6 +314,13 @@ export function normalizeExamQuestions(
       q.section === "LISTENING" && q.audioUrl?.trim()
         ? q.audioUrl.trim()
         : undefined,
+    imageUrl: q.imageUrl?.trim() || undefined,
+    optionImageUrls:
+      q.optionImageUrls?.map((url) => url.trim()).filter(Boolean) ?? undefined,
     bundleId: q.bundleId?.trim() || undefined,
   }));
+}
+
+function padUrls(urls: string[] | undefined, length: number): string[] {
+  return Array.from({ length: Math.max(length, 2) }, (_, i) => urls?.[i] ?? "");
 }

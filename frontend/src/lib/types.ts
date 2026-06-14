@@ -241,6 +241,8 @@ export type TopikQuestion = {
   passage: string | null;
   options: string[];
   audioUrl: string | null;
+  imageUrl: string | null;
+  optionImageUrls: string[];
   bundleId?: string | null;
   points: number;
 };
@@ -257,6 +259,8 @@ export type TopikQuestionAdminRow = {
   correctIndex: number;
   explanation: string | null;
   audioUrl: string | null;
+  imageUrl: string | null;
+  optionImageUrls: string[];
   bundleId: string | null;
   points: number;
   isPublished: boolean;
@@ -274,6 +278,8 @@ export type ExamQuestionInput = {
   correctIndex: number;
   explanation?: string;
   audioUrl?: string;
+  imageUrl?: string;
+  optionImageUrls?: string[];
   bundleId?: string;
   points?: number;
 };

@@ -55,6 +55,17 @@ export class CreateTopikQuestionDto {
   audioUrl?: string;
 
   @IsOptional()
+  @IsUrl()
+  @MaxLength(500)
+  imageUrl?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsUrl({}, { each: true })
+  @MaxLength(500, { each: true })
+  optionImageUrls?: string[];
+
+  @IsOptional()
   @IsString()
   @MaxLength(120)
   bundleId?: string;
@@ -115,6 +126,17 @@ export class UpdateTopikQuestionDto {
   @IsUrl()
   @MaxLength(500)
   audioUrl?: string | null;
+
+  @IsOptional()
+  @IsUrl()
+  @MaxLength(500)
+  imageUrl?: string | null;
+
+  @IsOptional()
+  @IsArray()
+  @IsUrl({}, { each: true })
+  @MaxLength(500, { each: true })
+  optionImageUrls?: string[];
 
   @IsOptional()
   @IsString()

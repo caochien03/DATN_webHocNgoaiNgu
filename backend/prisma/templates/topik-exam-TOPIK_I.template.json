@@ -13,7 +13,13 @@
       "prompt": "다음을 듣고 맞는 그림을 고르십시오.",
       "options": ["①", "②", "③", "④"],
       "correctIndex": 0,
-      "audioUrl": "https://example.com/audio/q1.mp3"
+      "audioUrl": "https://example.com/audio/q1.mp3",
+      "optionImageUrls": [
+        "https://example.com/images/opt-1.png",
+        "https://example.com/images/opt-2.png",
+        "https://example.com/images/opt-3.png",
+        "https://example.com/images/opt-4.png"
+      ]
     },
     {
       "sortOrder": 1,
@@ -51,7 +57,8 @@
       "prompt": "다음 글의 내용과 같은 것을 고르십시오.",
       "passage": "저는 한국어를 공부합니다.",
       "options": ["한국어를 배웁니다", "한국어를 가르칩니다", "한국어를 못합니다", "한국어를 싫어합니다"],
-      "correctIndex": 0
+      "correctIndex": 0,
+      "imageUrl": "https://example.com/images/passage-sample.png"
     }
   ]
 }

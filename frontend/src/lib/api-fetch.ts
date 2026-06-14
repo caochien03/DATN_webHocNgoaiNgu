@@ -43,7 +43,7 @@ export async function uploadWithAuth(
   const url = path.startsWith("http")
     ? path
     : `${base}${path.startsWith("/") ? "" : "/"}${path}`;
-  return fetch(url, { ...init, headers, body: formData });
+  return fetch(url, { ...init, method: "POST", headers, body: formData });
 }
 
 export async function parseApiError(res: Response): Promise<string> {

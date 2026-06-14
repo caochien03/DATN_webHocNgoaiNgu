@@ -55,6 +55,17 @@ export class ExamQuestionInputDto {
   audioUrl?: string;
 
   @IsOptional()
+  @IsUrl()
+  @MaxLength(500)
+  imageUrl?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsUrl({}, { each: true })
+  @MaxLength(500, { each: true })
+  optionImageUrls?: string[];
+
+  @IsOptional()
   @IsString()
   @MaxLength(120)
   bundleId?: string;
