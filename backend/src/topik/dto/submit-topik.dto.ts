@@ -5,8 +5,10 @@ import {
   IsArray,
   IsEnum,
   IsInt,
+  IsOptional,
   IsString,
   Min,
+  MinLength,
   ValidateNested,
 } from 'class-validator';
 
@@ -14,9 +16,21 @@ export class TopikAnswerItemDto {
   @IsString()
   questionId: string;
 
+  @IsOptional()
   @IsInt()
   @Min(0)
-  selectedIndex: number;
+  selectedIndex?: number;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  textAnswer?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  textAnswers?: string[];
 }
 
 export class SubmitTopikPracticeDto {

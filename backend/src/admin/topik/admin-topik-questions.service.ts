@@ -1,11 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { TopikSection, TopikTier } from '@prisma/client';
+import { Prisma, TopikQuestionType, TopikSection, TopikTier } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { assertValidQuestionNo } from '../../topik/topik-question-limits';
+import { assertQuestionInput } from '../../topik/topik-question-validation';
+import { parseWritingParts } from '../../topik/topik-writing-parts';
+import { resolveQuestionType } from './admin-topik-exam-questions.helper';
 import {
-  assertValidQuestionNo,
-  validateOptions,
-} from '../../topik/topik-question-limits';
-import { CreateTopikQuestionDto, UpdateTopikQuestionDto } from './dto/topik-question.dto';
+  CreateTopikQuestionDto,
+  UpdateTopikQuestionDto,
+} from './dto/topik-question.dto';
 
 @Injectable()
 export class AdminTopikQuestionsService {
@@ -51,21 +54,50 @@ export class AdminTopikQuestionsService {
 
   create(dto: CreateTopikQuestionDto) {
     assertValidQuestionNo(dto.tier, dto.section, dto.questionNo);
-    validateOptions(dto.correctIndex, dto.options);
+    const questionType = resolveQuestionType(dto.section, dto.questionType);
+    const options = dto.options ?? [];
+    const correctIndex = dto.correctIndex ?? 0;
+    assertQuestionInput({
+      tier: dto.tier,
+      section: dto.section,
+      questionType,
+      options,
+      correctIndex,
+      minChars: dto.minChars,
+      maxChars: dto.maxChars,
+      writingParts: dto.writingParts,
+    });
+
+    const writingParts =
+      questionType === TopikQuestionType.SHORT_ANSWER && dto.writingParts?.length
+        ? parseWritingParts(dto.writingParts)
+        : null;
+
     return this.prisma.topikQuestion.create({
       data: {
         tier: dto.tier,
         section: dto.section,
         questionNo: dto.questionNo,
+        questionType,
         prompt: dto.prompt,
         passage: dto.passage,
-        options: dto.options,
-        correctIndex: dto.correctIndex,
+        options,
+        correctIndex,
         explanation: dto.explanation,
         audioUrl: dto.audioUrl,
         imageUrl: dto.imageUrl,
         optionImageUrls: dto.optionImageUrls ?? [],
         bundleId: dto.bundleId,
+        modelAnswer: dto.modelAnswer,
+        ...(writingParts && {
+          writingParts: writingParts as Prisma.InputJsonValue,
+        }),
+        minChars: dto.minChars,
+        maxChars: dto.maxChars,
+        maxScore: dto.maxScore,
+        ...(dto.rubric !== undefined && {
+          rubric: dto.rubric as Prisma.InputJsonValue,
+        }),
         ...(dto.points !== undefined && { points: dto.points }),
         ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
       },
@@ -79,9 +111,29 @@ export class AdminTopikQuestionsService {
     const questionNo = dto.questionNo ?? existing.questionNo;
     assertValidQuestionNo(tier, section, questionNo);
 
+    const questionType = resolveQuestionType(
+      section,
+      dto.questionType ?? existing.questionType,
+    );
     const options = dto.options ?? existing.options;
     const correctIndex = dto.correctIndex ?? existing.correctIndex;
-    validateOptions(correctIndex, options);
+    assertQuestionInput({
+      tier,
+      section,
+      questionType,
+      options,
+      correctIndex,
+      minChars: dto.minChars ?? existing.minChars,
+      maxChars: dto.maxChars ?? existing.maxChars,
+      writingParts: dto.writingParts ?? existing.writingParts,
+    });
+
+    const writingParts =
+      dto.writingParts !== undefined
+        ? dto.writingParts?.length
+          ? parseWritingParts(dto.writingParts)
+          : null
+        : undefined;
 
     return this.prisma.topikQuestion.update({
       where: { id },
@@ -89,6 +141,7 @@ export class AdminTopikQuestionsService {
         ...(dto.tier !== undefined && { tier: dto.tier }),
         ...(dto.section !== undefined && { section: dto.section }),
         ...(dto.questionNo !== undefined && { questionNo: dto.questionNo }),
+        questionType,
         ...(dto.prompt !== undefined && { prompt: dto.prompt }),
         ...(dto.passage !== undefined && { passage: dto.passage }),
         ...(dto.options !== undefined && { options: dto.options }),
@@ -100,6 +153,22 @@ export class AdminTopikQuestionsService {
           optionImageUrls: dto.optionImageUrls,
         }),
         ...(dto.bundleId !== undefined && { bundleId: dto.bundleId }),
+        ...(dto.modelAnswer !== undefined && { modelAnswer: dto.modelAnswer }),
+        ...(writingParts !== undefined && {
+          writingParts:
+            writingParts === null
+              ? Prisma.JsonNull
+              : (writingParts as Prisma.InputJsonValue),
+        }),
+        ...(dto.minChars !== undefined && { minChars: dto.minChars }),
+        ...(dto.maxChars !== undefined && { maxChars: dto.maxChars }),
+        ...(dto.maxScore !== undefined && { maxScore: dto.maxScore }),
+        ...(dto.rubric !== undefined && {
+          rubric:
+            dto.rubric === null
+              ? Prisma.JsonNull
+              : (dto.rubric as Prisma.InputJsonValue),
+        }),
         ...(dto.points !== undefined && { points: dto.points }),
         ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
       },

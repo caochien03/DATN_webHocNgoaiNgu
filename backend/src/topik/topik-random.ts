@@ -1,7 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import { Prisma, TopikSection, TopikTier } from '@prisma/client';
+import { Prisma, TopikQuestionType, TopikSection, TopikTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { partitionPoolIntoUnits } from './topik-question-bundles';
+import {
+  type TopikWritingPartPublic,
+  writingPartsForClient,
+} from './topik-writing-parts';
 
 /** Câu thuộc ít nhất một đề TOPIK đã công bố (pool luyện dạng). */
 export function practicePoolQuestionWhere(params: {
@@ -27,6 +31,7 @@ const questionForClient = {
   tier: true,
   section: true,
   questionNo: true,
+  questionType: true,
   prompt: true,
   passage: true,
   options: true,
@@ -34,14 +39,23 @@ const questionForClient = {
   imageUrl: true,
   optionImageUrls: true,
   bundleId: true,
+  minChars: true,
+  maxChars: true,
+  maxScore: true,
+  writingParts: true,
   points: true,
 } as const;
+
+type DbClientQuestion = Prisma.TopikQuestionGetPayload<{
+  select: typeof questionForClient;
+}>;
 
 type ClientQuestion = {
   id: string;
   tier: TopikTier;
   section: TopikSection;
   questionNo: number;
+  questionType: TopikQuestionType;
   prompt: string;
   passage: string | null;
   options: string[];
@@ -49,8 +63,20 @@ type ClientQuestion = {
   imageUrl: string | null;
   optionImageUrls: string[];
   bundleId: string | null;
+  minChars: number | null;
+  maxChars: number | null;
+  maxScore: number | null;
+  writingParts: TopikWritingPartPublic[] | null;
   points: number;
 };
+
+function toClientQuestion(q: DbClientQuestion): ClientQuestion {
+  const { writingParts, ...rest } = q;
+  return {
+    ...rest,
+    writingParts: writingPartsForClient(writingParts),
+  };
+}
 
 function shuffle<T>(items: T[]): T[] {
   const arr = [...items];
@@ -81,7 +107,8 @@ export async function randomQuestionsForPractice(
       'Chưa có câu hỏi trong đề đã công bố cho dạng bài này',
     );
   }
-  const units = partitionPoolIntoUnits(pool);
+  const clientPool = pool.map(toClientQuestion);
+  const units = partitionPoolIntoUnits(clientPool);
   const shuffled = shuffle(units);
   const selected: ClientQuestion[] = [];
   for (const unit of shuffled) {
@@ -110,6 +137,6 @@ export async function loadFixedExamQuestions(
       question: { select: questionForClient },
     },
   });
-  return slots.map((slot) => slot.question);
+  return slots.map((slot) => toClientQuestion(slot.question));
 }
 

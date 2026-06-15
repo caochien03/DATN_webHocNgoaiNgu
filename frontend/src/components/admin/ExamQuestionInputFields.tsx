@@ -2,8 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { topikQuestionNoMax } from "@/lib/topik-question-limits";
-import { topikSectionLabel } from "@/lib/topik-labels";
-import type { ExamQuestionInput, TopikSection, TopikTier } from "@/lib/types";
+import { topikQuestionTypeLabel, topikSectionLabel } from "@/lib/topik-labels";
+import type {
+  ExamQuestionInput,
+  TopikQuestionType,
+  TopikSection,
+  TopikTier,
+} from "@/lib/types";
+import {
+  DEFAULT_SHORT_ANSWER_PARTS,
+  type TopikWritingPart,
+} from "@/lib/topik-writing-parts";
 
 const inputClass =
   "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
@@ -43,39 +52,71 @@ export function ExamQuestionInputFields({
     [tier, value.section],
   );
 
+  const options = value.options ?? ["", "", "", ""];
+  const questionType: TopikQuestionType =
+    value.questionType ??
+    (value.section === "WRITING" ? "SHORT_ANSWER" : "MULTIPLE_CHOICE");
+  const isMcq = questionType === "MULTIPLE_CHOICE";
+  const isWriting = value.section === "WRITING";
+
   function patch(partial: Partial<ExamQuestionInput>) {
     onChange({ ...value, ...partial });
   }
 
+  function handleSectionChange(section: TopikSection) {
+    if (section === "WRITING") {
+      patch({
+        section,
+        questionType:
+          questionType === "MULTIPLE_CHOICE" ? "SHORT_ANSWER" : questionType,
+        writingParts:
+          value.writingParts && value.writingParts.length > 0
+            ? value.writingParts
+            : DEFAULT_SHORT_ANSWER_PARTS,
+      });
+    } else {
+      patch({ section, questionType: "MULTIPLE_CHOICE", writingParts: undefined });
+    }
+  }
+
+  function updateWritingPart(index: number, partial: Partial<TopikWritingPart>) {
+    const parts = value.writingParts ?? DEFAULT_SHORT_ANSWER_PARTS;
+    patch({
+      writingParts: parts.map((p, i) =>
+        i === index ? { ...p, ...partial } : p,
+      ),
+    });
+  }
+
   function updateOption(i: number, text: string) {
     patch({
-      options: value.options.map((o, idx) => (idx === i ? text : o)),
+      options: options.map((o, idx) => (idx === i ? text : o)),
     });
   }
 
   function updateOptionImage(i: number, url: string) {
-    const urls = padUrls(value.optionImageUrls, value.options.length);
+    const urls = padUrls(value.optionImageUrls, options.length);
     urls[i] = url;
     patch({ optionImageUrls: urls });
   }
 
   function addOption() {
     patch({
-      options: [...value.options, ""],
-      optionImageUrls: [...padUrls(value.optionImageUrls, value.options.length), ""],
+      options: [...options, ""],
+      optionImageUrls: [...padUrls(value.optionImageUrls, options.length), ""],
     });
   }
 
   function removeOption(i: number) {
-    if (value.options.length <= 2) return;
-    const options = value.options.filter((_, idx) => idx !== i);
-    const optionImageUrls = padUrls(value.optionImageUrls, value.options.length).filter(
+    if (options.length <= 2) return;
+    const nextOptions = options.filter((_, idx) => idx !== i);
+    const optionImageUrls = padUrls(value.optionImageUrls, options.length).filter(
       (_, idx) => idx !== i,
     );
-    let correctIndex = value.correctIndex;
+    let correctIndex = value.correctIndex ?? 0;
     if (correctIndex === i) correctIndex = 0;
     else if (correctIndex > i) correctIndex -= 1;
-    patch({ options, optionImageUrls, correctIndex });
+    patch({ options: nextOptions, optionImageUrls, correctIndex });
   }
 
   const summary = value.prompt.trim()
@@ -127,9 +168,7 @@ export function ExamQuestionInputFields({
               <select
                 value={value.section}
                 onChange={(e) =>
-                  patch({
-                    section: e.target.value as TopikSection,
-                  })
+                  handleSectionChange(e.target.value as TopikSection)
                 }
                 className={inputClass}
               >
@@ -159,6 +198,26 @@ export function ExamQuestionInputFields({
               />
             </label>
           </div>
+
+          {isWriting ? (
+            <label className="flex flex-col gap-1 text-sm">
+              <span>Loại câu viết</span>
+              <select
+                value={questionType}
+                onChange={(e) =>
+                  patch({
+                    questionType: e.target.value as TopikQuestionType,
+                  })
+                }
+                className={inputClass}
+              >
+                <option value="SHORT_ANSWER">
+                  {topikQuestionTypeLabel("SHORT_ANSWER")}
+                </option>
+                <option value="ESSAY">{topikQuestionTypeLabel("ESSAY")}</option>
+              </select>
+            </label>
+          ) : null}
 
           <label className="flex flex-col gap-1 text-sm">
             <span>Đề bài</span>
@@ -210,6 +269,112 @@ export function ExamQuestionInputFields({
             />
           </label>
 
+          {isWriting ? (
+            <>
+              {questionType === "SHORT_ANSWER" ? (
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="text-sm font-medium">
+                    Các ý nhỏ (㉠, ㉡…)
+                  </legend>
+                  {(value.writingParts ?? DEFAULT_SHORT_ANSWER_PARTS).map(
+                    (part, i) => (
+                      <div
+                        key={i}
+                        className="grid gap-2 sm:grid-cols-3"
+                      >
+                        <input
+                          value={part.label}
+                          onChange={(e) =>
+                            updateWritingPart(i, { label: e.target.value })
+                          }
+                          className={inputClass}
+                        />
+                        <input
+                          value={part.modelAnswer ?? ""}
+                          onChange={(e) =>
+                            updateWritingPart(i, {
+                              modelAnswer: e.target.value,
+                            })
+                          }
+                          placeholder="Đáp án mẫu"
+                          className={`${inputClass} sm:col-span-2`}
+                        />
+                      </div>
+                    ),
+                  )}
+                </fieldset>
+              ) : (
+                <label className="flex flex-col gap-1 text-sm">
+                  <span>Đáp án mẫu (viết luận)</span>
+                  <textarea
+                    rows={3}
+                    value={value.modelAnswer ?? ""}
+                    onChange={(e) =>
+                      patch({
+                        modelAnswer: e.target.value.trim() || undefined,
+                      })
+                    }
+                    className={inputClass}
+                  />
+                </label>
+              )}
+              <div className="grid gap-3 sm:grid-cols-3">
+                {questionType === "ESSAY" ? (
+                  <>
+                    <label className="flex flex-col gap-1 text-sm">
+                      <span>Min ký tự</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={value.minChars ?? ""}
+                        onChange={(e) =>
+                          patch({
+                            minChars: e.target.value
+                              ? parseInt(e.target.value, 10)
+                              : undefined,
+                          })
+                        }
+                        className={inputClass}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1 text-sm">
+                      <span>Max ký tự</span>
+                      <input
+                        type="number"
+                        min={1}
+                        value={value.maxChars ?? ""}
+                        onChange={(e) =>
+                          patch({
+                            maxChars: e.target.value
+                              ? parseInt(e.target.value, 10)
+                              : undefined,
+                          })
+                        }
+                        className={inputClass}
+                      />
+                    </label>
+                  </>
+                ) : null}
+                <label className="flex flex-col gap-1 text-sm">
+                  <span>Điểm tối đa</span>
+                  <input
+                    type="number"
+                    min={1}
+                    value={value.maxScore ?? ""}
+                    onChange={(e) =>
+                      patch({
+                        maxScore: e.target.value
+                          ? parseInt(e.target.value, 10)
+                          : undefined,
+                      })
+                    }
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+            </>
+          ) : null}
+
           <label className="flex flex-col gap-1 text-sm">
             <span>Bundle ID (tùy chọn)</span>
             <input
@@ -224,7 +389,13 @@ export function ExamQuestionInputFields({
 
           <fieldset className="flex flex-col gap-2">
             <legend className="text-sm font-medium">Đáp án</legend>
-            {value.options.map((opt, i) => (
+            {!isMcq ? (
+              <p className="text-xs text-zinc-500">
+                Câu viết không dùng đáp án trắc nghiệm.
+              </p>
+            ) : (
+              <>
+            {options.map((opt, i) => (
               <div
                 key={i}
                 className="flex flex-col gap-2 rounded-md border border-zinc-100 p-2 dark:border-zinc-800"
@@ -242,7 +413,7 @@ export function ExamQuestionInputFields({
                     onChange={(e) => updateOption(i, e.target.value)}
                     className={`${inputClass} min-w-0 flex-1`}
                   />
-                  {value.options.length > 2 ? (
+                  {options.length > 2 ? (
                     <button
                       type="button"
                       onClick={() => removeOption(i)}
@@ -254,7 +425,7 @@ export function ExamQuestionInputFields({
                 </div>
                 <input
                   type="url"
-                  value={padUrls(value.optionImageUrls, value.options.length)[i] ?? ""}
+                  value={padUrls(value.optionImageUrls, options.length)[i] ?? ""}
                   onChange={(e) => updateOptionImage(i, e.target.value)}
                   placeholder={`URL ảnh đáp án ${i + 1}`}
                   className={inputClass}
@@ -268,6 +439,8 @@ export function ExamQuestionInputFields({
             >
               + Thêm đáp án
             </button>
+              </>
+            )}
           </fieldset>
 
           <label className="flex flex-col gap-1 text-sm">
@@ -303,22 +476,40 @@ export function ExamQuestionInputFields({
 export function normalizeExamQuestions(
   questions: ExamQuestionInput[],
 ): ExamQuestionInput[] {
-  return questions.map((q, i) => ({
-    ...q,
-    sortOrder: q.sortOrder ?? i,
-    prompt: q.prompt.trim(),
-    options: q.options.map((o) => o.trim()).filter(Boolean),
-    passage: q.passage?.trim() || undefined,
-    explanation: q.explanation?.trim() || undefined,
-    audioUrl:
-      q.section === "LISTENING" && q.audioUrl?.trim()
-        ? q.audioUrl.trim()
+  return questions.map((q, i) => {
+    const questionType =
+      q.questionType ??
+      (q.section === "WRITING" ? "SHORT_ANSWER" : "MULTIPLE_CHOICE");
+    const isMcq = questionType === "MULTIPLE_CHOICE";
+    return {
+      ...q,
+      sortOrder: q.sortOrder ?? i,
+      questionType,
+      prompt: q.prompt.trim(),
+      options: isMcq
+        ? (q.options ?? []).map((o) => o.trim()).filter(Boolean)
+        : [],
+      correctIndex: isMcq ? (q.correctIndex ?? 0) : 0,
+      passage: q.passage?.trim() || undefined,
+      explanation: q.explanation?.trim() || undefined,
+      audioUrl:
+        q.section === "LISTENING" && q.audioUrl?.trim()
+          ? q.audioUrl.trim()
+          : undefined,
+      imageUrl: q.imageUrl?.trim() || undefined,
+      optionImageUrls: isMcq
+        ? q.optionImageUrls?.map((url) => url.trim()).filter(Boolean)
         : undefined,
-    imageUrl: q.imageUrl?.trim() || undefined,
-    optionImageUrls:
-      q.optionImageUrls?.map((url) => url.trim()).filter(Boolean) ?? undefined,
-    bundleId: q.bundleId?.trim() || undefined,
-  }));
+      bundleId: q.bundleId?.trim() || undefined,
+      modelAnswer: q.modelAnswer?.trim() || undefined,
+      writingParts:
+        q.writingParts && q.writingParts.length > 0 ? q.writingParts : undefined,
+      minChars: q.minChars,
+      maxChars: q.maxChars,
+      maxScore: q.maxScore,
+      rubric: q.rubric,
+    };
+  });
 }
 
 function padUrls(urls: string[] | undefined, length: number): string[] {

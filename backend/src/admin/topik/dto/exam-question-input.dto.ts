@@ -1,16 +1,35 @@
-import { TopikSection } from '@prisma/client';
+import { TopikQuestionType, TopikSection } from '@prisma/client';
+import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
   IsArray,
+  IsEnum,
   IsInt,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
   MaxLength,
   Min,
   MinLength,
-  IsEnum,
+  ValidateNested,
 } from 'class-validator';
+
+export class TopikWritingPartInputDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(20)
+  label: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  modelAnswer?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxScore?: number;
+}
 
 export class ExamQuestionInputDto {
   @IsInt()
@@ -24,6 +43,10 @@ export class ExamQuestionInputDto {
   @Min(1)
   questionNo: number;
 
+  @IsOptional()
+  @IsEnum(TopikQuestionType)
+  questionType?: TopikQuestionType;
+
   @IsString()
   @MinLength(1)
   @MaxLength(4000)
@@ -34,15 +57,16 @@ export class ExamQuestionInputDto {
   @MaxLength(8000)
   passage?: string;
 
+  @IsOptional()
   @IsArray()
-  @ArrayMinSize(2)
   @IsString({ each: true })
   @MaxLength(1000, { each: true })
-  options: string[];
+  options?: string[];
 
+  @IsOptional()
   @IsInt()
   @Min(0)
-  correctIndex: number;
+  correctIndex?: number;
 
   @IsOptional()
   @IsString()
@@ -69,6 +93,34 @@ export class ExamQuestionInputDto {
   @IsString()
   @MaxLength(120)
   bundleId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(8000)
+  modelAnswer?: string;
+
+  @IsOptional()
+  @IsArray()
+  writingParts?: TopikWritingPartInputDto[];
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  minChars?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxChars?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxScore?: number;
+
+  @IsOptional()
+  @IsObject()
+  rubric?: Record<string, unknown>;
 
   @IsOptional()
   @IsInt()

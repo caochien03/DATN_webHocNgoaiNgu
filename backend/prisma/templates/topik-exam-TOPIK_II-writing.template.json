@@ -1,0 +1,77 @@
+{
+  "title": "TOPIK II — Mẫu viết (import)",
+  "description": "4 câu 쓰기: 51–52 mỗi câu 2 ý (㉠, ㉡); 53–54 viết luận",
+  "tier": "TOPIK_II",
+  "durationMinutes": 180,
+  "isPublished": false,
+  "sortOrder": 0,
+  "questions": [
+    {
+      "sortOrder": 0,
+      "section": "WRITING",
+      "questionNo": 1,
+      "questionType": "SHORT_ANSWER",
+      "prompt": "㉠, ㉡에 들어갈 말로 가장 알맞은 것을 각각 쓰십시오.",
+      "passage": "가: 오늘 날씨가 정말 좋네요.\n나: 맞아요. 그래서 (㉠)\n가: 저도 공원에서 산책했어요.",
+      "options": [],
+      "correctIndex": 0,
+      "maxScore": 10,
+      "writingParts": [
+        { "label": "㉠", "modelAnswer": "공원에 갔어요.", "maxScore": 5 },
+        { "label": "㉡", "modelAnswer": "기분이 좋아요.", "maxScore": 5 }
+      ]
+    },
+    {
+      "sortOrder": 1,
+      "section": "WRITING",
+      "questionNo": 2,
+      "questionType": "SHORT_ANSWER",
+      "prompt": "㉠, ㉡에 들어갈 문장을 각각 쓰십시오.",
+      "passage": "요즘 많은 사람들이 건강을 위해 운동을 합니다. (㉠) 그리고 규칙적인 생활을 하려고 노력합니다. (㉡)",
+      "options": [],
+      "correctIndex": 0,
+      "maxScore": 10,
+      "writingParts": [
+        {
+          "label": "㉠",
+          "modelAnswer": "저도 매일 아침에 조깅을 합니다.",
+          "maxScore": 5
+        },
+        {
+          "label": "㉡",
+          "modelAnswer": "일찍 자고 일찍 일어납니다.",
+          "maxScore": 5
+        }
+      ]
+    },
+    {
+      "sortOrder": 2,
+      "section": "WRITING",
+      "questionNo": 3,
+      "questionType": "ESSAY",
+      "prompt": "다음 내용을 200~300자로 쓰십시오.",
+      "passage": "아래 그래프는 최근 5년간 한국어 학습자 수의 변화를 나타낸 것입니다.",
+      "imageUrl": "https://placehold.co/600x320/png?text=Chart",
+      "options": [],
+      "correctIndex": 0,
+      "minChars": 200,
+      "maxChars": 300,
+      "maxScore": 30,
+      "modelAnswer": "최근 5년 동안 한국어 학습자 수가 꾸준히 증가했습니다..."
+    },
+    {
+      "sortOrder": 3,
+      "section": "WRITING",
+      "questionNo": 4,
+      "questionType": "ESSAY",
+      "prompt": "다음 주제에 대해 600~700자로 쓰십시오.",
+      "passage": "주제: 환경 보호를 위해 개인이 할 수 있는 일",
+      "options": [],
+      "correctIndex": 0,
+      "minChars": 600,
+      "maxChars": 700,
+      "maxScore": 50,
+      "modelAnswer": "환경 보호는 모두의 책임입니다..."
+    }
+  ]
+}

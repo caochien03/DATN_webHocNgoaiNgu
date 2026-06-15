@@ -2,8 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { topikQuestionNoMax } from "@/lib/topik-question-limits";
-import { topikSectionLabel, topikTierLabel } from "@/lib/topik-labels";
-import type { TopikSection, TopikTier } from "@/lib/types";
+import {
+  topikQuestionTypeLabel,
+  topikSectionLabel,
+  topikTierLabel,
+} from "@/lib/topik-labels";
+import type {
+  TopikQuestionType,
+  TopikSection,
+  TopikTier,
+  TopikWritingPart,
+} from "@/lib/types";
+import { DEFAULT_SHORT_ANSWER_PARTS } from "@/lib/topik-writing-parts";
 
 const inputClass =
   "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
@@ -12,6 +22,7 @@ export type TopikQuestionFormValues = {
   tier: TopikTier;
   section: TopikSection;
   questionNo: number;
+  questionType: TopikQuestionType;
   prompt: string;
   passage: string | null;
   options: string[];
@@ -21,6 +32,12 @@ export type TopikQuestionFormValues = {
   imageUrl: string | null;
   optionImageUrls: string[];
   bundleId: string | null;
+  modelAnswer: string | null;
+  writingParts: TopikWritingPart[] | null;
+  minChars: number | null;
+  maxChars: number | null;
+  maxScore: number | null;
+  rubric: Record<string, unknown> | null;
   points: number;
   isPublished: boolean;
 };
@@ -42,6 +59,9 @@ export function TopikQuestionForm({
 }: TopikQuestionFormProps) {
   const [tier, setTier] = useState<TopikTier>(initial.tier);
   const [section, setSection] = useState<TopikSection>(initial.section);
+  const [questionType, setQuestionType] = useState<TopikQuestionType>(
+    initial.questionType,
+  );
   const [questionNo, setQuestionNo] = useState(String(initial.questionNo));
   const [prompt, setPrompt] = useState(initial.prompt);
   const [passage, setPassage] = useState(initial.passage ?? "");
@@ -56,8 +76,32 @@ export function TopikQuestionForm({
     padOptionImageUrls(initial.optionImageUrls, initial.options.length),
   );
   const [bundleId, setBundleId] = useState(initial.bundleId ?? "");
+  const [modelAnswer, setModelAnswer] = useState(initial.modelAnswer ?? "");
+  const [writingParts, setWritingParts] = useState<TopikWritingPart[]>(
+    initial.writingParts?.length
+      ? initial.writingParts
+      : initial.section === "WRITING" &&
+          initial.questionType === "SHORT_ANSWER"
+        ? DEFAULT_SHORT_ANSWER_PARTS
+        : [],
+  );
+  const [minChars, setMinChars] = useState(
+    initial.minChars != null ? String(initial.minChars) : "",
+  );
+  const [maxChars, setMaxChars] = useState(
+    initial.maxChars != null ? String(initial.maxChars) : "",
+  );
+  const [maxScore, setMaxScore] = useState(
+    initial.maxScore != null ? String(initial.maxScore) : "",
+  );
+  const [rubricJson, setRubricJson] = useState(
+    initial.rubric ? JSON.stringify(initial.rubric, null, 2) : "",
+  );
   const [points, setPoints] = useState(String(initial.points));
   const [isPublished, setIsPublished] = useState(initial.isPublished);
+
+  const isMcq = questionType === "MULTIPLE_CHOICE";
+  const isWriting = section === "WRITING";
 
   const questionNoMax = useMemo(
     () => topikQuestionNoMax(tier, section),
@@ -94,24 +138,82 @@ export function TopikQuestionForm({
     });
   }
 
+  function handleQuestionTypeChange(next: TopikQuestionType) {
+    setQuestionType(next);
+    if (next === "SHORT_ANSWER" && writingParts.length === 0) {
+      setWritingParts(DEFAULT_SHORT_ANSWER_PARTS);
+    }
+  }
+
+  function updateWritingPart(
+    index: number,
+    patch: Partial<TopikWritingPart>,
+  ) {
+    setWritingParts((prev) =>
+      prev.map((part, i) => (i === index ? { ...part, ...patch } : part)),
+    );
+  }
+
+  function handleSectionChange(next: TopikSection) {
+    setSection(next);
+    if (next === "WRITING") {
+      setQuestionType((t) =>
+        t === "MULTIPLE_CHOICE" ? "SHORT_ANSWER" : t,
+      );
+      setWritingParts((prev) =>
+        prev.length > 0 ? prev : DEFAULT_SHORT_ANSWER_PARTS,
+      );
+    } else {
+      setQuestionType("MULTIPLE_CHOICE");
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    let rubric: Record<string, unknown> | null = null;
+    if (rubricJson.trim()) {
+      try {
+        rubric = JSON.parse(rubricJson) as Record<string, unknown>;
+      } catch {
+        alert("Rubric phải là JSON hợp lệ");
+        return;
+      }
+    }
     void onSubmit({
       tier,
       section,
       questionNo: parseInt(questionNo, 10) || 1,
+      questionType: isWriting ? questionType : "MULTIPLE_CHOICE",
       prompt: prompt.trim(),
       passage: passage.trim() || null,
-      options: options.map((o) => o.trim()).filter(Boolean),
-      correctIndex,
+      options: isMcq ? options.map((o) => o.trim()).filter(Boolean) : [],
+      correctIndex: isMcq ? correctIndex : 0,
       explanation: explanation.trim() || null,
       audioUrl:
         section === "LISTENING" && audioUrl.trim() ? audioUrl.trim() : null,
       imageUrl: imageUrl.trim() || null,
-      optionImageUrls: padOptionImageUrls(optionImageUrls, options.length)
-        .map((url) => url.trim())
-        .filter(Boolean),
+      optionImageUrls: isMcq
+        ? padOptionImageUrls(optionImageUrls, options.length)
+            .map((url) => url.trim())
+            .filter(Boolean)
+        : [],
       bundleId: bundleId.trim() || null,
+      modelAnswer:
+        questionType === "ESSAY" ? modelAnswer.trim() || null : null,
+      writingParts:
+        questionType === "SHORT_ANSWER" && writingParts.length > 0
+          ? writingParts.map((p) => ({
+              label: p.label.trim(),
+              ...(p.modelAnswer?.trim() && {
+                modelAnswer: p.modelAnswer.trim(),
+              }),
+              ...(p.maxScore != null && { maxScore: p.maxScore }),
+            }))
+          : null,
+      minChars: minChars.trim() ? parseInt(minChars, 10) : null,
+      maxChars: maxChars.trim() ? parseInt(maxChars, 10) : null,
+      maxScore: maxScore.trim() ? parseInt(maxScore, 10) : null,
+      rubric,
       points: parseInt(points, 10) || 2,
       isPublished,
     });
@@ -138,7 +240,9 @@ export function TopikQuestionForm({
           <span>Phần thi</span>
           <select
             value={section}
-            onChange={(e) => setSection(e.target.value as TopikSection)}
+            onChange={(e) =>
+              handleSectionChange(e.target.value as TopikSection)
+            }
             className={inputClass}
           >
             <option value="LISTENING">{topikSectionLabel("LISTENING")}</option>
@@ -164,6 +268,117 @@ export function TopikQuestionForm({
           />
         </label>
       </div>
+
+      {isWriting ? (
+        <label className="flex flex-col gap-1 text-sm">
+          <span>Loại câu viết</span>
+          <select
+            value={questionType}
+            onChange={(e) =>
+              handleQuestionTypeChange(e.target.value as TopikQuestionType)
+            }
+            className={inputClass}
+          >
+            <option value="SHORT_ANSWER">
+              {topikQuestionTypeLabel("SHORT_ANSWER")}
+            </option>
+            <option value="ESSAY">{topikQuestionTypeLabel("ESSAY")}</option>
+          </select>
+        </label>
+      ) : null}
+
+      {isWriting ? (
+        <div className="flex flex-col gap-3 rounded-md border border-dashed border-sky-300 p-3 dark:border-sky-900">
+          <p className="text-xs font-medium text-sky-800 dark:text-sky-300">
+            Câu viết — 51–52: 2 ý (㉠, ㉡) qua writingParts; 53–54: viết luận
+          </p>
+
+          {questionType === "SHORT_ANSWER" ? (
+            <fieldset className="flex flex-col gap-2">
+              <legend className="text-sm font-medium">
+                Các ý nhỏ (㉠, ㉡…)
+              </legend>
+              {writingParts.map((part, i) => (
+                <div
+                  key={i}
+                  className="grid gap-2 rounded-md border border-sky-100 p-2 dark:border-sky-900 sm:grid-cols-3"
+                >
+                  <input
+                    value={part.label}
+                    onChange={(e) =>
+                      updateWritingPart(i, { label: e.target.value })
+                    }
+                    placeholder="㉠"
+                    className={inputClass}
+                  />
+                  <input
+                    value={part.modelAnswer ?? ""}
+                    onChange={(e) =>
+                      updateWritingPart(i, { modelAnswer: e.target.value })
+                    }
+                    placeholder="Đáp án mẫu"
+                    className={`${inputClass} sm:col-span-2`}
+                  />
+                </div>
+              ))}
+            </fieldset>
+          ) : (
+            <label className="flex flex-col gap-1 text-sm">
+              <span>Đáp án mẫu (viết luận)</span>
+              <textarea
+                rows={4}
+                value={modelAnswer}
+                onChange={(e) => setModelAnswer(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="flex flex-col gap-1 text-sm">
+              <span>Min ký tự</span>
+              <input
+                type="number"
+                min={0}
+                value={minChars}
+                onChange={(e) => setMinChars(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span>Max ký tự</span>
+              <input
+                type="number"
+                min={1}
+                value={maxChars}
+                onChange={(e) => setMaxChars(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span>Điểm tối đa</span>
+              <input
+                type="number"
+                min={1}
+                value={maxScore}
+                onChange={(e) => setMaxScore(e.target.value)}
+                placeholder="10 / 30 / 50"
+                className={inputClass}
+              />
+            </label>
+          </div>
+          <label className="flex flex-col gap-1 text-sm">
+            <span>Rubric (JSON, tùy chọn — dùng cho AI chấm sau)</span>
+            <textarea
+              rows={4}
+              value={rubricJson}
+              onChange={(e) => setRubricJson(e.target.value)}
+              placeholder='{"criteria":[...]}'
+              className={`${inputClass} font-mono text-xs`}
+            />
+          </label>
+        </div>
+      ) : null}
 
       <label className="flex flex-col gap-1 text-sm">
         <span>Đề bài (prompt)</span>
@@ -251,6 +466,12 @@ export function TopikQuestionForm({
 
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">Đáp án</legend>
+        {!isMcq ? (
+          <p className="text-xs text-zinc-500">
+            Câu viết không dùng đáp án trắc nghiệm.
+          </p>
+        ) : (
+          <>
         {options.map((opt, i) => (
           <div key={i} className="flex flex-col gap-2 rounded-md border border-zinc-100 p-2 dark:border-zinc-800">
             <div className="flex items-center gap-2">
@@ -302,6 +523,8 @@ export function TopikQuestionForm({
         >
           + Thêm đáp án
         </button>
+          </>
+        )}
       </fieldset>
 
       <label className="flex flex-col gap-1 text-sm">

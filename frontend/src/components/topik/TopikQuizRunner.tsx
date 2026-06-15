@@ -288,21 +288,41 @@ function ResultView({
             <li
               key={a.questionId}
               className={`rounded-lg border p-3 text-sm ${
-                a.isCorrect
-                  ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
-                  : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
+                a.gradeStatus === "pending"
+                  ? "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/30"
+                  : a.isCorrect
+                    ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
+                    : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
               }`}
             >
               <p className="font-medium">
                 Câu {a.questionNo} · {topikSectionLabel(a.section)}{" "}
-                {a.isCorrect ? "✓" : "✗"}
+                {a.gradeStatus === "pending"
+                  ? "· chờ chấm"
+                  : a.isCorrect
+                    ? "✓"
+                    : "✗"}
               </p>
               {q ? (
                 <p className="mt-1 text-zinc-700 dark:text-zinc-300">{q.prompt}</p>
               ) : null}
-              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-                Đáp án đúng: {a.correctIndex + 1}
-              </p>
+              {a.textAnswer ? (
+                <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
+                  {a.textAnswer}
+                </p>
+              ) : null}
+              {a.gradeStatus === "graded" &&
+              a.selectedIndex != null &&
+              a.correctIndex != null ? (
+                <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                  Đáp án đúng: {a.correctIndex + 1}
+                </p>
+              ) : null}
+              {a.modelAnswer ? (
+                <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                  Đáp án mẫu: {a.modelAnswer}
+                </p>
+              ) : null}
               {a.explanation ? (
                 <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                   {a.explanation}

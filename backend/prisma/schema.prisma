@@ -307,12 +307,19 @@ model TopikQuestionFormat {
   @@index([tier, section, sortOrder])
 }
 
-/// Câu hỏi thuộc đề TOPIK — questionNo = số câu trong phần (nghe 1–30, đọc 1–40).
+enum TopikQuestionType {
+  MULTIPLE_CHOICE
+  SHORT_ANSWER
+  ESSAY
+}
+
+/// Câu hỏi thuộc đề TOPIK — questionNo = số câu trong phần (nghe 1–30, đọc 1–40, viết 1–4).
 model TopikQuestion {
   id           String              @id @default(cuid())
   tier         TopikTier
   section      TopikSection
   questionNo   Int
+  questionType TopikQuestionType   @default(MULTIPLE_CHOICE)
   prompt       String
   passage      String?
   options      String[]
@@ -325,6 +332,16 @@ model TopikQuestion {
   optionImageUrls String[]         @default([])
   /// Nhóm cặp câu (vd. nghe 25–26): cùng bundleId → hiển thị chung 1 trang + audio.
   bundleId     String?
+  /// Đáp án mẫu (câu viết đơn / luận) — không trả về API làm bài.
+  modelAnswer  String?
+  /// Ý nhỏ trong câu viết (vd. 51–52: ㉠, ㉡). JSON: [{ label, modelAnswer?, maxScore? }]
+  writingParts Json?
+  minChars     Int?
+  maxChars     Int?
+  /// Điểm tối đa câu viết (vd. 10, 30, 50).
+  maxScore     Int?
+  /// Rubric chấm (JSON) — không trả về API làm bài.
+  rubric       Json?
   points       Int                 @default(2)
   isPublished  Boolean             @default(true)
   createdAt    DateTime            @default(now())
@@ -334,6 +351,7 @@ model TopikQuestion {
   @@index([tier, section, questionNo])
   @@index([isPublished])
   @@index([bundleId])
+  @@index([questionType])
 }
 
 model TopikExam {

@@ -1,17 +1,20 @@
-import { TopikSection, TopikTier } from '@prisma/client';
+import { TopikQuestionType, TopikSection, TopikTier } from '@prisma/client';
+import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
   IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
   MaxLength,
   Min,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { TopikWritingPartInputDto } from './exam-question-input.dto';
 
 export class CreateTopikQuestionDto {
   @IsEnum(TopikTier)
@@ -24,6 +27,10 @@ export class CreateTopikQuestionDto {
   @Min(1)
   questionNo: number;
 
+  @IsOptional()
+  @IsEnum(TopikQuestionType)
+  questionType?: TopikQuestionType;
+
   @IsString()
   @MinLength(1)
   @MaxLength(4000)
@@ -34,15 +41,16 @@ export class CreateTopikQuestionDto {
   @MaxLength(8000)
   passage?: string;
 
+  @IsOptional()
   @IsArray()
-  @ArrayMinSize(2)
   @IsString({ each: true })
   @MaxLength(1000, { each: true })
-  options: string[];
+  options?: string[];
 
+  @IsOptional()
   @IsInt()
   @Min(0)
-  correctIndex: number;
+  correctIndex?: number;
 
   @IsOptional()
   @IsString()
@@ -71,6 +79,36 @@ export class CreateTopikQuestionDto {
   bundleId?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(8000)
+  modelAnswer?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TopikWritingPartInputDto)
+  writingParts?: TopikWritingPartInputDto[];
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  minChars?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxChars?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxScore?: number;
+
+  @IsOptional()
+  @IsObject()
+  rubric?: Record<string, unknown>;
+
+  @IsOptional()
   @IsInt()
   @Min(1)
   points?: number;
@@ -95,6 +133,10 @@ export class UpdateTopikQuestionDto {
   questionNo?: number;
 
   @IsOptional()
+  @IsEnum(TopikQuestionType)
+  questionType?: TopikQuestionType;
+
+  @IsOptional()
   @IsString()
   @MinLength(1)
   @MaxLength(4000)
@@ -107,7 +149,6 @@ export class UpdateTopikQuestionDto {
 
   @IsOptional()
   @IsArray()
-  @ArrayMinSize(2)
   @IsString({ each: true })
   @MaxLength(1000, { each: true })
   options?: string[];
@@ -142,6 +183,36 @@ export class UpdateTopikQuestionDto {
   @IsString()
   @MaxLength(120)
   bundleId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(8000)
+  modelAnswer?: string | null;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TopikWritingPartInputDto)
+  writingParts?: TopikWritingPartInputDto[] | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  minChars?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxChars?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxScore?: number | null;
+
+  @IsOptional()
+  @IsObject()
+  rubric?: Record<string, unknown> | null;
 
   @IsOptional()
   @IsInt()

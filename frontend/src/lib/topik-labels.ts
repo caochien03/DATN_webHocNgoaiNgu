@@ -1,4 +1,10 @@
-import type { TopikSection, TopikTier } from "@/lib/types";
+import type { TopikQuestionType, TopikSection, TopikTier } from "@/lib/types";
+
+export function topikQuestionTypeLabel(type: TopikQuestionType): string {
+  if (type === "SHORT_ANSWER") return "Điền / câu ngắn";
+  if (type === "ESSAY") return "Viết luận";
+  return "Trắc nghiệm";
+}
 
 export function topikSectionLabel(section: TopikSection): string {
   if (section === "LISTENING") return "Nghe";

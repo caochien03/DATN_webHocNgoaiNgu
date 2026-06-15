@@ -70,27 +70,64 @@ function AttemptDetailContent() {
       </p>
 
       <ul className="mt-6 flex flex-col gap-3">
-        {answers.map((a) => (
+        {answers.map((a) => {
+          const isWriting = a.gradeStatus === "pending" || a.textAnswer != null;
+          return (
           <li
             key={a.questionId}
             className={`rounded-lg border p-3 text-sm ${
-              a.isCorrect
-                ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
-                : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
+              isWriting
+                ? "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/30"
+                : a.isCorrect
+                  ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
+                  : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
             }`}
           >
             <p className="font-medium">
               {topikSectionLabel(a.section)} câu {a.questionNo}{" "}
-              {a.isCorrect ? "✓" : "✗"}
+              {isWriting
+                ? "· chờ chấm"
+                : a.isCorrect
+                  ? "✓"
+                  : "✗"}
             </p>
-            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-              Bạn chọn: {a.selectedIndex + 1} · Đúng: {a.correctIndex + 1}
-            </p>
+            {a.writingPartResults?.length ? (
+              <ul className="mt-2 flex flex-col gap-2">
+                {a.writingPartResults.map((part) => (
+                  <li key={part.label} className="text-sm">
+                    <span className="font-medium">{part.label}</span>
+                    <p className="mt-1 whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">
+                      {part.textAnswer}
+                    </p>
+                    {part.modelAnswer ? (
+                      <p className="mt-1 text-xs text-zinc-500">
+                        Mẫu: {part.modelAnswer}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {a.textAnswer ? (
+              <p className="mt-2 whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">
+                {a.textAnswer}
+              </p>
+            ) : null}
+            {!isWriting && a.selectedIndex != null && a.correctIndex != null ? (
+              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                Bạn chọn: {a.selectedIndex + 1} · Đúng: {a.correctIndex + 1}
+              </p>
+            ) : null}
+            {a.modelAnswer ? (
+              <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+                Đáp án mẫu: {a.modelAnswer}
+              </p>
+            ) : null}
             {a.explanation ? (
               <p className="mt-1 text-xs">{a.explanation}</p>
             ) : null}
           </li>
-        ))}
+        );})}
       </ul>
     </div>
   );

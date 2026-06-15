@@ -47,8 +47,15 @@ function AddExamQuestionContent() {
     if (!exam || !question) return;
 
     const normalized = normalizeExamQuestions([question])[0];
-    if (!normalized?.prompt || normalized.options.length < 2) {
-      setError("Cần đề bài và ít nhất 2 đáp án");
+    if (!normalized?.prompt) {
+      setError("Cần đề bài");
+      return;
+    }
+    if (
+      (normalized.questionType ?? "MULTIPLE_CHOICE") === "MULTIPLE_CHOICE" &&
+      (normalized.options?.length ?? 0) < 2
+    ) {
+      setError("Câu trắc nghiệm cần ít nhất 2 đáp án");
       return;
     }
 
@@ -61,15 +68,22 @@ function AddExamQuestionContent() {
           tier: exam.tier,
           section: normalized.section,
           questionNo: normalized.questionNo,
+          questionType: normalized.questionType,
           prompt: normalized.prompt,
           passage: normalized.passage ?? null,
-          options: normalized.options,
-          correctIndex: normalized.correctIndex,
+          options: normalized.options ?? [],
+          correctIndex: normalized.correctIndex ?? 0,
           explanation: normalized.explanation ?? null,
           audioUrl: normalized.audioUrl ?? null,
           imageUrl: normalized.imageUrl ?? null,
           optionImageUrls: normalized.optionImageUrls ?? [],
           bundleId: normalized.bundleId ?? null,
+          modelAnswer: normalized.modelAnswer ?? null,
+          writingParts: normalized.writingParts ?? null,
+          minChars: normalized.minChars ?? null,
+          maxChars: normalized.maxChars ?? null,
+          maxScore: normalized.maxScore ?? null,
+          rubric: normalized.rubric ?? null,
           points: normalized.points ?? 2,
           isPublished: true,
         }),

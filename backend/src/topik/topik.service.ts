@@ -12,8 +12,9 @@ import {
 import {
   assertUniqueAnswers,
   gradeTopikAnswers,
-  scorePercent,
+  scorePercentMcqOnly,
 } from './topik-grading';
+import { assertAnswersMatchQuestions } from './topik-answer-validation';
 import {
   loadFixedExamQuestions,
   practicePoolQuestionWhere,
@@ -138,7 +139,6 @@ export class TopikService {
     }
     await this.getFormatOrThrow(dto.tier, dto.section, dto.fromNo, dto.toNo);
     assertUniqueAnswers(dto.answers);
-
     const questionIds = dto.answers.map((a) => a.questionId);
     const questions = await this.prisma.topikQuestion.findMany({
       where: practicePoolQuestionWhere({
@@ -156,7 +156,10 @@ export class TopikService {
       );
     }
 
-    const { graded, correctCount } = gradeTopikAnswers(questions, dto.answers);
+    assertAnswersMatchQuestions(questions, dto.answers);
+
+    const { graded } = gradeTopikAnswers(questions, dto.answers);
+    const mcqScore = scorePercentMcqOnly(graded);
     const totalQuestions = dto.answers.length;
     const now = new Date();
 
@@ -170,9 +173,10 @@ export class TopikService {
         formatToNo: dto.toNo,
         questionIds,
         answers: graded,
-        correctCount,
+        correctCount: mcqScore.correctCount,
         totalQuestions,
-        scorePercent: scorePercent(correctCount, totalQuestions),
+        scorePercent:
+          mcqScore.totalMcq > 0 ? mcqScore.scorePercent : 0,
         finishedAt: now,
       },
     });
@@ -184,7 +188,7 @@ export class TopikService {
       section: attempt.section,
       formatFromNo: attempt.formatFromNo,
       formatToNo: attempt.formatToNo,
-      correctCount,
+      correctCount: mcqScore.correctCount,
       totalQuestions,
       scorePercent: attempt.scorePercent,
       answers: graded,
@@ -224,7 +228,9 @@ export class TopikService {
       where: { id: { in: [...allowedIds] } },
     });
 
-    const { graded, correctCount } = gradeTopikAnswers(questions, dto.answers);
+    assertAnswersMatchQuestions(questions, dto.answers);
+    const { graded } = gradeTopikAnswers(questions, dto.answers);
+    const mcqScore = scorePercentMcqOnly(graded);
     const totalQuestions = dto.answers.length;
     const now = new Date();
 
@@ -236,9 +242,10 @@ export class TopikService {
         tier: exam.tier,
         questionIds: examQuestions.map((q) => q.id),
         answers: graded,
-        correctCount,
+        correctCount: mcqScore.correctCount,
         totalQuestions,
-        scorePercent: scorePercent(correctCount, totalQuestions),
+        scorePercent:
+          mcqScore.totalMcq > 0 ? mcqScore.scorePercent : 0,
         finishedAt: now,
       },
     });
@@ -249,7 +256,7 @@ export class TopikService {
       examId: exam.id,
       examTitle: exam.title,
       tier: attempt.tier,
-      correctCount,
+      correctCount: mcqScore.correctCount,
       totalQuestions,
       scorePercent: attempt.scorePercent,
       answers: graded,

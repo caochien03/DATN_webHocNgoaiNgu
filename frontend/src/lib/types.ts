@@ -220,6 +220,17 @@ export type TopikTier = "TOPIK_I" | "TOPIK_II";
 export type TopikSection = "LISTENING" | "READING" | "WRITING";
 export type TopikAttemptMode = "FULL_EXAM" | "PRACTICE";
 
+export type TopikWritingPart = {
+  label: string;
+  modelAnswer?: string;
+  maxScore?: number;
+};
+
+export type TopikQuestionType =
+  | "MULTIPLE_CHOICE"
+  | "SHORT_ANSWER"
+  | "ESSAY";
+
 export type TopikQuestionFormat = {
   id: string;
   tier: TopikTier;
@@ -237,6 +248,7 @@ export type TopikQuestion = {
   tier: TopikTier;
   section: TopikSection;
   questionNo: number;
+  questionType: TopikQuestionType;
   prompt: string;
   passage: string | null;
   options: string[];
@@ -244,6 +256,10 @@ export type TopikQuestion = {
   imageUrl: string | null;
   optionImageUrls: string[];
   bundleId?: string | null;
+  minChars?: number | null;
+  maxChars?: number | null;
+  maxScore?: number | null;
+  writingParts?: TopikWritingPart[] | null;
   points: number;
 };
 
@@ -253,6 +269,7 @@ export type TopikQuestionAdminRow = {
   tier: TopikTier;
   section: TopikSection;
   questionNo: number;
+  questionType: TopikQuestionType;
   prompt: string;
   passage: string | null;
   options: string[];
@@ -262,6 +279,12 @@ export type TopikQuestionAdminRow = {
   imageUrl: string | null;
   optionImageUrls: string[];
   bundleId: string | null;
+  modelAnswer: string | null;
+  writingParts: TopikWritingPart[] | null;
+  minChars: number | null;
+  maxChars: number | null;
+  maxScore: number | null;
+  rubric: Record<string, unknown> | null;
   points: number;
   isPublished: boolean;
   createdAt: string;
@@ -272,15 +295,22 @@ export type ExamQuestionInput = {
   sortOrder: number;
   section: TopikSection;
   questionNo: number;
+  questionType?: TopikQuestionType;
   prompt: string;
   passage?: string;
-  options: string[];
-  correctIndex: number;
+  options?: string[];
+  correctIndex?: number;
   explanation?: string;
   audioUrl?: string;
   imageUrl?: string;
   optionImageUrls?: string[];
   bundleId?: string;
+  modelAnswer?: string;
+  writingParts?: TopikWritingPart[];
+  minChars?: number;
+  maxChars?: number;
+  maxScore?: number;
+  rubric?: Record<string, unknown>;
   points?: number;
 };
 
@@ -346,10 +376,22 @@ export type GradedTopikAnswer = {
   questionId: string;
   questionNo: number;
   section: TopikSection;
-  selectedIndex: number;
-  correctIndex: number;
-  isCorrect: boolean;
+  questionType: TopikQuestionType;
+  selectedIndex?: number;
+  correctIndex?: number;
+  textAnswer?: string;
+  textAnswers?: string[];
+  writingPartResults?: {
+    label: string;
+    textAnswer: string;
+    modelAnswer?: string | null;
+    maxScore?: number | null;
+  }[];
+  isCorrect: boolean | null;
+  gradeStatus: "pending" | "graded" | "not_applicable";
   explanation: string | null;
+  modelAnswer?: string | null;
+  maxScore?: number | null;
 };
 
 export type TopikSubmitResult = {

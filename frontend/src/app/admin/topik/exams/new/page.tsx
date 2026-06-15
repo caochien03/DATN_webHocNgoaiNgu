@@ -57,8 +57,13 @@ function NewTopikExamContent() {
       return;
     }
     for (const q of normalized) {
-      if (!q.prompt || q.options.length < 2) {
-        setError("Mỗi câu cần đề bài và ít nhất 2 đáp án");
+      if (!q.prompt) {
+        setError("Mỗi câu cần đề bài");
+        return;
+      }
+      const isMcq = (q.questionType ?? "MULTIPLE_CHOICE") === "MULTIPLE_CHOICE";
+      if (isMcq && (q.options?.length ?? 0) < 2) {
+        setError("Câu trắc nghiệm cần ít nhất 2 đáp án");
         return;
       }
     }
