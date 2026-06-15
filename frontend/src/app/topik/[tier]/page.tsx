@@ -17,11 +17,18 @@ import type {
 } from "@/lib/types";
 
 const VALID_TIERS = new Set<TopikTier>(["TOPIK_I", "TOPIK_II"]);
-type TabId = "listening" | "reading" | "mock";
+type TabId = "listening" | "reading" | "writing" | "mock";
 
-const TABS: { id: TabId; label: string; section?: TopikSection }[] = [
+const TABS_TOPIK_I: { id: TabId; label: string; section?: TopikSection }[] = [
   { id: "listening", label: "Nghe", section: "LISTENING" },
   { id: "reading", label: "Đọc", section: "READING" },
+  { id: "mock", label: "Thi thử" },
+];
+
+const TABS_TOPIK_II: { id: TabId; label: string; section?: TopikSection }[] = [
+  { id: "listening", label: "Nghe", section: "LISTENING" },
+  { id: "reading", label: "Đọc", section: "READING" },
+  { id: "writing", label: "Viết", section: "WRITING" },
   { id: "mock", label: "Thi thử" },
 ];
 
@@ -35,8 +42,13 @@ function TierPracticeContent() {
     : null;
 
   const tabParam = searchParams.get("tab");
+  const tabs = tier === "TOPIK_II" ? TABS_TOPIK_II : TABS_TOPIK_I;
   const tab: TabId =
-    tabParam === "reading" || tabParam === "mock" ? tabParam : "listening";
+    tabParam === "reading" ||
+    tabParam === "writing" ||
+    tabParam === "mock"
+      ? tabParam
+      : "listening";
 
   const [formats, setFormats] = useState<TopikQuestionFormat[] | null>(null);
   const [exams, setExams] = useState<TopikExamRow[] | null>(null);
@@ -80,11 +92,12 @@ function TierPracticeContent() {
 
   const sectionFormats = useMemo(() => {
     if (!formats || tab === "mock") return [];
-    const section = tab === "listening" ? "LISTENING" : "READING";
+    const activeTab = tabs.find((t) => t.id === tab);
+    if (!activeTab?.section) return [];
     return formats
-      .filter((f) => f.section === section)
+      .filter((f) => f.section === activeTab.section)
       .sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [formats, tab]);
+  }, [formats, tab, tabs]);
 
   function setTab(next: TabId) {
     const q = next === "listening" ? "" : `?tab=${next}`;
@@ -109,7 +122,7 @@ function TierPracticeContent() {
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.id}
               type="button"

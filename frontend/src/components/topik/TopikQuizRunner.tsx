@@ -171,7 +171,7 @@ export function TopikQuizRunner({
   );
 }
 
-function QuestionBlock({
+export function QuestionBlock({
   question,
   showAudio,
   selectedIndex,

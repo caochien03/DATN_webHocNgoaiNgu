@@ -4,6 +4,7 @@ import {
   TopikTier,
 } from '@prisma/client';
 import { TOPIK_I_FORMATS } from './topik-i-formats';
+import { TOPIK_II_FORMATS } from './topik-ii-formats';
 
 type QuestionSeed = {
   tier: TopikTier;
@@ -155,7 +156,8 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
 const EXAM_TITLE = 'TOPIK I — Đề thi thử #1';
 
 export async function seedTopik(prisma: PrismaClient) {
-  for (const fmt of TOPIK_I_FORMATS) {
+  const ALL_FORMATS = [...TOPIK_I_FORMATS, ...TOPIK_II_FORMATS];
+  for (const fmt of ALL_FORMATS) {
     await prisma.topikQuestionFormat.upsert({
       where: {
         tier_section_fromNo_toNo: {
@@ -231,6 +233,6 @@ export async function seedTopik(prisma: PrismaClient) {
   }
 
   console.log(
-    `Đã seed TOPIK I: ${TOPIK_I_FORMATS.length} dạng bài, ${SAMPLE_QUESTIONS.length} câu trong đề đã công bố.`,
+    `Đã seed TOPIK: ${ALL_FORMATS.length} dạng bài, ${SAMPLE_QUESTIONS.length} câu trong đề TOPIK I đã công bố.`,
   );
 }

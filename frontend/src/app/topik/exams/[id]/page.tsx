@@ -3,8 +3,9 @@
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
-import { TopikQuizRunner } from "@/components/topik/TopikQuizRunner";
+import { TopikExamRunner } from "@/components/topik/TopikExamRunner";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
+import type { TopikAnswerPayload } from "@/lib/topik-answers";
 import type { TopikExamTake, TopikSubmitResult } from "@/lib/types";
 
 function ExamTakeContent() {
@@ -32,7 +33,7 @@ function ExamTakeContent() {
   }, [load]);
 
   async function submit(
-    answers: { questionId: string; selectedIndex: number }[],
+    answers: TopikAnswerPayload[],
   ): Promise<TopikSubmitResult> {
     const res = await fetchWithAuth(`/topik/exams/${id}/submit`, {
       method: "POST",
@@ -52,7 +53,7 @@ function ExamTakeContent() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <TopikQuizRunner
+      <TopikExamRunner
         title={exam.title}
         subtitle={`${exam.questionCount} câu · ${exam.durationMinutes} phút`}
         questions={exam.questions}

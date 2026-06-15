@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
 import { TopikQuizRunner } from "@/components/topik/TopikQuizRunner";
+import { TopikWritingRunner } from "@/components/topik/TopikWritingRunner";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
+import type { TopikAnswerPayload } from "@/lib/topik-answers";
 import { topikSectionLabel } from "@/lib/topik-labels";
 import type {
   TopikQuestion,
@@ -137,7 +139,7 @@ function PracticeContent() {
   }, [countParam]);
 
   async function submit(
-    answers: { questionId: string; selectedIndex: number }[],
+    answers: TopikAnswerPayload[],
   ): Promise<TopikSubmitResult> {
     const res = await fetchWithAuth("/topik/practice/submit", {
       method: "POST",
@@ -169,7 +171,10 @@ function PracticeContent() {
     fromNo === toNo ? fromNo : `${fromNo}–${toNo}`;
   const subtitle = `${topikSectionLabel(section)} · câu ${rangeLabel}${formatTitle ? ` · ${formatTitle}` : ""}`;
 
+  const isWriting = section === "WRITING";
+
   if (questions && activeCount !== null) {
+    const Runner = isWriting ? TopikWritingRunner : TopikQuizRunner;
     return (
       <div className="mx-auto w-full max-w-2xl px-4 py-8">
         {requestedCount !== null && activeCount < requestedCount ? (
@@ -178,7 +183,7 @@ function PracticeContent() {
             {requestedCount}).
           </p>
         ) : null}
-        <TopikQuizRunner
+        <Runner
           title="Luyện dạng bài"
           subtitle={`${subtitle} · ${activeCount} câu`}
           questions={questions}

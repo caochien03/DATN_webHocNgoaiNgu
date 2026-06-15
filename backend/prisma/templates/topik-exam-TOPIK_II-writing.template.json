@@ -9,7 +9,7 @@
     {
       "sortOrder": 0,
       "section": "WRITING",
-      "questionNo": 1,
+      "questionNo": 51,
       "questionType": "SHORT_ANSWER",
       "prompt": "㉠, ㉡에 들어갈 말로 가장 알맞은 것을 각각 쓰십시오.",
       "passage": "가: 오늘 날씨가 정말 좋네요.\n나: 맞아요. 그래서 (㉠)\n가: 저도 공원에서 산책했어요.",
@@ -24,7 +24,7 @@
     {
       "sortOrder": 1,
       "section": "WRITING",
-      "questionNo": 2,
+      "questionNo": 52,
       "questionType": "SHORT_ANSWER",
       "prompt": "㉠, ㉡에 들어갈 문장을 각각 쓰십시오.",
       "passage": "요즘 많은 사람들이 건강을 위해 운동을 합니다. (㉠) 그리고 규칙적인 생활을 하려고 노력합니다. (㉡)",
@@ -47,7 +47,7 @@
     {
       "sortOrder": 2,
       "section": "WRITING",
-      "questionNo": 3,
+      "questionNo": 53,
       "questionType": "ESSAY",
       "prompt": "다음 내용을 200~300자로 쓰십시오.",
       "passage": "아래 그래프는 최근 5년간 한국어 학습자 수의 변화를 나타낸 것입니다.",
@@ -62,7 +62,7 @@
     {
       "sortOrder": 3,
       "section": "WRITING",
-      "questionNo": 4,
+      "questionNo": 54,
       "questionType": "ESSAY",
       "prompt": "다음 주제에 대해 600~700자로 쓰십시오.",
       "passage": "주제: 환경 보호를 위해 개인이 할 수 있는 일",
