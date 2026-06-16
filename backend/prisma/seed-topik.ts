@@ -1,5 +1,7 @@
 import {
+  Prisma,
   PrismaClient,
+  TopikQuestionType,
   TopikSection,
   TopikTier,
 } from '@prisma/client';
@@ -153,7 +155,113 @@ const SAMPLE_QUESTIONS: QuestionSeed[] = [
   },
 ];
 
+const TOPIK_II_SAMPLE_QUESTIONS: Array<{
+  tier: TopikTier;
+  section: TopikSection;
+  questionNo: number;
+  questionType: TopikQuestionType;
+  prompt: string;
+  passage?: string;
+  options: string[];
+  correctIndex: number;
+  explanation?: string;
+  modelAnswer?: string;
+  writingParts?: Prisma.InputJsonValue;
+  minChars?: number;
+  maxChars?: number;
+  maxScore?: number;
+  points?: number;
+}> = [
+  {
+    tier: TopikTier.TOPIK_II,
+    section: TopikSection.LISTENING,
+    questionNo: 1,
+    questionType: TopikQuestionType.MULTIPLE_CHOICE,
+    prompt: '여자: 회의는 몇 시에 시작합니까? 남자: ___________________',
+    options: ['2시에요', '3시에요', '4시에요', '5시에요'],
+    correctIndex: 1,
+    explanation: 'Nghe hội thoại về giờ họp.',
+    points: 2,
+  },
+  {
+    tier: TopikTier.TOPIK_II,
+    section: TopikSection.LISTENING,
+    questionNo: 2,
+    questionType: TopikQuestionType.MULTIPLE_CHOICE,
+    prompt: '다음을 듣고 중심 생각을 고르십시오.',
+    passage: '남자: 이번 프로젝트는 팀워크가 가장 중요합니다.',
+    options: [
+      '프로젝트는 혼자 하는 것이 좋다',
+      '팀워크가 중요하다',
+      '프로젝트를 포기했다',
+      '회의가 없었다',
+    ],
+    correctIndex: 1,
+    points: 2,
+  },
+  {
+    tier: TopikTier.TOPIK_II,
+    section: TopikSection.READING,
+    questionNo: 1,
+    questionType: TopikQuestionType.MULTIPLE_CHOICE,
+    prompt: '( )에 들어갈 가장 알맞은 것을 고르십시오.',
+    passage: '환경 보호를 위해 우리는 일상에서 작은 실천을 ( ).',
+    options: ['해야 한다', '피해야 한다', '무시해야 한다', '거부해야 한다'],
+    correctIndex: 0,
+    points: 2,
+  },
+  {
+    tier: TopikTier.TOPIK_II,
+    section: TopikSection.READING,
+    questionNo: 2,
+    questionType: TopikQuestionType.MULTIPLE_CHOICE,
+    prompt: '중심 생각을 고르십시오.',
+    passage:
+      '디지털 기술의 발전은 교육 방식을 변화시키고 있습니다. 온라인 수업은 시간과 장소의 제약을 줄여 줍니다.',
+    options: [
+      '온라인 수업은 불필요하다',
+      '기술 발전이 교육에 영향을 준다',
+      '학생은 공부하지 않는다',
+      '교실 수업만 유효하다',
+    ],
+    correctIndex: 1,
+    points: 2,
+  },
+  {
+    tier: TopikTier.TOPIK_II,
+    section: TopikSection.WRITING,
+    questionNo: 51,
+    questionType: TopikQuestionType.SHORT_ANSWER,
+    prompt: '㉠, ㉡에 들어갈 말을 각각 쓰십시오.',
+    passage: '가: 요즘 건강을 위해 (㉠)\n나: 저도 매일 운동을 합니다. (㉡)',
+    options: [],
+    correctIndex: 0,
+    maxScore: 10,
+    writingParts: [
+      { label: '㉠', modelAnswer: '운동을 합니다.', maxScore: 5 },
+      { label: '㉡', modelAnswer: '건강해졌어요.', maxScore: 5 },
+    ],
+    points: 10,
+  },
+  {
+    tier: TopikTier.TOPIK_II,
+    section: TopikSection.WRITING,
+    questionNo: 53,
+    questionType: TopikQuestionType.ESSAY,
+    prompt: '다음 내용을 200~300자로 쓰십시오.',
+    passage: '최근 원격 근무가 늘어나고 있습니다.',
+    options: [],
+    correctIndex: 0,
+    minChars: 200,
+    maxChars: 300,
+    maxScore: 30,
+    modelAnswer: '원격 근무는 출퇴근 시간을 줄여 줍니다...',
+    points: 30,
+  },
+];
+
 const EXAM_TITLE = 'TOPIK I — Đề thi thử #1';
+const EXAM_TITLE_II = 'TOPIK II — Đề thi thử mini (Nghe·Đọc·Viết)';
 
 export async function seedTopik(prisma: PrismaClient) {
   const ALL_FORMATS = [...TOPIK_I_FORMATS, ...TOPIK_II_FORMATS];
@@ -177,19 +285,72 @@ export async function seedTopik(prisma: PrismaClient) {
     });
   }
 
+  await seedTopikExam(prisma, {
+    title: EXAM_TITLE,
+    description:
+      'Đề mẫu TOPIK I: câu hỏi gắn với đề (pool luyện dạng + thi thử).',
+    tier: TopikTier.TOPIK_I,
+    durationMinutes: 100,
+    sortOrder: 1,
+    questions: SAMPLE_QUESTIONS,
+  });
+
+  await seedTopikExam(prisma, {
+    title: EXAM_TITLE_II,
+    description:
+      'Đề mini TOPIK II: 2 Nghe + 2 Đọc + 2 Viết — thử luồng thi đầy đủ.',
+    tier: TopikTier.TOPIK_II,
+    durationMinutes: 180,
+    sortOrder: 1,
+    questions: TOPIK_II_SAMPLE_QUESTIONS,
+  });
+
+  console.log(
+    `Đã seed TOPIK: ${ALL_FORMATS.length} dạng bài, đề I (${SAMPLE_QUESTIONS.length} câu) + đề II mini (${TOPIK_II_SAMPLE_QUESTIONS.length} câu).`,
+  );
+}
+
+async function seedTopikExam(
+  prisma: PrismaClient,
+  params: {
+    title: string;
+    description: string;
+    tier: TopikTier;
+    durationMinutes: number;
+    sortOrder: number;
+    questions: Array<{
+      tier: TopikTier;
+      section: TopikSection;
+      questionNo: number;
+      questionType?: TopikQuestionType;
+      prompt: string;
+      passage?: string;
+      options: string[];
+      correctIndex: number;
+      explanation?: string;
+      modelAnswer?: string;
+      writingParts?: Prisma.InputJsonValue;
+      minChars?: number;
+      maxChars?: number;
+      maxScore?: number;
+      points?: number;
+      audioUrl?: string;
+      bundleId?: string;
+    }>;
+  },
+) {
   let exam = await prisma.topikExam.findFirst({
-    where: { title: EXAM_TITLE },
+    where: { title: params.title },
   });
   if (!exam) {
     exam = await prisma.topikExam.create({
       data: {
-        title: EXAM_TITLE,
-        description:
-          'Đề mẫu TOPIK I: câu hỏi gắn với đề (pool luyện dạng + thi thử).',
-        tier: TopikTier.TOPIK_I,
-        durationMinutes: 100,
+        title: params.title,
+        description: params.description,
+        tier: params.tier,
+        durationMinutes: params.durationMinutes,
         isPublished: true,
-        sortOrder: 1,
+        sortOrder: params.sortOrder,
       },
     });
   } else if (!exam.isPublished) {
@@ -204,18 +365,24 @@ export async function seedTopik(prisma: PrismaClient) {
   });
 
   if (existingSlots === 0) {
-    for (let i = 0; i < SAMPLE_QUESTIONS.length; i++) {
-      const q = SAMPLE_QUESTIONS[i];
+    for (let i = 0; i < params.questions.length; i++) {
+      const q = params.questions[i];
       const question = await prisma.topikQuestion.create({
         data: {
           tier: q.tier,
           section: q.section,
           questionNo: q.questionNo,
+          questionType: q.questionType ?? TopikQuestionType.MULTIPLE_CHOICE,
           prompt: q.prompt,
           passage: q.passage,
           options: q.options,
           correctIndex: q.correctIndex,
           explanation: q.explanation,
+          modelAnswer: q.modelAnswer,
+          writingParts: q.writingParts,
+          minChars: q.minChars,
+          maxChars: q.maxChars,
+          maxScore: q.maxScore,
           audioUrl: q.audioUrl,
           bundleId: q.bundleId,
           points: q.points ?? 2,
@@ -231,8 +398,4 @@ export async function seedTopik(prisma: PrismaClient) {
       });
     }
   }
-
-  console.log(
-    `Đã seed TOPIK: ${ALL_FORMATS.length} dạng bài, ${SAMPLE_QUESTIONS.length} câu trong đề TOPIK I đã công bố.`,
-  );
 }

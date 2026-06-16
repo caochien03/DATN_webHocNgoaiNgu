@@ -20,6 +20,7 @@ import {
   practicePoolQuestionWhere,
   randomQuestionsForPractice,
 } from './topik-random';
+import { countQuestionsBySection } from './topik-exam-sections';
 
 const PRACTICE_COUNT_DEFAULT = 10;
 const PRACTICE_COUNT_MAX = 50;
@@ -71,6 +72,7 @@ export class TopikService {
       tier: exam.tier,
       durationMinutes: exam.durationMinutes,
       questionCount: questions.length,
+      sectionCounts: countQuestionsBySection(questions),
       questions,
     };
   }

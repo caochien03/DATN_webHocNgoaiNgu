@@ -6,6 +6,7 @@ import { AuthGate } from "@/components/AuthGate";
 import { TopikExamRunner } from "@/components/topik/TopikExamRunner";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { TopikAnswerPayload } from "@/lib/topik-answers";
+import { formatSectionCounts } from "@/lib/topik-exam-sections";
 import type { TopikExamTake, TopikSubmitResult } from "@/lib/types";
 
 function ExamTakeContent() {
@@ -43,6 +44,11 @@ function ExamTakeContent() {
     return (await res.json()) as TopikSubmitResult;
   }
 
+  const sectionHint =
+    exam?.sectionCounts && Object.keys(exam.sectionCounts).length > 0
+      ? formatSectionCounts(exam.sectionCounts)
+      : null;
+
   if (error) {
     return <p className="px-4 py-8 text-sm text-red-600">{error}</p>;
   }
@@ -55,7 +61,14 @@ function ExamTakeContent() {
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
       <TopikExamRunner
         title={exam.title}
-        subtitle={`${exam.questionCount} câu · ${exam.durationMinutes} phút`}
+        subtitle={[
+          sectionHint,
+          `${exam.questionCount} câu`,
+          `${exam.durationMinutes} phút`,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+        durationMinutes={exam.durationMinutes}
         questions={exam.questions}
         backHref={`/topik/${exam.tier}`}
         onSubmit={submit}

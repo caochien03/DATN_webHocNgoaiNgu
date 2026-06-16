@@ -1,8 +1,26 @@
 import { TopikSection, TopikTier } from '@prisma/client';
 import type { TopikFormatSeed } from './topik-i-formats';
 
-/** Ma trận dạng bài 쓰기 TOPIK II (câu 51–54). */
+/** Ma trận dạng bài TOPIK II (mẫu — bổ sung dần khi có đề thật). */
 export const TOPIK_II_FORMATS: TopikFormatSeed[] = [
+  {
+    tier: TopikTier.TOPIK_II,
+    section: TopikSection.LISTENING,
+    fromNo: 1,
+    toNo: 4,
+    title: 'Chọn câu trả lời phù hợp',
+    titleKo: '물음에 맞는 대답 고르기',
+    sortOrder: 1,
+  },
+  {
+    tier: TopikTier.TOPIK_II,
+    section: TopikSection.READING,
+    fromNo: 1,
+    toNo: 4,
+    title: 'Chọn từ điền vào chỗ trống',
+    titleKo: '( )에 들어갈 가장 알맞은 것',
+    sortOrder: 1,
+  },
   {
     tier: TopikTier.TOPIK_II,
     section: TopikSection.WRITING,

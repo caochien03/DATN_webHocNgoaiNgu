@@ -365,6 +365,7 @@ export type TopikExamDetail = {
   tier: TopikTier;
   durationMinutes: number;
   questionCount: number;
+  sectionCounts?: Partial<Record<TopikSection, number>>;
 };
 
 /** Đề thi thử kèm câu hỏi cố định (GET /topik/exams/:id). */

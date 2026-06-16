@@ -5,7 +5,7 @@ const MAX_QUESTION_NO: Record<
   Partial<Record<TopikSection, number>>
 > = {
   TOPIK_I: { LISTENING: 30, READING: 40 },
-  TOPIK_II: { LISTENING: 50, READING: 50, WRITING: 4 },
+  TOPIK_II: { LISTENING: 50, READING: 50, WRITING: 54 },
 };
 
 export function topikQuestionNoMax(
