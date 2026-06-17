@@ -387,12 +387,16 @@ export type GradedTopikAnswer = {
     textAnswer: string;
     modelAnswer?: string | null;
     maxScore?: number | null;
+    aiScore?: number | null;
+    aiFeedback?: string | null;
   }[];
   isCorrect: boolean | null;
-  gradeStatus: "pending" | "graded" | "not_applicable";
+  gradeStatus: "pending" | "graded" | "ai_graded" | "not_applicable";
   explanation: string | null;
   modelAnswer?: string | null;
   maxScore?: number | null;
+  aiScore?: number | null;
+  aiFeedback?: string | null;
 };
 
 export type TopikSubmitResult = {

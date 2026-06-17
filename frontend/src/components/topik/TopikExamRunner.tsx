@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { QuestionBlock } from "@/components/topik/TopikQuizRunner";
 import { WritingQuestionFields } from "@/components/topik/TopikWritingRunner";
+import { WritingGradeView } from "@/components/topik/WritingGradeView";
 import { useTopikExamTimer } from "@/hooks/useTopikExamTimer";
 import {
   buildTopikSubmitAnswers,
@@ -343,6 +344,9 @@ function ExamResultView({
   const byId = new Map(questions.map((q) => [q.id, q]));
   const graded = result.answers as GradedTopikAnswer[];
   const pendingCount = graded.filter((a) => a.gradeStatus === "pending").length;
+  const aiGraded = graded.filter((a) => a.gradeStatus === "ai_graded");
+  const writingScore = aiGraded.reduce((s, a) => s + (a.aiScore ?? 0), 0);
+  const writingMax = aiGraded.reduce((s, a) => s + (a.maxScore ?? 0), 0);
 
   return (
     <div>
@@ -355,6 +359,13 @@ function ExamResultView({
           {result.correctCount}/{result.totalQuestions}
         </span>{" "}
         ({result.scorePercent}%)
+        {aiGraded.length > 0 ? (
+          <span className="text-emerald-700 dark:text-emerald-300">
+            {" "}
+            · Viết (AI): {Math.round(writingScore * 10) / 10}
+            {writingMax > 0 ? `/${writingMax}` : ""}
+          </span>
+        ) : null}
         {pendingCount > 0 ? (
           <span className="text-zinc-500">
             {" "}
@@ -366,11 +377,14 @@ function ExamResultView({
         {graded.map((a) => {
           const q = byId.get(a.questionId);
           const isPending = a.gradeStatus === "pending";
+          const isAiGraded = a.gradeStatus === "ai_graded";
           return (
             <li
               key={a.questionId}
               className={`rounded-lg border p-3 text-sm ${
-                isPending
+                isAiGraded
+                  ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"
+                  : isPending
                   ? "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/30"
                   : a.isCorrect
                     ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
@@ -379,7 +393,13 @@ function ExamResultView({
             >
               <p className="font-medium">
                 Câu {a.questionNo} · {topikSectionLabel(a.section)}{" "}
-                {isPending ? "· chờ chấm" : a.isCorrect ? "✓" : "✗"}
+                {isAiGraded
+                  ? `· ${a.aiScore ?? 0}${a.maxScore != null ? `/${a.maxScore}` : ""}`
+                  : isPending
+                  ? "· chờ chấm"
+                  : a.isCorrect
+                    ? "✓"
+                    : "✗"}
               </p>
               {q ? (
                 <p className="mt-1 text-zinc-700 dark:text-zinc-300">{q.prompt}</p>
@@ -398,7 +418,9 @@ function ExamResultView({
                   {a.textAnswer}
                 </p>
               ) : null}
+              <WritingGradeView answer={a} />
               {!isPending &&
+              !isAiGraded &&
               a.selectedIndex != null &&
               a.correctIndex != null ? (
                 <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">

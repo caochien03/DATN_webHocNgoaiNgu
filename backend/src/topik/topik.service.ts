@@ -21,13 +21,17 @@ import {
   randomQuestionsForPractice,
 } from './topik-random';
 import { countQuestionsBySection } from './topik-exam-sections';
+import { TopikAiGradingService } from './topik-ai-grading.service';
 
 const PRACTICE_COUNT_DEFAULT = 10;
 const PRACTICE_COUNT_MAX = 50;
 
 @Injectable()
 export class TopikService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly aiGrading: TopikAiGradingService,
+  ) {}
 
   listFormats(tier: TopikTier, section?: TopikSection) {
     return this.prisma.topikQuestionFormat.findMany({
@@ -161,6 +165,7 @@ export class TopikService {
     assertAnswersMatchQuestions(questions, dto.answers);
 
     const { graded } = gradeTopikAnswers(questions, dto.answers);
+    await this.aiGrading.gradeWritingAnswers(graded, questions);
     const mcqScore = scorePercentMcqOnly(graded);
     const totalQuestions = dto.answers.length;
     const now = new Date();
@@ -232,6 +237,7 @@ export class TopikService {
 
     assertAnswersMatchQuestions(questions, dto.answers);
     const { graded } = gradeTopikAnswers(questions, dto.answers);
+    await this.aiGrading.gradeWritingAnswers(graded, questions);
     const mcqScore = scorePercentMcqOnly(graded);
     const totalQuestions = dto.answers.length;
     const now = new Date();

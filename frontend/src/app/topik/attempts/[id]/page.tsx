@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
+import { WritingGradeView } from "@/components/topik/WritingGradeView";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import {
   topikAttemptModeLabel,
@@ -71,12 +72,17 @@ function AttemptDetailContent() {
 
       <ul className="mt-6 flex flex-col gap-3">
         {answers.map((a) => {
-          const isWriting = a.gradeStatus === "pending" || a.textAnswer != null;
+          const isAiGraded = a.gradeStatus === "ai_graded";
+          const isPending = a.gradeStatus === "pending";
+          const isWriting =
+            isPending || isAiGraded || a.textAnswer != null;
           return (
           <li
             key={a.questionId}
             className={`rounded-lg border p-3 text-sm ${
-              isWriting
+              isAiGraded
+                ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"
+                : isWriting
                 ? "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/30"
                 : a.isCorrect
                   ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
@@ -85,7 +91,9 @@ function AttemptDetailContent() {
           >
             <p className="font-medium">
               {topikSectionLabel(a.section)} câu {a.questionNo}{" "}
-              {isWriting
+              {isAiGraded
+                ? `· ${a.aiScore ?? 0}${a.maxScore != null ? `/${a.maxScore}` : ""}`
+                : isWriting
                 ? "· chờ chấm"
                 : a.isCorrect
                   ? "✓"
@@ -123,6 +131,7 @@ function AttemptDetailContent() {
                 Đáp án mẫu: {a.modelAnswer}
               </p>
             ) : null}
+            <WritingGradeView answer={a} />
             {a.explanation ? (
               <p className="mt-1 text-xs">{a.explanation}</p>
             ) : null}

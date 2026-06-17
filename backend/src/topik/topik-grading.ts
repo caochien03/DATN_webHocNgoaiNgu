@@ -12,13 +12,15 @@ import {
   type TopikWritingPart,
 } from './topik-writing-parts';
 
-export type WritingGradeStatus = 'pending' | 'not_applicable';
+export type WritingGradeStatus = 'pending' | 'ai_graded' | 'not_applicable';
 
 export type GradedWritingPartResult = {
   label: string;
   textAnswer: string;
   modelAnswer?: string | null;
   maxScore?: number | null;
+  aiScore?: number | null;
+  aiFeedback?: string | null;
 };
 
 export type GradedTopikAnswer = {
@@ -36,6 +38,10 @@ export type GradedTopikAnswer = {
   explanation: string | null;
   modelAnswer?: string | null;
   maxScore?: number | null;
+  /// Điểm AI cho câu viết (tổng cả câu, gồm các ý nhỏ nếu có).
+  aiScore?: number | null;
+  /// Nhận xét chung của AI cho câu viết.
+  aiFeedback?: string | null;
 };
 
 export function assertUniqueAnswers(answers: TopikAnswerItemDto[]) {
