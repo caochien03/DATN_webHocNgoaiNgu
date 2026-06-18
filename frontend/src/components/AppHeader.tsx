@@ -100,24 +100,26 @@ export function AppHeader() {
                   TOPIK
                 </button>
                 {topikOpen ? (
-                  <div
-                    role="menu"
-                    className="absolute left-0 z-20 mt-1 w-40 rounded-md border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
-                  >
-                    <Link
-                      href="/topik/TOPIK_I"
-                      role="menuitem"
-                      className={menuLinkClass}
+                  <div className="absolute left-0 top-full z-20 w-40 pt-1">
+                    <div
+                      role="menu"
+                      className="rounded-md border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
                     >
-                      TOPIK I
-                    </Link>
-                    <Link
-                      href="/topik/TOPIK_II"
-                      role="menuitem"
-                      className={menuLinkClass}
-                    >
-                      TOPIK II
-                    </Link>
+                      <Link
+                        href="/topik/TOPIK_I"
+                        role="menuitem"
+                        className={menuLinkClass}
+                      >
+                        TOPIK I
+                      </Link>
+                      <Link
+                        href="/topik/TOPIK_II"
+                        role="menuitem"
+                        className={menuLinkClass}
+                      >
+                        TOPIK II
+                      </Link>
+                    </div>
                   </div>
                 ) : null}
               </div>

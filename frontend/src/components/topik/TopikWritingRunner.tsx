@@ -9,8 +9,14 @@ import {
   type TopikAnswerPayload,
   type WritingAnswerState,
 } from "@/lib/topik-answers";
-import { WritingGradeView } from "@/components/topik/WritingGradeView";
+import { WritingGradeView, WritingResultSummary } from "@/components/topik/WritingGradeView";
+import { WritingSubmitOverlay } from "@/components/topik/WritingSubmitOverlay";
 import { topikQuestionTypeLabel, topikSectionLabel } from "@/lib/topik-labels";
+import {
+  writingGradeCardClass,
+  writingGradeTitleSuffix,
+  writingGradeUiStatus,
+} from "@/lib/topik-writing-grade-status";
 import {
   DEFAULT_SHORT_ANSWER_PARTS,
   getWritingPartCount,
@@ -112,6 +118,11 @@ export function TopikWritingRunner({
 
   return (
     <div>
+      <WritingSubmitOverlay
+        visible={submitting}
+        hasWriting
+        writingCount={sorted.length}
+      />
       <Link
         href={backHref}
         className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
@@ -172,7 +183,7 @@ export function TopikWritingRunner({
                 onClick={() => void finish()}
                 className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
               >
-                {submitting ? "Đang nộp…" : "Nộp bài"}
+                {submitting ? "Đang chấm…" : "Nộp bài"}
               </button>
             )}
           </div>
@@ -309,52 +320,25 @@ function WritingResultView({
 }) {
   const byId = new Map(questions.map((q) => [q.id, q]));
   const graded = result.answers as GradedTopikAnswer[];
-  const aiGraded = graded.filter((a) => a.gradeStatus === "ai_graded");
-  const allPending = graded.every((a) => a.gradeStatus === "pending");
-  const writingScore = aiGraded.reduce((s, a) => s + (a.aiScore ?? 0), 0);
-  const writingMax = aiGraded.reduce((s, a) => s + (a.maxScore ?? 0), 0);
 
   return (
     <div>
       <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
         Đã nộp bài
       </h2>
-      {aiGraded.length > 0 ? (
-        <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-300">
-          Điểm viết (AI): {Math.round(writingScore * 10) / 10}
-          {writingMax > 0 ? `/${writingMax}` : ""}
-        </p>
-      ) : allPending ? (
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          {graded.length} câu viết đã gửi — chờ chấm điểm.
-        </p>
-      ) : (
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Đúng{" "}
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
-            {result.correctCount}/{result.totalQuestions}
-          </span>{" "}
-          ({result.scorePercent}%)
-        </p>
-      )}
+      <WritingResultSummary answers={graded} />
       <ul className="mt-4 flex flex-col gap-3">
         {graded.map((a) => {
           const q = byId.get(a.questionId);
-          const isAiGraded = a.gradeStatus === "ai_graded";
+          const uiStatus = writingGradeUiStatus(a);
           return (
             <li
               key={a.questionId}
-              className={`rounded-lg border p-3 text-sm ${
-                isAiGraded
-                  ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"
-                  : "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/30"
-              }`}
+              className={`rounded-lg border p-3 text-sm ${writingGradeCardClass(uiStatus)}`}
             >
               <p className="font-medium">
                 Câu {a.questionNo} · {topikSectionLabel(a.section)}{" "}
-                {isAiGraded
-                  ? `· ${a.aiScore ?? 0}${a.maxScore != null ? `/${a.maxScore}` : ""}`
-                  : "· chờ chấm"}
+                {writingGradeTitleSuffix(a)}
               </p>
               {q ? (
                 <p className="mt-1 text-zinc-700 dark:text-zinc-300">{q.prompt}</p>

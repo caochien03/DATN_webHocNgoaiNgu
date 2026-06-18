@@ -4,13 +4,19 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
-import { WritingGradeView } from "@/components/topik/WritingGradeView";
+import { WritingGradeView, WritingResultSummary } from "@/components/topik/WritingGradeView";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import {
   topikAttemptModeLabel,
   topikSectionLabel,
   topikTierLabel,
 } from "@/lib/topik-labels";
+import {
+  summarizeWritingGrades,
+  writingGradeCardClass,
+  writingGradeTitleSuffix,
+  writingGradeUiStatus,
+} from "@/lib/topik-writing-grade-status";
 import type { GradedTopikAnswer, TopikAttemptRow } from "@/lib/types";
 
 type AttemptDetail = TopikAttemptRow & {
@@ -50,6 +56,7 @@ function AttemptDetailContent() {
   }
 
   const answers = attempt.answers ?? [];
+  const writingSummary = summarizeWritingGrades(answers);
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
@@ -65,39 +72,47 @@ function AttemptDetailContent() {
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
         {topikTierLabel(attempt.tier)}
         {attempt.exam ? ` · ${attempt.exam.title}` : null}
-        {" · "}
-        {attempt.correctCount}/{attempt.totalQuestions} ({attempt.scorePercent}
-        %)
+        {writingSummary.writingCount === 0 ? (
+          <>
+            {" · "}
+            {attempt.correctCount}/{attempt.totalQuestions} ({attempt.scorePercent}
+            %)
+          </>
+        ) : null}
       </p>
+      {writingSummary.writingCount > 0 ? (
+        <WritingResultSummary
+          answers={answers}
+          mcqLine={{
+            correctCount: attempt.correctCount,
+            totalQuestions: attempt.totalQuestions,
+            scorePercent: attempt.scorePercent,
+          }}
+        />
+      ) : null}
 
       <ul className="mt-6 flex flex-col gap-3">
         {answers.map((a) => {
-          const isAiGraded = a.gradeStatus === "ai_graded";
-          const isPending = a.gradeStatus === "pending";
-          const isWriting =
-            isPending || isAiGraded || a.textAnswer != null;
+          const uiStatus = writingGradeUiStatus(a);
+          const isMcq = uiStatus === "mcq";
           return (
           <li
             key={a.questionId}
             className={`rounded-lg border p-3 text-sm ${
-              isAiGraded
-                ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"
-                : isWriting
-                ? "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/30"
-                : a.isCorrect
+              isMcq
+                ? a.isCorrect
                   ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
                   : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
+                : writingGradeCardClass(uiStatus)
             }`}
           >
             <p className="font-medium">
               {topikSectionLabel(a.section)} câu {a.questionNo}{" "}
-              {isAiGraded
-                ? `· ${a.aiScore ?? 0}${a.maxScore != null ? `/${a.maxScore}` : ""}`
-                : isWriting
-                ? "· chờ chấm"
-                : a.isCorrect
+              {isMcq
+                ? a.isCorrect
                   ? "✓"
-                  : "✗"}
+                  : "✗"
+                : writingGradeTitleSuffix(a)}
             </p>
             {a.writingPartResults?.length ? (
               <ul className="mt-2 flex flex-col gap-2">
@@ -121,7 +136,7 @@ function AttemptDetailContent() {
                 {a.textAnswer}
               </p>
             ) : null}
-            {!isWriting && a.selectedIndex != null && a.correctIndex != null ? (
+            {isMcq && a.selectedIndex != null && a.correctIndex != null ? (
               <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                 Bạn chọn: {a.selectedIndex + 1} · Đúng: {a.correctIndex + 1}
               </p>

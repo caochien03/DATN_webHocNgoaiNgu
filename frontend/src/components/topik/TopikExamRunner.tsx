@@ -4,8 +4,14 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { QuestionBlock } from "@/components/topik/TopikQuizRunner";
 import { WritingQuestionFields } from "@/components/topik/TopikWritingRunner";
-import { WritingGradeView } from "@/components/topik/WritingGradeView";
+import { WritingGradeView, WritingResultSummary } from "@/components/topik/WritingGradeView";
+import { WritingSubmitOverlay } from "@/components/topik/WritingSubmitOverlay";
 import { useTopikExamTimer } from "@/hooks/useTopikExamTimer";
+import {
+  writingGradeCardClass,
+  writingGradeTitleSuffix,
+  writingGradeUiStatus,
+} from "@/lib/topik-writing-grade-status";
 import {
   buildTopikSubmitAnswers,
   initWritingAnswerState,
@@ -47,6 +53,14 @@ export function TopikExamRunner({
   onSubmit,
 }: TopikExamRunnerProps) {
   const steps = useMemo(() => buildTopikExamSteps(questions), [questions]);
+  const writingQuestionCount = useMemo(
+    () =>
+      questions.filter(
+        (q) => q.questionType === "SHORT_ANSWER" || q.questionType === "ESSAY",
+      ).length,
+    [questions],
+  );
+  const hasWriting = writingQuestionCount > 0;
   const [stepIndex, setStepIndex] = useState(0);
   const [mcqSelections, setMcqSelections] = useState<Record<string, number>>({});
   const [writingAnswers, setWritingAnswers] = useState<WritingAnswerState>(() =>
@@ -185,6 +199,11 @@ export function TopikExamRunner({
 
   return (
     <div>
+      <WritingSubmitOverlay
+        visible={submitting}
+        hasWriting={hasWriting}
+        writingCount={writingQuestionCount}
+      />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <Link
           href={backHref}
@@ -297,7 +316,11 @@ export function TopikExamRunner({
                 onClick={() => void finish()}
                 className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
               >
-                {submitting ? "Đang nộp…" : "Nộp bài"}
+                {submitting
+                  ? hasWriting
+                    ? "Đang chấm…"
+                    : "Đang nộp…"
+                  : "Nộp bài"}
               </button>
             )}
           </div>
@@ -343,60 +366,41 @@ function ExamResultView({
 }) {
   const byId = new Map(questions.map((q) => [q.id, q]));
   const graded = result.answers as GradedTopikAnswer[];
-  const pendingCount = graded.filter((a) => a.gradeStatus === "pending").length;
-  const aiGraded = graded.filter((a) => a.gradeStatus === "ai_graded");
-  const writingScore = aiGraded.reduce((s, a) => s + (a.aiScore ?? 0), 0);
-  const writingMax = aiGraded.reduce((s, a) => s + (a.maxScore ?? 0), 0);
 
   return (
     <div>
       <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
         Kết quả
       </h2>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Đúng{" "}
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">
-          {result.correctCount}/{result.totalQuestions}
-        </span>{" "}
-        ({result.scorePercent}%)
-        {aiGraded.length > 0 ? (
-          <span className="text-emerald-700 dark:text-emerald-300">
-            {" "}
-            · Viết (AI): {Math.round(writingScore * 10) / 10}
-            {writingMax > 0 ? `/${writingMax}` : ""}
-          </span>
-        ) : null}
-        {pendingCount > 0 ? (
-          <span className="text-zinc-500">
-            {" "}
-            · {pendingCount} câu viết chờ chấm
-          </span>
-        ) : null}
-      </p>
+      <WritingResultSummary
+        answers={graded}
+        mcqLine={{
+          correctCount: result.correctCount,
+          totalQuestions: result.totalQuestions,
+          scorePercent: result.scorePercent,
+        }}
+      />
       <ul className="mt-4 flex flex-col gap-3">
         {graded.map((a) => {
           const q = byId.get(a.questionId);
+          const uiStatus = writingGradeUiStatus(a);
           const isPending = a.gradeStatus === "pending";
           const isAiGraded = a.gradeStatus === "ai_graded";
+          const cardClass =
+            uiStatus !== "mcq"
+              ? writingGradeCardClass(uiStatus)
+              : a.isCorrect
+                ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
+                : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30";
           return (
             <li
               key={a.questionId}
-              className={`rounded-lg border p-3 text-sm ${
-                isAiGraded
-                  ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"
-                  : isPending
-                  ? "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/30"
-                  : a.isCorrect
-                    ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
-                    : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
-              }`}
+              className={`rounded-lg border p-3 text-sm ${cardClass}`}
             >
               <p className="font-medium">
                 Câu {a.questionNo} · {topikSectionLabel(a.section)}{" "}
-                {isAiGraded
-                  ? `· ${a.aiScore ?? 0}${a.maxScore != null ? `/${a.maxScore}` : ""}`
-                  : isPending
-                  ? "· chờ chấm"
+                {isAiGraded || isPending
+                  ? writingGradeTitleSuffix(a)
                   : a.isCorrect
                     ? "✓"
                     : "✗"}
