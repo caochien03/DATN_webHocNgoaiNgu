@@ -13,6 +13,7 @@ import {
   assertUniqueAnswers,
   gradeTopikAnswers,
   scorePercentMcqOnly,
+  type GradedTopikAnswer,
 } from './topik-grading';
 import { assertAnswersMatchQuestions } from './topik-answer-validation';
 import {
@@ -22,6 +23,7 @@ import {
 } from './topik-random';
 import { countQuestionsBySection } from './topik-exam-sections';
 import { TopikAiGradingService } from './topik-ai-grading.service';
+import { summarizeWritingFromAnswers } from './topik-writing-summary';
 
 const PRACTICE_COUNT_DEFAULT = 10;
 const PRACTICE_COUNT_MAX = 50;
@@ -115,8 +117,8 @@ export class TopikService {
     return format;
   }
 
-  listAttempts(userId: string) {
-    return this.prisma.topikExamAttempt.findMany({
+  async listAttempts(userId: string) {
+    const rows = await this.prisma.topikExamAttempt.findMany({
       where: { userId, finishedAt: { not: null } },
       orderBy: { finishedAt: 'desc' },
       take: 100,
@@ -124,6 +126,11 @@ export class TopikService {
         exam: { select: { id: true, title: true } },
       },
     });
+
+    return rows.map(({ answers, ...row }) => ({
+      ...row,
+      writingSummary: summarizeWritingFromAnswers(answers),
+    }));
   }
 
   async getAttempt(userId: string, attemptId: string) {
@@ -136,7 +143,73 @@ export class TopikService {
     if (!attempt) {
       throw new NotFoundException('Không tìm thấy bài làm');
     }
-    return attempt;
+    return this.shapeAttemptResponse(attempt);
+  }
+
+  async regradeAttemptWriting(userId: string, attemptId: string) {
+    if (!this.aiGrading.enabled) {
+      throw new BadRequestException(
+        'Chưa cấu hình Gemini trên server — không thể chấm lại.',
+      );
+    }
+
+    const attempt = await this.prisma.topikExamAttempt.findFirst({
+      where: { id: attemptId, userId, finishedAt: { not: null } },
+      include: {
+        exam: { select: { id: true, title: true } },
+      },
+    });
+    if (!attempt) {
+      throw new NotFoundException('Không tìm thấy bài làm');
+    }
+
+    const graded = attempt.answers as unknown as GradedTopikAnswer[];
+    if (!Array.isArray(graded)) {
+      throw new BadRequestException('Dữ liệu bài làm không hợp lệ');
+    }
+
+    const pendingCount = graded.filter((a) => a.gradeStatus === 'pending').length;
+    if (pendingCount === 0) {
+      throw new BadRequestException('Không có câu viết nào đang chờ chấm');
+    }
+
+    const questionIds =
+      attempt.questionIds.length > 0
+        ? attempt.questionIds
+        : graded.map((a) => a.questionId);
+    const questions = await this.prisma.topikQuestion.findMany({
+      where: { id: { in: questionIds } },
+    });
+
+    await this.aiGrading.gradeWritingAnswers(graded, questions);
+
+    const stillPending = graded.filter((a) => a.gradeStatus === 'pending').length;
+    const regradedCount = pendingCount - stillPending;
+
+    const updated = await this.prisma.topikExamAttempt.update({
+      where: { id: attemptId },
+      data: { answers: graded },
+      include: {
+        exam: { select: { id: true, title: true } },
+      },
+    });
+
+    return {
+      ...this.shapeAttemptResponse(updated),
+      regradedCount,
+      stillPendingCount: stillPending,
+    };
+  }
+
+  private shapeAttemptResponse<
+    T extends { answers: unknown },
+  >(attempt: T) {
+    const { answers, ...row } = attempt;
+    return {
+      ...row,
+      answers,
+      writingSummary: summarizeWritingFromAnswers(answers),
+    };
   }
 
   async submitPractice(userId: string, dto: SubmitTopikPracticeDto) {

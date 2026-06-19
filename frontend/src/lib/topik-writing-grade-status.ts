@@ -56,3 +56,49 @@ export function writingGradeTitleSuffix(answer: GradedTopikAnswer): string {
   if (writingGradeUiStatus(answer) === "pending") return "· chưa chấm được";
   return "";
 }
+
+export type AttemptListScoreLines = {
+  mcqLine: string | null;
+  writingLine: string | null;
+  writingTone: "emerald" | "amber" | null;
+};
+
+/** Dòng điểm gọn cho danh sách lịch sử làm bài. */
+export function getAttemptListScoreLines(attempt: {
+  correctCount: number;
+  totalQuestions: number;
+  scorePercent: number;
+  writingSummary?: {
+    writingCount: number;
+    aiGradedCount: number;
+    pendingCount: number;
+    writingScore: number;
+    writingMax: number;
+  } | null;
+}): AttemptListScoreLines {
+  const ws = attempt.writingSummary;
+  const writingCount = ws?.writingCount ?? 0;
+  const mcqCount = attempt.totalQuestions - writingCount;
+
+  let mcqLine: string | null = null;
+  if (mcqCount > 0) {
+    mcqLine = `Trắc nghiệm: ${attempt.correctCount}/${mcqCount} (${attempt.scorePercent}%)`;
+  }
+
+  let writingLine: string | null = null;
+  let writingTone: "emerald" | "amber" | null = null;
+  if (writingCount > 0 && ws) {
+    if (ws.aiGradedCount > 0) {
+      writingLine = `Viết (AI): ${ws.writingScore}${ws.writingMax > 0 ? `/${ws.writingMax}` : ""}`;
+      if (ws.pendingCount > 0) {
+        writingLine += ` · ${ws.pendingCount} câu chưa chấm`;
+      }
+      writingTone = "emerald";
+    } else if (ws.pendingCount > 0) {
+      writingLine = "Viết: chưa chấm được";
+      writingTone = "amber";
+    }
+  }
+
+  return { mcqLine, writingLine, writingTone };
+}

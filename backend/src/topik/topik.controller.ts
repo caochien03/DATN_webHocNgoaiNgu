@@ -100,4 +100,12 @@ export class TopikController {
   ) {
     return this.topikService.getAttempt(userId, attemptId);
   }
+
+  @Post('attempts/:id/regrade-writing')
+  regradeAttemptWriting(
+    @CurrentUser('id') userId: string,
+    @Param('id') attemptId: string,
+  ) {
+    return this.topikService.regradeAttemptWriting(userId, attemptId);
+  }
 }

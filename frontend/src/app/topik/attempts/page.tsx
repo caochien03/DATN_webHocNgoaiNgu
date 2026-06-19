@@ -9,6 +9,7 @@ import {
   topikSectionLabel,
   topikTierLabel,
 } from "@/lib/topik-labels";
+import { getAttemptListScoreLines } from "@/lib/topik-writing-grade-status";
 import type { TopikAttemptRow } from "@/lib/types";
 
 function AttemptsContent() {
@@ -53,7 +54,9 @@ function AttemptsContent() {
         <p className="mt-4 text-sm text-zinc-500">Chưa có bài làm nào.</p>
       ) : (
         <ul className="mt-4 flex flex-col gap-2">
-          {attempts.map((a) => (
+          {attempts.map((a) => {
+            const scores = getAttemptListScoreLines(a);
+            return (
             <li
               key={a.id}
               className="rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800"
@@ -72,11 +75,35 @@ function AttemptsContent() {
                     {a.formatFromNo != null && a.formatToNo != null
                       ? ` · câu ${a.formatFromNo}${a.formatToNo !== a.formatFromNo ? `–${a.formatToNo}` : ""}`
                       : null}
-                    {" · "}
-                    {a.correctCount}/{a.totalQuestions} ({a.scorePercent}%)
                   </p>
+                  {scores.mcqLine || scores.writingLine ? (
+                    <div className="mt-1 space-y-0.5 text-xs">
+                      {scores.mcqLine ? (
+                        <p className="text-zinc-600 dark:text-zinc-400">
+                          {scores.mcqLine}
+                        </p>
+                      ) : null}
+                      {scores.writingLine ? (
+                        <p
+                          className={
+                            scores.writingTone === "emerald"
+                              ? "text-emerald-700 dark:text-emerald-300"
+                              : scores.writingTone === "amber"
+                                ? "text-amber-800 dark:text-amber-200"
+                                : "text-zinc-600 dark:text-zinc-400"
+                          }
+                        >
+                          {scores.writingLine}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-xs text-zinc-500">
+                      {a.correctCount}/{a.totalQuestions} ({a.scorePercent}%)
+                    </p>
+                  )}
                   {a.finishedAt ? (
-                    <p className="text-xs text-zinc-400">
+                    <p className="mt-1 text-xs text-zinc-400">
                       {new Date(a.finishedAt).toLocaleString("vi-VN")}
                     </p>
                   ) : null}
@@ -89,7 +116,7 @@ function AttemptsContent() {
                 </Link>
               </div>
             </li>
-          ))}
+          );})}
         </ul>
       )}
     </div>

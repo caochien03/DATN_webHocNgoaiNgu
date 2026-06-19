@@ -43,12 +43,9 @@ export function WritingGradeView({ answer }: { answer: GradedTopikAnswer }) {
   if (writingGradeUiStatus(answer) === "pending") {
     return (
       <div className="mt-2 rounded-md border border-amber-200 bg-amber-50/80 p-2 text-xs leading-relaxed text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-        Bài đã lưu nhưng <strong>chưa chấm tự động</strong> (thiếu cấu hình
-        Gemini hoặc dịch vụ AI tạm lỗi). Kiểm tra{" "}
-        <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">
-          GEMINI_API_KEY
-        </code>{" "}
-        trên server rồi làm lại nếu cần.
+        Bài đã lưu nhưng <strong>chưa chấm tự động</strong> (dịch vụ AI tạm
+        không khả dụng lúc nộp). Dùng nút <strong>Chấm lại bằng AI</strong>{" "}
+        phía trên để thử lại.
       </div>
     );
   }

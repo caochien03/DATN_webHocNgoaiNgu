@@ -428,6 +428,15 @@ export type TopikAttemptRow = {
   startedAt: string;
   finishedAt: string | null;
   exam: { id: string; title: string } | null;
+  writingSummary?: TopikWritingSummary | null;
+};
+
+export type TopikWritingSummary = {
+  writingCount: number;
+  aiGradedCount: number;
+  pendingCount: number;
+  writingScore: number;
+  writingMax: number;
 };
 
 export type QuizSourceType = "DECK" | "TOPIC" | "LESSON" | "PATH";

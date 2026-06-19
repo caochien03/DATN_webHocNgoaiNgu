@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
 import { WritingGradeView, WritingResultSummary } from "@/components/topik/WritingGradeView";
+import { WritingSubmitOverlay } from "@/components/topik/WritingSubmitOverlay";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import {
   topikAttemptModeLabel,
@@ -27,19 +28,22 @@ function AttemptDetailContent() {
   const params = useParams();
   const id = params.id as string;
   const [attempt, setAttempt] = useState<AttemptDetail | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [regradeError, setRegradeError] = useState<string | null>(null);
+  const [regrading, setRegrading] = useState(false);
+  const [regradeNote, setRegradeNote] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setError(null);
+    setLoadError(null);
     try {
       const res = await fetchWithAuth(`/topik/attempts/${id}`);
       if (!res.ok) {
-        setError(await parseApiError(res));
+        setLoadError(await parseApiError(res));
         return;
       }
       setAttempt((await res.json()) as AttemptDetail);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Không tải được chi tiết");
+      setLoadError(e instanceof Error ? e.message : "Không tải được chi tiết");
     }
   }, [id]);
 
@@ -47,8 +51,43 @@ function AttemptDetailContent() {
     void load();
   }, [load]);
 
-  if (error) {
-    return <p className="px-4 py-8 text-sm text-red-600">{error}</p>;
+  async function regradeWriting() {
+    setRegrading(true);
+    setRegradeError(null);
+    setRegradeNote(null);
+    try {
+      const res = await fetchWithAuth(`/topik/attempts/${id}/regrade-writing`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        setRegradeError(await parseApiError(res));
+        return;
+      }
+      const data = (await res.json()) as AttemptDetail & {
+        regradedCount?: number;
+        stillPendingCount?: number;
+      };
+      setAttempt(data);
+      const graded = data.regradedCount ?? 0;
+      const still = data.stillPendingCount ?? 0;
+      if (graded > 0 && still === 0) {
+        setRegradeNote(`Đã chấm xong ${graded} câu viết.`);
+      } else if (graded > 0) {
+        setRegradeNote(
+          `Đã chấm ${graded} câu; ${still} câu vẫn chưa chấm được — thử lại sau.`,
+        );
+      } else {
+        setRegradeNote("Chưa chấm được câu nào — kiểm tra cấu hình Gemini trên server.");
+      }
+    } catch (e) {
+      setRegradeError(e instanceof Error ? e.message : "Không chấm lại được");
+    } finally {
+      setRegrading(false);
+    }
+  }
+
+  if (loadError) {
+    return <p className="px-4 py-8 text-sm text-red-600">{loadError}</p>;
   }
 
   if (!attempt) {
@@ -60,6 +99,11 @@ function AttemptDetailContent() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
+      <WritingSubmitOverlay
+        visible={regrading}
+        hasWriting
+        writingCount={writingSummary.pendingCount}
+      />
       <Link
         href="/topik/attempts"
         className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
@@ -89,6 +133,30 @@ function AttemptDetailContent() {
             scorePercent: attempt.scorePercent,
           }}
         />
+      ) : null}
+
+      {writingSummary.pendingCount > 0 ? (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            disabled={regrading}
+            onClick={() => void regradeWriting()}
+            className="rounded-md bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+          >
+            {regrading ? "Đang chấm…" : "Chấm lại bằng AI"}
+          </button>
+          <p className="text-xs text-zinc-500">
+            {writingSummary.pendingCount} câu viết chưa có điểm AI
+          </p>
+        </div>
+      ) : null}
+
+      {regradeNote ? (
+        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">{regradeNote}</p>
+      ) : null}
+
+      {regradeError ? (
+        <p className="mt-3 text-sm text-red-600 dark:text-red-400">{regradeError}</p>
       ) : null}
 
       <ul className="mt-6 flex flex-col gap-3">
