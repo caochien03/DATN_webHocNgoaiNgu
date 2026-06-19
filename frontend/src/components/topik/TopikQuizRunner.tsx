@@ -7,7 +7,9 @@ import {
   pageLabel,
   sharedAudioUrl,
 } from "@/lib/group-topik-pages";
+import { TopikQuestionMap } from "@/components/topik/TopikQuestionMap";
 import { topikSectionLabel } from "@/lib/topik-labels";
+import { buildQuizQuestionMapItems } from "@/lib/topik-question-map";
 import type { GradedTopikAnswer, TopikQuestion, TopikSubmitResult } from "@/lib/types";
 
 type TopikQuizRunnerProps = {
@@ -41,6 +43,11 @@ export function TopikQuizRunner({
   const allAnswered = questions.every((q) => selections[q.id] !== undefined);
   const pageAnswered = currentPage.every((q) => selections[q.id] !== undefined);
   const audio = sharedAudioUrl(currentPage);
+
+  const mapItems = useMemo(
+    () => buildQuizQuestionMapItems(questions, pages, pageIndex, selections),
+    [questions, pages, pageIndex, selections],
+  );
 
   function pick(questionId: string, optionIndex: number) {
     if (result) return;
@@ -103,6 +110,11 @@ export function TopikQuizRunner({
           {error}
         </p>
       ) : null}
+
+      <TopikQuestionMap
+        items={mapItems}
+        onSelect={(index) => setPageIndex(index)}
+      />
 
       {currentPage.length > 0 ? (
         <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">

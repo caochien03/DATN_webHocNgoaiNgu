@@ -11,6 +11,7 @@ import {
 } from "@/lib/topik-answers";
 import { WritingGradeView, WritingResultSummary } from "@/components/topik/WritingGradeView";
 import { WritingSubmitOverlay } from "@/components/topik/WritingSubmitOverlay";
+import { TopikQuestionMap } from "@/components/topik/TopikQuestionMap";
 import { topikQuestionTypeLabel, topikSectionLabel } from "@/lib/topik-labels";
 import {
   writingGradeCardClass,
@@ -21,6 +22,7 @@ import {
   DEFAULT_SHORT_ANSWER_PARTS,
   getWritingPartCount,
 } from "@/lib/topik-writing-parts";
+import { buildWritingQuestionMapItems } from "@/lib/topik-question-map";
 import type { GradedTopikAnswer, TopikQuestion, TopikSubmitResult } from "@/lib/types";
 
 const textareaClass =
@@ -57,6 +59,11 @@ export function TopikWritingRunner({
   const allAnswered = sorted.every((q) => isWritingAnswerComplete(q, answers));
   const pageAnswered =
     current != null && isWritingAnswerComplete(current, answers);
+
+  const mapItems = useMemo(
+    () => buildWritingQuestionMapItems(sorted, pageIndex, answers),
+    [sorted, pageIndex, answers],
+  );
 
   function setPartAnswer(
     questionId: string,
@@ -141,6 +148,11 @@ export function TopikWritingRunner({
           {error}
         </p>
       ) : null}
+
+      <TopikQuestionMap
+        items={mapItems}
+        onSelect={(index) => setPageIndex(index)}
+      />
 
       {current ? (
         <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">

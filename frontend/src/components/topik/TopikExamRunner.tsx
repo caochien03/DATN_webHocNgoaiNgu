@@ -6,6 +6,7 @@ import { QuestionBlock } from "@/components/topik/TopikQuizRunner";
 import { WritingQuestionFields } from "@/components/topik/TopikWritingRunner";
 import { WritingGradeView, WritingResultSummary } from "@/components/topik/WritingGradeView";
 import { WritingSubmitOverlay } from "@/components/topik/WritingSubmitOverlay";
+import { TopikQuestionMap } from "@/components/topik/TopikQuestionMap";
 import { useTopikExamTimer } from "@/hooks/useTopikExamTimer";
 import {
   writingGradeCardClass,
@@ -21,6 +22,7 @@ import {
 } from "@/lib/topik-answers";
 import { buildTopikExamSteps } from "@/lib/topik-exam-steps";
 import { pageLabel, sharedAudioUrl } from "@/lib/group-topik-pages";
+import { buildExamQuestionMapItems } from "@/lib/topik-question-map";
 import { topikSectionLabel } from "@/lib/topik-labels";
 import type {
   GradedTopikAnswer,
@@ -96,6 +98,18 @@ export function TopikExamRunner({
       (q) => mcqSelections[q.id] !== undefined,
     );
   }, [currentStep, writingAnswers, mcqSelections]);
+
+  const mapItems = useMemo(
+    () =>
+      buildExamQuestionMapItems(
+        questions,
+        steps,
+        stepIndex,
+        mcqSelections,
+        writingAnswers,
+      ),
+    [questions, steps, stepIndex, mcqSelections, writingAnswers],
+  );
 
   const finishRef = useRef<() => void>(() => {});
 
@@ -241,6 +255,11 @@ export function TopikExamRunner({
           {error}
         </p>
       ) : null}
+
+      <TopikQuestionMap
+        items={mapItems}
+        onSelect={(index) => setStepIndex(index)}
+      />
 
       {currentStep ? (
         <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
