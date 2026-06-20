@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { hasWritingDraft, useTopikLeaveGuard } from "@/components/topik/TopikRunGuards";
 import {
   buildTopikSubmitAnswers,
   initWritingAnswerState,
@@ -63,6 +64,11 @@ export function TopikWritingRunner({
   const mapItems = useMemo(
     () => buildWritingQuestionMapItems(sorted, pageIndex, answers),
     [sorted, pageIndex, answers],
+  );
+
+  const hasProgress = hasWritingDraft(answers);
+  const { confirmLeave } = useTopikLeaveGuard(
+    result == null && !submitting && hasProgress,
   );
 
   function setPartAnswer(
@@ -133,6 +139,9 @@ export function TopikWritingRunner({
       <Link
         href={backHref}
         className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        onClick={(e) => {
+          if (!confirmLeave()) e.preventDefault();
+        }}
       >
         ← Quay lại
       </Link>

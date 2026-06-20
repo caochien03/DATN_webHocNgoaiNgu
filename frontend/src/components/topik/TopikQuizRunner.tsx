@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { hasMcqSelections, useTopikLeaveGuard } from "@/components/topik/TopikRunGuards";
 import {
   groupTopikQuestionsIntoPages,
   pageLabel,
@@ -49,12 +50,17 @@ export function TopikQuizRunner({
     [questions, pages, pageIndex, selections],
   );
 
+  const hasProgress = hasMcqSelections(selections);
+  const { confirmLeave } = useTopikLeaveGuard(
+    result == null && !submitting && hasProgress,
+  );
+
   function pick(questionId: string, optionIndex: number) {
     if (result) return;
     setSelections((prev) => ({ ...prev, [questionId]: optionIndex }));
   }
 
-  async function finish() {
+  const finish = useCallback(async () => {
     if (!allAnswered || submitting) return;
     setSubmitting(true);
     setError(null);
@@ -69,7 +75,7 @@ export function TopikQuizRunner({
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [allAnswered, submitting, questions, selections, onSubmit]);
 
   if (questions.length === 0) {
     return (
@@ -95,6 +101,9 @@ export function TopikQuizRunner({
       <Link
         href={backHref}
         className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        onClick={(e) => {
+          if (!confirmLeave()) e.preventDefault();
+        }}
       >
         ← Quay lại
       </Link>

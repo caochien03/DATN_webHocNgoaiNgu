@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { hasSessionProgress, useTopikLeaveGuard } from "@/components/topik/TopikRunGuards";
 import { QuestionBlock } from "@/components/topik/TopikQuizRunner";
 import { WritingQuestionFields } from "@/components/topik/TopikWritingRunner";
 import { WritingGradeView, WritingResultSummary } from "@/components/topik/WritingGradeView";
@@ -109,6 +110,11 @@ export function TopikExamRunner({
         writingAnswers,
       ),
     [questions, steps, stepIndex, mcqSelections, writingAnswers],
+  );
+
+  const hasProgress = hasSessionProgress(mcqSelections, writingAnswers);
+  const { confirmLeave } = useTopikLeaveGuard(
+    result == null && !submitting && hasProgress,
   );
 
   const finishRef = useRef<() => void>(() => {});
@@ -222,6 +228,9 @@ export function TopikExamRunner({
         <Link
           href={backHref}
           className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+          onClick={(e) => {
+            if (!confirmLeave()) e.preventDefault();
+          }}
         >
           ← Quay lại
         </Link>
