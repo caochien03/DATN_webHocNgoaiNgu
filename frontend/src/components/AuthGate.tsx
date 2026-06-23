@@ -19,7 +19,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (state === "loading") {
     return (
-      <p className="px-4 py-10 text-center text-sm text-zinc-500">
+      <p className="px-4 py-10 text-center text-sm text-muted-foreground">
         Đang kiểm tra đăng nhập…
       </p>
     );

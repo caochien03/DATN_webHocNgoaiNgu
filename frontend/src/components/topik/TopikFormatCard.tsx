@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Play } from "lucide-react";
+import { BRAND, scoreColor } from "@/components/ui-kit/brand";
 import type { FormatStats } from "@/lib/topik-format-stats";
 import type { TopikQuestionFormat } from "@/lib/types";
 
@@ -19,30 +21,51 @@ export function TopikFormatCard({
     format.fromNo === format.toNo
       ? `${format.fromNo}`
       : `${format.fromNo}~${format.toNo}`;
+  const accColor = scoreColor(stats.percent);
 
   return (
     <Link
       href={practiceHref}
-      className="block rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-orange-200 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-orange-900"
+      className="group block rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
     >
-      <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">
-        Phần {partIndex} - {format.title} ({rangeLabel})
-      </h3>
-      <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            Phần {partIndex} · {format.title}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Câu {rangeLabel}</p>
+        </div>
+        {stats.correctAnswers > 0 ? (
+          <span
+            className="rounded px-2 py-0.5 font-mono text-xs font-semibold"
+            style={{ color: accColor, backgroundColor: `${accColor}18` }}
+          >
+            {stats.percent}%
+          </span>
+        ) : null}
+      </div>
+
+      <p className="mb-3 text-xs text-muted-foreground">
         Trả lời đúng:{" "}
-        <span className="font-medium text-zinc-900 dark:text-zinc-200">
-          {stats.correctAnswers}
-        </span>
+        <span className="font-medium text-foreground">{stats.correctAnswers}</span>
       </p>
-      <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-        Tỷ lệ đúng
-      </p>
-      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+
+      <div
+        className="h-1.5 overflow-hidden rounded-full"
+        style={{ backgroundColor: "rgba(255,255,255,0.07)" }}
+      >
         <div
-          className="h-full rounded-full bg-teal-500 transition-all"
-          style={{ width: `${stats.percent}%` }}
+          className="h-full rounded-full transition-all"
+          style={{ width: `${stats.percent}%`, backgroundColor: accColor }}
         />
       </div>
+
+      <span
+        className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-white"
+        style={{ background: `linear-gradient(90deg,${BRAND.blue},${BRAND.cyan})` }}
+      >
+        <Play size={12} /> Luyện dạng này
+      </span>
     </Link>
   );
 }

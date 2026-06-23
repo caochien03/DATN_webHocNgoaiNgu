@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { motion } from "motion/react";
+import { Route } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { BRAND } from "@/components/ui-kit/brand";
+import { Bar, PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { LearningPathRow } from "@/lib/types";
 
@@ -29,61 +33,70 @@ function PathsContent() {
   }, [load]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-        Lộ trình học
-      </h1>
-      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-        Học theo thứ tự các bước để đi từ từ vựng nền tảng tới bài học ngữ pháp.
-      </p>
+    <div>
+      <PageHeader
+        title="Lộ trình học"
+        sub="Theo từng bước từ từ vựng nền tảng tới bài học ngữ pháp"
+      />
 
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
 
       {paths === null && !error ? (
-        <p className="mt-6 text-sm text-zinc-500">Đang tải…</p>
+        <p className="text-sm text-muted-foreground">Đang tải…</p>
       ) : null}
 
       {paths ? (
-        <ul className="mt-6 flex flex-col gap-3">
-          {paths.map((p) => (
-            <li key={p.id}>
+        <div className="space-y-3">
+          {paths.map((p, i) => (
+            <motion.div
+              key={p.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06 }}
+            >
               <Link
                 href={`/paths/${p.id}`}
-                className="block rounded-xl border border-zinc-200 bg-white p-4 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+                className="block rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {p.title}
-                    </p>
-                    {p.description ? (
-                      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                        {p.description}
+                  <div className="flex items-start gap-3">
+                    <span
+                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
+                      style={{ backgroundColor: `${BRAND.yellow}18`, color: BRAND.yellow }}
+                    >
+                      <Route size={18} />
+                    </span>
+                    <div>
+                      <p className="font-semibold text-foreground">{p.title}</p>
+                      {p.description ? (
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {p.description}
+                        </p>
+                      ) : null}
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {p.level ?? p.languageCode.toUpperCase()} ·{" "}
+                        {p.completedSteps}/{p.totalSteps} bước
                       </p>
-                    ) : null}
-                    <p className="mt-1 text-xs text-zinc-500">
-                      {p.level ?? p.languageCode.toUpperCase()} ·{" "}
-                      {p.completedSteps}/{p.totalSteps} bước
-                    </p>
+                    </div>
                   </div>
-                  <span className="shrink-0 text-sm text-zinc-500">
+                  <span
+                    className="shrink-0 font-mono text-sm font-semibold"
+                    style={{ color: BRAND.blue }}
+                  >
                     {p.percent}%
                   </span>
                 </div>
-                <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
-                  <div
-                    className="h-full bg-zinc-900 dark:bg-zinc-100"
-                    style={{ width: `${p.percent}%` }}
-                  />
+                <div className="mt-3">
+                  <Bar done={p.completedSteps} total={p.totalSteps || 1} color={BRAND.blue} />
                 </div>
               </Link>
-            </li>
+            </motion.div>
           ))}
-        </ul>
+        </div>
       ) : null}
     </div>
   );

@@ -42,3 +42,6 @@ Thumbs.db
 tmp/
 temp/
 *.pem
+
+# UI reference (Figma export, không thuộc dự án)
+Build User Interface/

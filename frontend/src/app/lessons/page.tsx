@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "motion/react";
+import { ChevronRight, GraduationCap } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { BRAND } from "@/components/ui-kit/brand";
+import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { GrammarLevel, LessonRow } from "@/lib/types";
 
@@ -50,21 +54,19 @@ function LessonsContent() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-        Bài học tiếng Hàn
-      </h1>
-      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-        Mỗi bài gồm từ vựng, điểm ngữ pháp và bài tập luyện tập.
-      </p>
+    <div>
+      <PageHeader
+        title="Bài học ngữ pháp"
+        sub="Mỗi bài gồm từ vựng, điểm ngữ pháp và bài tập luyện tập"
+      />
 
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
 
-      <nav className="mt-6 flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-wrap gap-2">
         {LEVELS.map((l) => {
           const active = level === l.code;
           return (
@@ -72,61 +74,75 @@ function LessonsContent() {
               key={l.code}
               type="button"
               onClick={() => setLevel(l.code)}
-              className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                active
-                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                  : "border-zinc-300 text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-              }`}
+              className="relative rounded-xl px-4 py-1.5 text-sm font-medium"
+              style={{ color: active ? "#fff" : BRAND.muted }}
             >
-              <span className="font-medium">{l.label}</span>
-              <span
-                className={`ml-2 text-xs ${
-                  active ? "text-white/80" : "text-zinc-500 dark:text-zinc-400"
-                }`}
-              >
-                {counts[l.code] ?? 0} bài
+              {active ? (
+                <motion.span
+                  layoutId="lesson-filter"
+                  className="absolute inset-0 rounded-xl"
+                  style={{ background: `linear-gradient(90deg,${BRAND.blue},${BRAND.cyan})` }}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              ) : (
+                <span
+                  className="absolute inset-0 rounded-xl"
+                  style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+                />
+              )}
+              <span className="relative">
+                {l.label}
+                <span className="ml-2 text-xs opacity-70">{counts[l.code] ?? 0}</span>
               </span>
             </button>
           );
         })}
-      </nav>
+      </div>
 
-      <section className="mt-6">
-        {lessons === null && !error ? (
-          <p className="text-sm text-zinc-500">Đang tải…</p>
-        ) : filtered.length === 0 ? (
-          <p className="text-sm text-zinc-500">Chưa có bài nào ở cấp này.</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {filtered.map((l) => (
-              <li key={l.id}>
-                <Link
-                  href={`/lessons/${l.id}`}
-                  className="flex items-start justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+      {lessons === null && !error ? (
+        <p className="text-sm text-muted-foreground">Đang tải…</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Chưa có bài nào ở cấp này.</p>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((l, i) => (
+            <motion.div
+              key={l.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+            >
+              <Link
+                href={`/lessons/${l.id}`}
+                className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+              >
+                <span
+                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: `${BRAND.cyan}18`, color: BRAND.cyan }}
                 >
-                  <div className="min-w-0">
-                    <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {l.title}
+                  <GraduationCap size={18} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-foreground">{l.title}</p>
+                  {l.summary ? (
+                    <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+                      {l.summary}
                     </p>
-                    {l.summary ? (
-                      <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
-                        {l.summary}
-                      </p>
-                    ) : null}
-                    <p className="mt-1 text-xs text-zinc-500">
-                      {l._count.vocabulary} từ · {l._count.points} ngữ pháp
-                      {l._count.exercises > 0
-                        ? ` · ${l._count.exercises} bài tập`
-                        : ""}
-                    </p>
-                  </div>
-                  <span className="self-center text-zinc-400">›</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                  ) : null}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {l._count.vocabulary} từ · {l._count.points} ngữ pháp
+                    {l._count.exercises > 0 ? ` · ${l._count.exercises} bài tập` : ""}
+                  </p>
+                </div>
+                <ChevronRight
+                  size={16}
+                  className="text-muted-foreground transition-colors group-hover:text-foreground"
+                />
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -3,8 +3,12 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "motion/react";
+import { Clock, History, Trophy } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { TopikFormatCard } from "@/components/topik/TopikFormatCard";
+import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { statsForFormat } from "@/lib/topik-format-stats";
 import { topikTierLabel } from "@/lib/topik-labels";
@@ -109,52 +113,87 @@ function TierPracticeContent() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6">
-      <nav className="text-sm text-zinc-500">
-        <Link href={`/topik/${tier}`} className="hover:text-zinc-800 dark:hover:text-zinc-200">
-          Luyện tập
-        </Link>
-        <span className="mx-1.5">›</span>
-        <span className="text-zinc-800 dark:text-zinc-200">
-          {topikTierLabel(tier)}
-        </span>
-      </nav>
+    <div>
+      <PageHeader
+        title="Luyện thi TOPIK"
+        sub={`${topikTierLabel(tier)} — Nghe, Đọc${tier === "TOPIK_II" ? ", Viết" : ""}, Thi thử`}
+        action={
+          <Link
+            href="/topik/attempts"
+            className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <History size={14} /> Lịch sử
+          </Link>
+        }
+      />
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2">
-          {tabs.map((t) => (
+      <div className="mb-6 flex gap-2">
+        {(["TOPIK_I", "TOPIK_II"] as const).map((t) => {
+          const active = tier === t;
+          return (
+            <button
+              key={t}
+              type="button"
+              onClick={() => router.push(`/topik/${t}`)}
+              className="relative rounded-xl px-6 py-2 text-sm font-bold"
+              style={{ color: active ? "#fff" : BRAND.muted }}
+            >
+              {active ? (
+                <motion.span
+                  layoutId="topik-level"
+                  className="absolute inset-0 rounded-xl"
+                  style={{ background: GRADIENT }}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              ) : (
+                <span
+                  className="absolute inset-0 rounded-xl"
+                  style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+                />
+              )}
+              <span className="relative">{topikTierLabel(t)}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mb-6 flex w-fit gap-1 rounded-xl border border-border bg-secondary/40 p-1">
+        {tabs.map((t) => {
+          const active = tab === t.id;
+          return (
             <button
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
-              className={`rounded-full px-5 py-2 text-sm font-medium transition ${
-                tab === t.id
-                  ? "bg-orange-500 text-white shadow-sm"
-                  : "border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-              }`}
+              className="relative rounded-lg px-5 py-2 text-sm font-medium"
+              style={{ color: active ? "#fff" : BRAND.muted }}
             >
-              {t.label}
+              {active ? (
+                <motion.span
+                  layoutId="topik-tab"
+                  className="absolute inset-0 rounded-lg"
+                  style={{ background: GRADIENT }}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              ) : null}
+              <span className="relative">{t.label}</span>
             </button>
-          ))}
-        </div>
-        <Link
-          href="/topik/attempts"
-          className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
-        >
-          Lịch sử
-        </Link>
+          );
+        })}
       </div>
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+          {error}
+        </p>
       ) : null}
 
       {tab !== "mock" ? (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           {formats === null ? (
-            <p className="text-sm text-zinc-500 sm:col-span-2">Đang tải…</p>
+            <p className="text-sm text-muted-foreground sm:col-span-2">Đang tải…</p>
           ) : sectionFormats.length === 0 ? (
-            <p className="text-sm text-zinc-500 sm:col-span-2">
+            <p className="text-sm text-muted-foreground sm:col-span-2">
               Chưa có dạng bài cho cấp độ này.
             </p>
           ) : (
@@ -170,29 +209,52 @@ function TierPracticeContent() {
           )}
         </div>
       ) : (
-        <div className="mt-6">
+        <div>
           {exams === null ? (
-            <p className="text-sm text-zinc-500">Đang tải…</p>
+            <p className="text-sm text-muted-foreground">Đang tải…</p>
           ) : exams.length === 0 ? (
-            <p className="text-sm text-zinc-500">Chưa có đề thi thử.</p>
+            <p className="text-sm text-muted-foreground">Chưa có đề thi thử.</p>
           ) : (
-            <ul className="grid gap-4 sm:grid-cols-2">
-              {exams.map((exam) => (
-                <li key={exam.id}>
+            <div className="space-y-4">
+              {exams.map((exam, i) => (
+                <motion.div
+                  key={exam.id}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                >
                   <Link
                     href={`/topik/exams/${exam.id}`}
-                    className="block rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-orange-200 dark:border-zinc-800 dark:bg-zinc-950"
+                    className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
                   >
-                    <p className="font-semibold text-zinc-900 dark:text-zinc-100">
-                      {exam.title}
-                    </p>
-                    <p className="mt-2 text-xs text-zinc-500">
-                      {exam.questionCount} câu · {exam.durationMinutes} phút
-                    </p>
+                    <span
+                      className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
+                      style={{
+                        background: `linear-gradient(135deg,${BRAND.blue}20,${BRAND.cyan}20)`,
+                        color: BRAND.blue,
+                      }}
+                    >
+                      <Trophy size={20} />
+                    </span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-foreground">{exam.title}</p>
+                      <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1">
+                          <Clock size={11} /> {exam.durationMinutes} phút
+                        </span>
+                        <span>{exam.questionCount} câu</span>
+                      </div>
+                    </div>
+                    <span
+                      className="rounded-xl px-5 py-2 text-sm font-semibold text-white"
+                      style={{ background: GRADIENT }}
+                    >
+                      Vào thi
+                    </span>
                   </Link>
-                </li>
+                </motion.div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       )}
