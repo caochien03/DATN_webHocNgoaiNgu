@@ -8,6 +8,14 @@ import {
   TopikExamMetaForm,
   type TopikExamMetaValues,
 } from "@/components/admin/TopikExamMetaForm";
+import {
+  backLinkClass,
+  dangerButtonClass,
+  dashedCardClass,
+  errorClass,
+  listItemClass,
+  sectionTitleClass,
+} from "@/components/ui-kit/form-styles";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { topikSectionLabel, topikTierLabel } from "@/lib/topik-labels";
 import type { AdminTopikExamDetail } from "@/lib/types";
@@ -137,7 +145,7 @@ function EditTopikExamContent() {
   }
 
   if (!exam && !error) {
-    return <p className="px-4 py-8 text-sm text-zinc-500">Đang tải…</p>;
+    return <p className="px-4 py-8 text-sm text-muted-foreground">Đang tải…</p>;
   }
 
   const metaInitial: TopikExamMetaValues | null = exam
@@ -159,21 +167,21 @@ function EditTopikExamContent() {
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
       <Link
         href="/admin/topik/exams"
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className={backLinkClass}
       >
         ← Danh sách đề
       </Link>
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className={`mt-4 `}>{error}</p>
       ) : null}
 
       {exam && metaInitial ? (
         <>
-          <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <h1 className="mt-4 text-xl font-semibold text-foreground">
             Sửa đề TOPIK
           </h1>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             {topikTierLabel(exam.tier)} · {slots.length} câu
           </p>
 
@@ -189,7 +197,7 @@ function EditTopikExamContent() {
                 <button
                   type="button"
                   onClick={() => void removeExam()}
-                  className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:text-red-400"
+                  className={dangerButtonClass}
                 >
                   Xóa đề
                 </button>
@@ -199,19 +207,19 @@ function EditTopikExamContent() {
 
           <section className="mt-8">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              <h2 className={sectionTitleClass}>
                 Câu hỏi ({slots.length})
               </h2>
               <Link
                 href={`/admin/topik/exams/${id}/questions/new`}
-                className="text-sm text-zinc-700 hover:underline dark:text-zinc-300"
+                className="text-sm text-primary hover:underline"
               >
                 + Thêm câu
               </Link>
             </div>
 
             {slots.length === 0 ? (
-              <p className="mt-3 text-sm text-zinc-500">
+              <p className="mt-3 text-sm text-muted-foreground">
                 Chưa có câu. Thêm câu hoặc import/thay thế bằng JSON bên dưới.
               </p>
             ) : (
@@ -219,10 +227,10 @@ function EditTopikExamContent() {
                 {slots.map((slot) => (
                   <li
                     key={slot.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950"
+                    className="flex flex-wrap items-center justify-between gap-2 listItemClass"
                   >
                     <div className="min-w-0">
-                      <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                      <p className="font-medium text-foreground">
                         #{slot.sortOrder + 1} ·{" "}
                         {topikSectionLabel(slot.question.section)} · câu{" "}
                         {slot.question.questionNo}
@@ -232,13 +240,13 @@ function EditTopikExamContent() {
                           </span>
                         ) : null}
                       </p>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                      <p className="text-sm text-muted-foreground">
                         {truncate(slot.question.prompt)}
                       </p>
                     </div>
                     <Link
                       href={`/admin/topik/questions/${slot.questionId}/edit`}
-                      className="shrink-0 text-sm text-zinc-700 hover:underline dark:text-zinc-300"
+                      className="shrink-0 text-sm text-primary hover:underline"
                     >
                       Sửa câu
                     </Link>
@@ -273,7 +281,7 @@ function EditTopikExamContent() {
                 className="text-sm"
               />
               {replacing ? (
-                <p className="mt-1 text-sm text-zinc-500">Đang thay thế…</p>
+                <p className="mt-1 text-sm text-muted-foreground">Đang thay thế…</p>
               ) : null}
             </div>
           </section>

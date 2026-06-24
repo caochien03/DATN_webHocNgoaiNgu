@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
 import { TopikQuizRunner } from "@/components/topik/TopikQuizRunner";
 import { TopikWritingRunner } from "@/components/topik/TopikWritingRunner";
+import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { TopikAnswerPayload } from "@/lib/topik-answers";
 import { topikSectionLabel } from "@/lib/topik-labels";
@@ -30,7 +31,7 @@ function formatLoadError(e: unknown): string {
 }
 
 const inputClass =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
+  "rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
 
 function PracticeContent() {
   const router = useRouter();
@@ -163,7 +164,7 @@ function PracticeContent() {
 
   if (!section || !fromNo || !toNo) {
     return (
-      <p className="px-4 py-8 text-sm text-red-600">Thiếu tham số dạng bài.</p>
+      <p className="text-sm text-red-400">Thiếu tham số dạng bài.</p>
     );
   }
 
@@ -176,9 +177,9 @@ function PracticeContent() {
   if (questions && activeCount !== null) {
     const Runner = isWriting ? TopikWritingRunner : TopikQuizRunner;
     return (
-      <div className="mx-auto w-full max-w-2xl px-4 py-8">
+      <div className="mx-auto max-w-2xl">
         {requestedCount !== null && activeCount < requestedCount ? (
-          <p className="mb-4 text-sm text-amber-800 dark:text-amber-300">
+          <p className="mb-4 text-sm text-amber-300">
             Pool đề đã công bố chỉ có {activeCount} câu cho dạng này (bạn chọn{" "}
             {requestedCount}).
           </p>
@@ -193,7 +194,7 @@ function PracticeContent() {
         <button
           type="button"
           onClick={backToSetup}
-          className="mt-4 text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+          className="mt-4 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           ← Chọn lại số câu
         </button>
@@ -202,29 +203,25 @@ function PracticeContent() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-lg px-4 py-8">
+    <div className="mx-auto max-w-lg">
       <Link
         href={`/topik/${tier}`}
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Quay lại
       </Link>
-      <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-        Luyện dạng bài
-      </h1>
-      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-        {subtitle}
-      </p>
+      <h1 className="mt-4 text-2xl font-bold text-foreground">Luyện dạng bài</h1>
+      <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+          {error}
+        </p>
       ) : null}
 
-      <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-          Số câu muốn làm
-        </p>
-        <p className="mt-1 text-xs text-zinc-500">
+      <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+        <p className="text-sm font-semibold text-foreground">Số câu muốn làm</p>
+        <p className="mt-1 text-xs text-muted-foreground">
           Random {selectedCount} câu khác nhau từ các đề đã công bố (dạng câu{" "}
           {rangeLabel}
           {formatRangeSize
@@ -234,24 +231,31 @@ function PracticeContent() {
         </p>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {countOptions.map((n) => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => setSelectedCount(n)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-                selectedCount === n
-                  ? "bg-orange-500 text-white"
-                  : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-              }`}
-            >
-              {n} câu
-            </button>
-          ))}
+          {countOptions.map((n) => {
+            const active = selectedCount === n;
+            return (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setSelectedCount(n)}
+                className="rounded-xl px-4 py-1.5 text-sm font-medium transition-colors"
+                style={
+                  active
+                    ? { background: GRADIENT, color: "#fff" }
+                    : {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: BRAND.muted,
+                      }
+                }
+              >
+                {n} câu
+              </button>
+            );
+          })}
         </div>
 
-        <label className="mt-4 flex flex-col gap-1 text-sm">
-          <span>Hoặc nhập số câu (1–50)</span>
+        <label className="mt-4 flex flex-col gap-1.5 text-sm">
+          <span className="text-muted-foreground">Hoặc nhập số câu (1–50)</span>
           <input
             type="number"
             min={1}
@@ -268,7 +272,8 @@ function PracticeContent() {
           type="button"
           disabled={loading}
           onClick={() => void startPractice()}
-          className="mt-4 w-full rounded-md bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+          className="mt-4 w-full rounded-xl py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          style={{ background: GRADIENT }}
         >
           {loading ? "Đang tải câu…" : "Bắt đầu luyện"}
         </button>

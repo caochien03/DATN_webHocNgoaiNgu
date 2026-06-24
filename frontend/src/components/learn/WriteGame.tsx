@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BRAND, GRADIENT, scoreColor } from "@/components/ui-kit/brand";
 import { shuffle } from "@/lib/shuffle";
 import type { AttemptHandler, LearnCard } from "./types";
 
@@ -38,7 +39,7 @@ export function WriteGame({
   }, [cards]);
 
   if (cards.length === 0) {
-    return <p className="mt-6 text-sm text-zinc-500">Chưa có thẻ nào.</p>;
+    return <p className="mt-6 text-sm text-muted-foreground">Chưa có thẻ nào.</p>;
   }
 
   const current = queue[index];
@@ -79,21 +80,20 @@ export function WriteGame({
   }
 
   if (done) {
+    const pctScore = queue.length > 0 ? Math.round((score / queue.length) * 100) : 0;
     return (
-      <div className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-950">
-        <p className="text-sm text-zinc-500">Hoàn thành</p>
-        <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          {score} / {queue.length}
+      <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-center">
+        <p className="text-4xl font-bold" style={{ color: scoreColor(pctScore) }}>
+          {score}/{queue.length}
         </p>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Sai {wrongCards.length} từ.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Sai {wrongCards.length} từ.</p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
           {wrongCards.length > 0 ? (
             <button
               type="button"
               onClick={() => restart(wrongCards)}
-              className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
+              style={{ background: GRADIENT }}
             >
               Ôn lại {wrongCards.length} từ sai
             </button>
@@ -101,7 +101,7 @@ export function WriteGame({
           <button
             type="button"
             onClick={() => restart()}
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            className="rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Làm lại cả bộ
           </button>
@@ -114,18 +114,16 @@ export function WriteGame({
 
   return (
     <>
-      <p className="mt-4 text-sm text-zinc-500">
+      <p className="mt-4 text-sm text-muted-foreground">
         Thẻ {index + 1}/{queue.length} · Điểm: {score}
       </p>
-      <div className="mt-3 rounded-xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-950">
-        <p className="text-xs uppercase tracking-wide text-zinc-500">
+      <div className="mt-3 rounded-2xl border border-border bg-card p-6 text-center">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">
           Viết từ cho nghĩa sau
         </p>
-        <p className="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          {current.backText}
-        </p>
+        <p className="mt-1 text-xl font-bold text-foreground">{current.backText}</p>
         {current.note ? (
-          <p className="mt-1 text-xs text-zinc-500">{current.note}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{current.note}</p>
         ) : null}
       </div>
 
@@ -136,22 +134,24 @@ export function WriteGame({
           onChange={(e) => setAnswer(e.target.value)}
           disabled={result !== null}
           placeholder="Nhập đáp án…"
-          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none ring-zinc-400 focus:ring-2 disabled:opacity-70 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+          className="rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20 disabled:opacity-70"
         />
         {result === null ? (
           <button
             type="submit"
-            className="rounded-md bg-zinc-900 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+            className="rounded-xl py-2.5 text-sm font-semibold text-white"
+            style={{ background: GRADIENT }}
           >
             Kiểm tra
           </button>
         ) : (
           <div
-            className={`rounded-md border px-3 py-2 text-sm ${
-              result === "correct"
-                ? "border-green-500 bg-green-50 text-green-800 dark:bg-green-950/50 dark:text-green-200"
-                : "border-red-500 bg-red-50 text-red-800 dark:bg-red-950/50 dark:text-red-200"
-            }`}
+            className="rounded-xl border px-3 py-2 text-sm"
+            style={{
+              borderColor: result === "correct" ? BRAND.green : BRAND.red,
+              backgroundColor: `${result === "correct" ? BRAND.green : BRAND.red}14`,
+              color: result === "correct" ? BRAND.green : BRAND.red,
+            }}
           >
             {result === "correct" ? (
               <span>Chính xác.</span>
@@ -167,7 +167,8 @@ export function WriteGame({
           <button
             type="button"
             onClick={next}
-            className="rounded-md bg-zinc-900 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+            className="rounded-xl py-2.5 text-sm font-semibold text-white"
+            style={{ background: GRADIENT }}
           >
             {index + 1 >= queue.length ? "Xem kết quả" : "Thẻ tiếp →"}
           </button>

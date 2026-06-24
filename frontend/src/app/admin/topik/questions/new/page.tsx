@@ -8,6 +8,7 @@ import {
   TopikQuestionForm,
   type TopikQuestionFormValues,
 } from "@/components/admin/TopikQuestionForm";
+import { backLinkClass, dangerButtonClass, errorClass } from "@/components/ui-kit/form-styles";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 
 const defaultValues: TopikQuestionFormValues = {
@@ -65,11 +66,11 @@ function NewTopikQuestionContent() {
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
       <Link
         href="/admin/topik/questions"
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className={backLinkClass}
       >
         ← Danh sách câu hỏi
       </Link>
-      <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+      <h1 className="mt-4 text-xl font-semibold text-foreground">
         Tạo câu hỏi TOPIK
       </h1>
       <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
@@ -81,7 +82,7 @@ function NewTopikQuestionContent() {
       </p>
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className={`mt-4 `}>{error}</p>
       ) : null}
 
       <div className="mt-4">

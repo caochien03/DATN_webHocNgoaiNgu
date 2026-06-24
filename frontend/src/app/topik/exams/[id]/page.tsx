@@ -50,15 +50,19 @@ function ExamTakeContent() {
       : null;
 
   if (error) {
-    return <p className="px-4 py-8 text-sm text-red-600">{error}</p>;
+    return (
+      <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+        {error}
+      </p>
+    );
   }
 
   if (!exam) {
-    return <p className="px-4 py-8 text-sm text-zinc-500">Đang tải đề thi…</p>;
+    return <p className="text-sm text-muted-foreground">Đang tải đề thi…</p>;
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl">
       <TopikExamRunner
         title={exam.title}
         subtitle={[

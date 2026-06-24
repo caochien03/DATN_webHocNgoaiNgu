@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { BarChart3, CheckCircle2 } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { BRAND, scoreColor } from "@/components/ui-kit/brand";
+import { PageHeader, Stat } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { QuizAttempt } from "@/lib/types";
 
@@ -42,69 +45,76 @@ function TestsHistoryContent() {
   }, [attempts]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Lịch sử kiểm tra
-        </h1>
-        <Link
-          href="/tests"
-          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
-        >
-          Làm bài mới
-        </Link>
-      </div>
+    <div className="mx-auto max-w-2xl">
+      <PageHeader
+        title="Lịch sử kiểm tra"
+        sub="Các lần làm bài kiểm tra tổng hợp gần đây"
+        action={
+          <Link
+            href="/tests"
+            className="rounded-xl border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Làm bài mới
+          </Link>
+        }
+      />
 
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
 
       {attempts === null ? (
-        <p className="mt-4 text-sm text-zinc-500">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Đang tải...</p>
       ) : (
         <>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
-              <p className="text-[11px] uppercase tracking-wide text-zinc-500">
-                Số lần làm
-              </p>
-              <p className="mt-1 text-xl font-semibold">{attempts.length}</p>
-            </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
-              <p className="text-[11px] uppercase tracking-wide text-zinc-500">
-                Điểm TB
-              </p>
-              <p className="mt-1 text-xl font-semibold">{avgScore}%</p>
-            </div>
+          <div className="mb-6 grid grid-cols-2 gap-4">
+            <Stat
+              label="Số lần làm"
+              value={attempts.length}
+              icon={<CheckCircle2 size={18} />}
+              color={BRAND.blue}
+              delay={0.05}
+            />
+            <Stat
+              label="Điểm trung bình"
+              value={`${avgScore}%`}
+              icon={<BarChart3 size={18} />}
+              color={BRAND.cyan}
+              delay={0.1}
+            />
           </div>
 
           {attempts.length === 0 ? (
-            <p className="mt-5 text-sm text-zinc-500">Bạn chưa có lần kiểm tra nào.</p>
+            <p className="text-sm text-muted-foreground">
+              Bạn chưa có lần kiểm tra nào.
+            </p>
           ) : (
-            <ul className="mt-5 flex flex-col gap-2">
+            <div className="space-y-2">
               {attempts.map((a) => (
-                <li
+                <div
                   key={a.id}
-                  className="rounded-xl border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-zinc-900 dark:text-zinc-100">
-                        {a.sourceTitle}
-                      </p>
-                      <p className="mt-0.5 text-xs text-zinc-500">
-                        {label(a.sourceType)} · {new Date(a.createdAt).toLocaleString("vi-VN")}
-                      </p>
-                    </div>
-                    <p className="shrink-0 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      {a.correctAnswers}/{a.totalQuestions} ({a.scorePercent}%)
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-foreground">
+                      {a.sourceTitle}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {label(a.sourceType)} ·{" "}
+                      {new Date(a.createdAt).toLocaleString("vi-VN")}
                     </p>
                   </div>
-                </li>
+                  <p
+                    className="shrink-0 font-mono text-sm font-bold"
+                    style={{ color: scoreColor(a.scorePercent) }}
+                  >
+                    {a.correctAnswers}/{a.totalQuestions} ({a.scorePercent}%)
+                  </p>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { GRADIENT } from "@/components/ui-kit/brand";
 import { shuffle } from "@/lib/shuffle";
 import type { LearnCard } from "./types";
 
@@ -22,7 +23,7 @@ export function FlashcardGame({ cards }: { cards: LearnCard[] }) {
   const current = order[index];
 
   if (order.length === 0 || !current) {
-    return <p className="mt-6 text-sm text-zinc-500">Chưa có thẻ nào.</p>;
+    return <p className="mt-6 text-sm text-muted-foreground">Chưa có thẻ nào.</p>;
   }
 
   function next() {
@@ -41,18 +42,18 @@ export function FlashcardGame({ cards }: { cards: LearnCard[] }) {
 
   return (
     <>
-      <p className="mt-4 text-sm text-zinc-500">
+      <p className="mt-4 text-sm text-muted-foreground">
         Thẻ {index + 1}/{order.length}
       </p>
       <button
         type="button"
         onClick={() => setFlipped((f) => !f)}
-        className="mt-3 flex min-h-[200px] w-full items-center justify-center rounded-xl border border-zinc-200 bg-white p-6 text-center text-xl font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900"
+        className="mt-3 flex min-h-[200px] w-full items-center justify-center rounded-3xl border border-border bg-card p-6 text-center text-2xl font-semibold text-foreground transition-colors hover:border-primary/40"
       >
         {flipped ? current.backText : current.frontText}
       </button>
       {current.note ? (
-        <p className="mt-2 text-center text-xs text-zinc-500">{current.note}</p>
+        <p className="mt-2 text-center text-xs text-muted-foreground">{current.note}</p>
       ) : null}
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
@@ -60,21 +61,22 @@ export function FlashcardGame({ cards }: { cards: LearnCard[] }) {
           <button
             type="button"
             onClick={prev}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            className="rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             ← Trước
           </button>
           <button
             type="button"
             onClick={() => setFlipped((f) => !f)}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            className="rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Lật thẻ
           </button>
           <button
             type="button"
             onClick={next}
-            className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
+            style={{ background: GRADIENT }}
           >
             Sau →
           </button>
@@ -82,7 +84,7 @@ export function FlashcardGame({ cards }: { cards: LearnCard[] }) {
         <button
           type="button"
           onClick={reshuffle}
-          className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Trộn lại
         </button>

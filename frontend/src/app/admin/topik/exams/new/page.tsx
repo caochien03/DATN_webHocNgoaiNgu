@@ -13,6 +13,11 @@ import {
   TopikExamMetaForm,
   type TopikExamMetaValues,
 } from "@/components/admin/TopikExamMetaForm";
+import {
+  backLinkClass,
+  errorClass,
+  sectionTitleClass,
+} from "@/components/ui-kit/form-styles";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { AdminTopikExamDetail, ExamQuestionInput } from "@/lib/types";
 
@@ -96,16 +101,16 @@ function NewTopikExamContent() {
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
       <Link
         href="/admin/topik/exams"
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className={backLinkClass}
       >
         ← Danh sách đề
       </Link>
-      <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+      <h1 className="mt-4 text-xl font-semibold text-foreground">
         Tạo đề TOPIK mới
       </h1>
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className={`mt-4 `}>{error}</p>
       ) : null}
 
       <div className="mt-4">
@@ -119,13 +124,13 @@ function NewTopikExamContent() {
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+          <h2 className={sectionTitleClass}>
             Câu hỏi trong đề ({questions.length})
           </h2>
           <button
             type="button"
             onClick={addQuestion}
-            className="text-sm text-zinc-700 hover:underline dark:text-zinc-300"
+            className="text-sm text-primary hover:underline"
           >
             + Thêm câu
           </button>
@@ -145,7 +150,7 @@ function NewTopikExamContent() {
             />
           ))}
         </div>
-        <p className="mt-3 text-xs text-zinc-500">
+        <p className="mt-3 text-xs text-muted-foreground">
           Nhấn &quot;Tạo đề&quot; ở trên để lưu metadata và toàn bộ câu hỏi.
         </p>
       </section>

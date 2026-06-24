@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { Play, Plus, Trash2 } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 
 type CardRow = {
@@ -117,34 +119,35 @@ function DeckDetailContent() {
     }
   }
 
+  const inputClass =
+    "rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
+
   return (
-    <div className="mx-auto w-full max-w-lg px-4 py-8">
+    <div className="mx-auto max-w-lg">
       <Link
         href="/decks"
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Danh sách bộ
       </Link>
 
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
 
       {deck === null && !error ? (
-        <p className="mt-6 text-sm text-zinc-500">Đang tải…</p>
+        <p className="mt-6 text-sm text-muted-foreground">Đang tải…</p>
       ) : null}
 
       {deck ? (
         <>
           <div className="mt-4 flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-                {deck.title}
-              </h1>
+              <h1 className="text-2xl font-bold text-foreground">{deck.title}</h1>
               {deck.description ? (
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {deck.description}
                 </p>
               ) : null}
@@ -153,92 +156,88 @@ function DeckDetailContent() {
               {deck.cards.length > 0 ? (
                 <Link
                   href={`/decks/${id}/learn`}
-                  className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                  className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
+                  style={{ background: GRADIENT }}
                 >
-                  Học
+                  <Play size={14} /> Học
                 </Link>
               ) : null}
               <button
                 type="button"
                 onClick={() => void removeDeck()}
-                className="text-sm text-red-600 hover:underline dark:text-red-400"
+                className="text-sm hover:underline"
+                style={{ color: BRAND.red }}
               >
                 Xóa bộ
               </button>
             </div>
           </div>
 
-          <section className="mt-8 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-            <h2 className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-              Thêm thẻ
-            </h2>
-            <form onSubmit={addCard} className="mt-3 flex flex-col gap-3">
+          <section className="mt-8 rounded-2xl border border-border bg-card p-5">
+            <h2 className="mb-3 text-sm font-semibold text-foreground">Thêm thẻ</h2>
+            <form onSubmit={addCard} className="flex flex-col gap-3">
               <input
                 required
                 value={front}
                 onChange={(e) => setFront(e.target.value)}
                 placeholder="Mặt trước (VD: từ tiếng Hàn)"
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                className={inputClass}
               />
               <input
                 required
                 value={back}
                 onChange={(e) => setBack(e.target.value)}
                 placeholder="Mặt sau (VD: nghĩa tiếng Việt)"
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                className={inputClass}
               />
               <input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Ghi chú (tuỳ chọn)"
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                className={inputClass}
               />
               <button
                 type="submit"
                 disabled={adding}
-                className="rounded-md bg-zinc-900 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                style={{ background: GRADIENT }}
               >
-                {adding ? "Đang thêm…" : "Thêm thẻ"}
+                <Plus size={14} /> {adding ? "Đang thêm…" : "Thêm thẻ"}
               </button>
             </form>
           </section>
 
           <section className="mt-8">
-            <h2 className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <h2 className="mb-3 text-sm font-semibold text-foreground">
               Danh sách thẻ ({deck.cards.length})
             </h2>
             {deck.cards.length === 0 ? (
-              <p className="mt-2 text-sm text-zinc-500">Chưa có thẻ nào.</p>
+              <p className="text-sm text-muted-foreground">Chưa có thẻ nào.</p>
             ) : (
-              <ul className="mt-3 flex flex-col gap-2">
+              <div className="flex flex-col gap-2">
                 {deck.cards.map((c) => (
-                  <li
+                  <div
                     key={c.id}
-                    className="rounded-lg border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950"
+                    className="flex justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3"
                   >
-                    <div className="flex justify-between gap-2">
-                      <div className="min-w-0 text-sm">
-                        <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                          {c.frontText}
-                        </p>
-                        <p className="text-zinc-600 dark:text-zinc-400">
-                          {c.backText}
-                        </p>
-                        {c.note ? (
-                          <p className="mt-1 text-xs text-zinc-500">{c.note}</p>
-                        ) : null}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => void removeCard(c.id)}
-                        className="shrink-0 text-xs text-red-600 hover:underline dark:text-red-400"
-                      >
-                        Xóa
-                      </button>
+                    <div className="min-w-0 text-sm">
+                      <p className="font-semibold text-foreground">{c.frontText}</p>
+                      <p className="text-muted-foreground">{c.backText}</p>
+                      {c.note ? (
+                        <p className="mt-1 text-xs text-muted-foreground/70">{c.note}</p>
+                      ) : null}
                     </div>
-                  </li>
+                    <button
+                      type="button"
+                      onClick={() => void removeCard(c.id)}
+                      className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-red-400"
+                      aria-label="Xóa thẻ"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
         </>

@@ -41,10 +41,10 @@ export function writingGradeStatusLabel(status: WritingGradeUiStatus): string {
 
 export function writingGradeCardClass(status: WritingGradeUiStatus): string {
   if (status === "ai_graded") {
-    return "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30";
+    return "border-emerald-500/30 bg-emerald-500/10";
   }
   if (status === "pending") {
-    return "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30";
+    return "border-amber-500/30 bg-amber-500/10";
   }
   return "";
 }

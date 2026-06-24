@@ -22,7 +22,11 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   if (!allowed) {
-    return <p className="px-4 py-8 text-sm text-zinc-500">Đang kiểm tra quyền…</p>;
+    return (
+      <p className="px-4 py-8 text-sm text-muted-foreground">
+        Đang kiểm tra quyền…
+      </p>
+    );
   }
 
   return <>{children}</>;

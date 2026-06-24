@@ -43,27 +43,27 @@ function LearnContent() {
   const { deck, error, loading } = useDeck(id);
 
   return (
-    <div className="mx-auto w-full max-w-lg px-4 py-8">
+    <div className="mx-auto max-w-lg">
       <Link
         href={`/decks/${id}`}
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Quay lại bộ
       </Link>
 
-      {loading ? <p className="mt-6 text-sm text-zinc-500">Đang tải…</p> : null}
+      {loading ? <p className="mt-6 text-sm text-muted-foreground">Đang tải…</p> : null}
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
 
       {deck ? (
         <>
-          <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <h1 className="mt-4 text-2xl font-bold text-foreground">
             Học bộ “{deck.title}”
           </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Bộ có {deck.cards.length} thẻ · Từ sai gần đây:{" "}
             {deck.cards.filter((c) => c.lastResult === false).length}
           </p>
@@ -71,15 +71,15 @@ function LearnContent() {
           {deck.cards.some((c) => c.lastResult === false) ? (
             <Link
               href={`/decks/${id}/learn/weak`}
-              className="mt-4 flex items-center justify-between rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200 dark:hover:bg-amber-900/40"
+              className="mt-4 flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-200 transition-colors hover:bg-amber-500/15"
             >
               <div>
                 <p className="font-medium">Ôn từ sai</p>
-                <p className="mt-0.5 text-sm">
+                <p className="mt-0.5 text-sm text-amber-200/80">
                   Tập trung các thẻ gần nhất trả lời sai.
                 </p>
               </div>
-              <span className="text-amber-700 dark:text-amber-300">›</span>
+              <span>›</span>
             </Link>
           ) : null}
 
@@ -91,25 +91,21 @@ function LearnContent() {
                   {enough ? (
                     <Link
                       href={`/decks/${id}/learn/${m.slug}`}
-                      className="flex items-start justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+                      className="flex items-start justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition-colors hover:border-primary/40"
                     >
                       <div>
-                        <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                          {m.title}
-                        </p>
-                        <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
+                        <p className="font-semibold text-foreground">{m.title}</p>
+                        <p className="mt-0.5 text-sm text-muted-foreground">
                           {m.description}
                         </p>
                       </div>
-                      <span className="self-center text-zinc-400">›</span>
+                      <span className="self-center text-muted-foreground">›</span>
                     </Link>
                   ) : (
-                    <div className="flex items-start justify-between gap-3 rounded-lg border border-dashed border-zinc-200 px-4 py-3 opacity-70 dark:border-zinc-800">
+                    <div className="flex items-start justify-between gap-3 rounded-2xl border border-dashed border-border px-4 py-3 opacity-70">
                       <div>
-                        <p className="font-medium text-zinc-700 dark:text-zinc-300">
-                          {m.title}
-                        </p>
-                        <p className="mt-0.5 text-sm text-zinc-500">
+                        <p className="font-semibold text-foreground/80">{m.title}</p>
+                        <p className="mt-0.5 text-sm text-muted-foreground">
                           Cần tối thiểu {m.minCards} thẻ để chơi.
                         </p>
                       </div>

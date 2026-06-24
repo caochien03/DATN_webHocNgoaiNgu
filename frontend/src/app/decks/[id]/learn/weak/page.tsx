@@ -4,6 +4,13 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
+import {
+  backLinkClass,
+  dangerButtonClass,
+  ghostButtonClass,
+  successButtonClass,
+} from "@/components/ui-kit/form-styles";
+import { GradientButton } from "@/components/ui-kit/primitives";
 import { recordAttempt } from "@/lib/api-fetch";
 import { shuffle } from "@/lib/shuffle";
 import type { CardRow } from "@/lib/types";
@@ -59,35 +66,28 @@ function WeakContent() {
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-8">
-      <Link
-        href={`/decks/${id}/learn`}
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
-      >
+      <Link href={`/decks/${id}/learn`} className={backLinkClass}>
         ← Chọn chế độ khác
       </Link>
 
-      {loading ? <p className="mt-6 text-sm text-zinc-500">Đang tải…</p> : null}
+      {loading ? (
+        <p className="mt-6 text-sm text-muted-foreground">Đang tải…</p>
+      ) : null}
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="mt-4 text-sm text-destructive">{error}</p>
       ) : null}
 
       {deck && total === 0 ? (
-        <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-sm text-zinc-500">
+        <div className="mt-6 rounded-2xl border border-border bg-card p-6 text-center">
+          <p className="text-sm text-muted-foreground">
             Chưa có thẻ nào đang ở trạng thái sai. Hoàn thành quiz hoặc bài viết
             để đánh dấu các thẻ cần ôn.
           </p>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
-            <Link
-              href={`/decks/${id}/learn/quiz`}
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
-            >
+            <Link href={`/decks/${id}/learn/quiz`} className={ghostButtonClass}>
               Mở trắc nghiệm
             </Link>
-            <Link
-              href={`/decks/${id}/learn/write`}
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
-            >
+            <Link href={`/decks/${id}/learn/write`} className={ghostButtonClass}>
               Mở viết
             </Link>
           </div>
@@ -96,18 +96,18 @@ function WeakContent() {
 
       {deck && total > 0 && current ? (
         <>
-          <p className="mt-4 text-sm text-zinc-500">
+          <p className="mt-4 text-sm text-muted-foreground">
             Còn {remaining}/{total} từ sai
           </p>
           <button
             type="button"
             onClick={() => setFlipped((f) => !f)}
-            className="mt-3 flex min-h-[180px] w-full items-center justify-center rounded-xl border border-amber-300 bg-amber-50 p-6 text-center text-xl font-medium text-amber-900 shadow-sm hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100 dark:hover:bg-amber-900/40"
+            className="mt-3 flex min-h-[180px] w-full items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 text-center text-xl font-medium text-amber-200 shadow-sm transition hover:bg-amber-500/15"
           >
             {flipped ? current.backText : current.frontText}
           </button>
           {current.note ? (
-            <p className="mt-2 text-center text-xs text-zinc-500">
+            <p className="mt-2 text-center text-xs text-muted-foreground">
               {current.note}
             </p>
           ) : null}
@@ -116,7 +116,7 @@ function WeakContent() {
             <button
               type="button"
               onClick={() => setFlipped((f) => !f)}
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              className={ghostButtonClass}
             >
               Lật thẻ
             </button>
@@ -124,14 +124,14 @@ function WeakContent() {
               <button
                 type="button"
                 onClick={markStillWrong}
-                className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/50"
+                className={dangerButtonClass}
               >
                 Vẫn chưa thuộc
               </button>
               <button
                 type="button"
                 onClick={markRemember}
-                className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                className={successButtonClass}
               >
                 Đã nhớ
               </button>
@@ -141,15 +141,15 @@ function WeakContent() {
       ) : null}
 
       {deck && total > 0 && queue.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-sm text-zinc-500">Đã duyệt hết lượt ôn này.</p>
-          <button
+        <div className="mt-6 rounded-2xl border border-border bg-card p-6 text-center">
+          <p className="text-sm text-muted-foreground">Đã duyệt hết lượt ôn này.</p>
+          <GradientButton
             type="button"
             onClick={() => void reload()}
-            className="mt-3 rounded-md bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+            className="mt-3"
           >
             Tải lại danh sách từ sai
-          </button>
+          </GradientButton>
         </div>
       ) : null}
     </div>

@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { motion } from "motion/react";
+import { ChevronRight, Trophy } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { BRAND, scoreColor } from "@/components/ui-kit/brand";
+import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import {
   topikAttemptModeLabel,
@@ -35,89 +39,104 @@ function AttemptsContent() {
   }, [load]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <Link
-        href="/topik"
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
-      >
-        ← Luyện TOPIK
-      </Link>
-      <h1 className="mt-4 text-xl font-semibold">Lịch sử làm bài</h1>
+    <div>
+      <PageHeader
+        title="Lịch sử làm bài TOPIK"
+        sub="Xem lại các lần luyện tập và thi thử"
+        action={
+          <Link
+            href="/topik/TOPIK_I"
+            className="rounded-xl border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            ← Luyện TOPIK
+          </Link>
+        }
+      />
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600">{error}</p>
+        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+          {error}
+        </p>
       ) : null}
 
       {attempts === null ? (
-        <p className="mt-4 text-sm text-zinc-500">Đang tải…</p>
+        <p className="text-sm text-muted-foreground">Đang tải…</p>
       ) : attempts.length === 0 ? (
-        <p className="mt-4 text-sm text-zinc-500">Chưa có bài làm nào.</p>
+        <p className="text-sm text-muted-foreground">Chưa có bài làm nào.</p>
       ) : (
-        <ul className="mt-4 flex flex-col gap-2">
-          {attempts.map((a) => {
+        <div className="space-y-2">
+          {attempts.map((a, i) => {
             const scores = getAttemptListScoreLines(a);
+            const acc = scoreColor(a.scorePercent);
             return (
-            <li
-              key={a.id}
-              className="rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="text-sm font-medium">
-                    {topikAttemptModeLabel(a.mode)}
-                    {a.exam ? ` · ${a.exam.title}` : null}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    {topikTierLabel(a.tier)}
-                    {a.section
-                      ? ` · ${topikSectionLabel(a.section)}`
-                      : null}
-                    {a.formatFromNo != null && a.formatToNo != null
-                      ? ` · câu ${a.formatFromNo}${a.formatToNo !== a.formatFromNo ? `–${a.formatToNo}` : ""}`
-                      : null}
-                  </p>
-                  {scores.mcqLine || scores.writingLine ? (
-                    <div className="mt-1 space-y-0.5 text-xs">
-                      {scores.mcqLine ? (
-                        <p className="text-zinc-600 dark:text-zinc-400">
-                          {scores.mcqLine}
-                        </p>
-                      ) : null}
-                      {scores.writingLine ? (
-                        <p
-                          className={
-                            scores.writingTone === "emerald"
-                              ? "text-emerald-700 dark:text-emerald-300"
-                              : scores.writingTone === "amber"
-                                ? "text-amber-800 dark:text-amber-200"
-                                : "text-zinc-600 dark:text-zinc-400"
-                          }
-                        >
-                          {scores.writingLine}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <p className="mt-1 text-xs text-zinc-500">
-                      {a.correctCount}/{a.totalQuestions} ({a.scorePercent}%)
-                    </p>
-                  )}
-                  {a.finishedAt ? (
-                    <p className="mt-1 text-xs text-zinc-400">
-                      {new Date(a.finishedAt).toLocaleString("vi-VN")}
-                    </p>
-                  ) : null}
-                </div>
+              <motion.div
+                key={a.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.04 }}
+              >
                 <Link
                   href={`/topik/attempts/${a.id}`}
-                  className="text-sm hover:underline"
+                  className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
                 >
-                  Chi tiết
+                  <span
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
+                    style={{ backgroundColor: `${BRAND.blue}18`, color: BRAND.blue }}
+                  >
+                    <Trophy size={18} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground">
+                      {topikAttemptModeLabel(a.mode)}
+                      {a.exam ? ` · ${a.exam.title}` : null}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {topikTierLabel(a.tier)}
+                      {a.section ? ` · ${topikSectionLabel(a.section)}` : null}
+                      {a.formatFromNo != null && a.formatToNo != null
+                        ? ` · câu ${a.formatFromNo}${a.formatToNo !== a.formatFromNo ? `–${a.formatToNo}` : ""}`
+                        : null}
+                    </p>
+                    {scores.mcqLine || scores.writingLine ? (
+                      <div className="mt-1 space-y-0.5 text-xs">
+                        {scores.mcqLine ? (
+                          <p className="text-muted-foreground">{scores.mcqLine}</p>
+                        ) : null}
+                        {scores.writingLine ? (
+                          <p
+                            style={{
+                              color:
+                                scores.writingTone === "emerald"
+                                  ? BRAND.green
+                                  : scores.writingTone === "amber"
+                                    ? BRAND.yellow
+                                    : BRAND.muted,
+                            }}
+                          >
+                            {scores.writingLine}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <p className="mt-1 text-xs" style={{ color: acc }}>
+                        {a.correctCount}/{a.totalQuestions} ({a.scorePercent}%)
+                      </p>
+                    )}
+                    {a.finishedAt ? (
+                      <p className="mt-1 text-xs text-muted-foreground/70">
+                        {new Date(a.finishedAt).toLocaleString("vi-VN")}
+                      </p>
+                    ) : null}
+                  </div>
+                  <ChevronRight
+                    size={16}
+                    className="text-muted-foreground transition-colors group-hover:text-foreground"
+                  />
                 </Link>
-              </div>
-            </li>
-          );})}
-        </ul>
+              </motion.div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

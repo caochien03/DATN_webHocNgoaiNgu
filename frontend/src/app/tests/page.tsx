@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { History } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { BRAND, GRADIENT, scoreColor } from "@/components/ui-kit/brand";
+import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { shuffle } from "@/lib/shuffle";
 import type { DeckWithStats, LessonRow, QuizSourceType, TopicRow } from "@/lib/types";
@@ -179,49 +182,52 @@ function TestsContent() {
     }
   }
 
+  const finalPercent =
+    questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
+  const selectClass =
+    "w-full rounded-xl border border-border bg-secondary px-3 py-2 text-foreground outline-none focus:border-primary/50";
+
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Bài kiểm tra tổng hợp
-        </h1>
-        <Link
-          href="/tests/history"
-          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
-        >
-          Lịch sử
-        </Link>
-      </div>
-      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-        Chọn nguồn dữ liệu và làm nhanh {QUESTION_COUNT} câu trắc nghiệm.
-      </p>
+    <div className="mx-auto max-w-2xl">
+      <PageHeader
+        title="Bài kiểm tra tổng hợp"
+        sub={`Chọn nguồn và làm nhanh ${QUESTION_COUNT} câu trắc nghiệm`}
+        action={
+          <Link
+            href="/tests/history"
+            className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <History size={14} /> Lịch sử
+          </Link>
+        }
+      />
 
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
 
-      <div className="mt-5 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="rounded-2xl border border-border bg-card p-5">
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="text-sm">
-            <span className="mb-1 block text-zinc-600 dark:text-zinc-400">Nguồn</span>
+            <span className="mb-1.5 block font-medium text-muted-foreground">Nguồn</span>
             <select
-              className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700"
+              className={selectClass}
               value={sourceType}
               onChange={(e) => setSourceType(e.target.value as QuizSourceType)}
             >
-              <option value="DECK">Bộ từ</option>
+              <option value="DECK">Bộ thẻ</option>
               <option value="TOPIC">Chủ đề</option>
               <option value="LESSON">Bài học</option>
             </select>
           </label>
           <label className="text-sm sm:col-span-2">
-            <span className="mb-1 block text-zinc-600 dark:text-zinc-400">
+            <span className="mb-1.5 block font-medium text-muted-foreground">
               {sourceLabel(sourceType)}
             </span>
             <select
-              className="w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700"
+              className={selectClass}
               value={sourceId}
               onChange={(e) => setSourceId(e.target.value)}
             >
@@ -237,19 +243,21 @@ function TestsContent() {
           type="button"
           onClick={() => void startQuiz()}
           disabled={!sourceId}
-          className="mt-3 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+          className="mt-4 rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          style={{ background: GRADIENT }}
         >
           Bắt đầu
         </button>
       </div>
 
       {questions.length > 0 && !finished && current ? (
-        <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-xs text-zinc-500">
+        <section className="mt-6 rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs text-muted-foreground">
             Câu {index + 1}/{questions.length}
           </p>
-          <h2 className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            Nghĩa của: <span className="text-indigo-600 dark:text-indigo-300">{current.prompt}</span>
+          <h2 className="mt-1 text-lg font-semibold text-foreground">
+            Nghĩa của:{" "}
+            <span style={{ color: BRAND.cyan }}>{current.prompt}</span>
           </h2>
           <div className="mt-4 grid gap-2">
             {current.options.map((opt) => (
@@ -257,7 +265,7 @@ function TestsContent() {
                 key={opt}
                 type="button"
                 onClick={() => void answer(opt)}
-                className="rounded-md border border-zinc-300 px-3 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                className="rounded-xl border border-border bg-secondary/40 px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:border-primary/40"
               >
                 {opt}
               </button>
@@ -267,37 +275,34 @@ function TestsContent() {
       ) : null}
 
       {finished ? (
-        <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            Hoàn thành bài kiểm tra
-          </h2>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Điểm của bạn:{" "}
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
-              {correctCount}/{questions.length} (
-              {questions.length > 0
-                ? Math.round((correctCount / questions.length) * 100)
-                : 0}
-              %)
-            </span>
+        <section className="mt-6 rounded-2xl border border-border bg-card p-6 text-center">
+          <p
+            className="text-4xl font-bold"
+            style={{ color: scoreColor(finalPercent) }}
+          >
+            {finalPercent}%
           </p>
-          <div className="mt-3 flex gap-2">
+          <p className="mt-1 text-sm text-muted-foreground">
+            {correctCount}/{questions.length} câu đúng
+          </p>
+          <div className="mt-4 flex justify-center gap-2">
             <button
               type="button"
               onClick={() => void startQuiz()}
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Làm lại
             </button>
             <Link
               href="/tests/history"
-              className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
+              style={{ background: GRADIENT }}
             >
               Xem lịch sử
             </Link>
           </div>
           {submitting ? (
-            <p className="mt-2 text-xs text-zinc-500">Đang lưu kết quả...</p>
+            <p className="mt-2 text-xs text-muted-foreground">Đang lưu kết quả...</p>
           ) : null}
         </section>
       ) : null}

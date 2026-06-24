@@ -9,13 +9,11 @@ import type {
   TopikSection,
   TopikTier,
 } from "@/lib/types";
+import { inputClass } from "@/components/ui-kit/form-styles";
 import {
   DEFAULT_SHORT_ANSWER_PARTS,
   type TopikWritingPart,
 } from "@/lib/topik-writing-parts";
-
-const inputClass =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
 
 type ExamQuestionInputFieldsProps = {
   tier: TopikTier;
@@ -124,18 +122,18 @@ export function ExamQuestionInputFields({
     : "Chưa có đề bài";
 
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="rounded-2xl border border-border bg-card">
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="min-w-0 flex-1 text-left"
         >
-          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <p className="text-sm font-medium text-foreground">
             Câu #{index + 1} · {topikSectionLabel(value.section)} · số{" "}
             {value.questionNo}
           </p>
-          <p className="truncate text-xs text-zinc-500">{summary}</p>
+          <p className="truncate text-xs text-muted-foreground">{summary}</p>
         </button>
         {onRemove ? (
           <button
@@ -149,7 +147,7 @@ export function ExamQuestionInputFields({
       </div>
 
       {open ? (
-        <div className="flex flex-col gap-3 border-t border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="flex flex-col gap-3 border-t border-border p-4">
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="flex flex-col gap-1 text-sm">
               <span>Thứ tự trong đề</span>
@@ -183,7 +181,7 @@ export function ExamQuestionInputFields({
               <span>
                 Số câu
                 {questionNoMax ? (
-                  <span className="text-zinc-500"> (1–{questionNoMax})</span>
+                  <span className="text-muted-foreground"> (1–{questionNoMax})</span>
                 ) : null}
               </span>
               <input
@@ -390,7 +388,7 @@ export function ExamQuestionInputFields({
           <fieldset className="flex flex-col gap-2">
             <legend className="text-sm font-medium">Đáp án</legend>
             {!isMcq ? (
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted-foreground">
                 Câu viết không dùng đáp án trắc nghiệm.
               </p>
             ) : (
@@ -398,7 +396,7 @@ export function ExamQuestionInputFields({
             {options.map((opt, i) => (
               <div
                 key={i}
-                className="flex flex-col gap-2 rounded-md border border-zinc-100 p-2 dark:border-zinc-800"
+                className="flex flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-2"
               >
                 <div className="flex items-center gap-2">
                   <input
@@ -435,7 +433,7 @@ export function ExamQuestionInputFields({
             <button
               type="button"
               onClick={addOption}
-              className="self-start text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+              className="self-start text-sm text-primary hover:underline"
             >
               + Thêm đáp án
             </button>

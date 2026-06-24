@@ -9,6 +9,8 @@ import {
   ExamQuestionInputFields,
   normalizeExamQuestions,
 } from "@/components/admin/ExamQuestionInputFields";
+import { backLinkClass, errorClass } from "@/components/ui-kit/form-styles";
+import { GradientButton } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { AdminTopikExamDetail, ExamQuestionInput } from "@/lib/types";
 
@@ -119,26 +121,26 @@ function AddExamQuestionContent() {
   }
 
   if (!exam && !error) {
-    return <p className="px-4 py-8 text-sm text-zinc-500">Đang tải…</p>;
+    return <p className="px-4 py-8 text-sm text-muted-foreground">Đang tải…</p>;
   }
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
       <Link
         href={`/admin/topik/exams/${examId}/edit`}
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className={backLinkClass}
       >
         ← Sửa đề
       </Link>
-      <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+      <h1 className="mt-4 text-xl font-semibold text-foreground">
         Thêm câu vào đề
       </h1>
       {exam ? (
-        <p className="mt-1 text-sm text-zinc-500">{exam.title}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{exam.title}</p>
       ) : null}
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className={`mt-4 `}>{error}</p>
       ) : null}
 
       {exam && question ? (
@@ -150,13 +152,9 @@ function AddExamQuestionContent() {
             defaultOpen
             onChange={setQuestion}
           />
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-4 rounded-md bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900"
-          >
+          <GradientButton type="submit" disabled={loading} className="mt-4">
             {loading ? "Đang lưu…" : "Thêm câu vào đề"}
-          </button>
+          </GradientButton>
         </form>
       ) : null}
     </div>

@@ -4,12 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AdminGate } from "@/components/AdminGate";
+import {
+  backLinkClass,
+  errorClass,
+  inputClass,
+  labelClass,
+  labelTextClass,
+} from "@/components/ui-kit/form-styles";
+import { GradientButton } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { GRAMMAR_LEVELS } from "@/lib/grammar-levels";
 import type { GrammarLevel } from "@/lib/types";
-
-const inputClass =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
 
 function NewLessonForm() {
   const router = useRouter();
@@ -50,18 +55,15 @@ function NewLessonForm() {
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-8">
-      <Link
-        href="/admin/lessons"
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
-      >
+      <Link href="/admin/lessons" className={backLinkClass}>
         ← Danh sách admin
       </Link>
-      <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+      <h1 className="mt-4 text-xl font-semibold text-foreground">
         Tạo bài học mới
       </h1>
       <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-700 dark:text-zinc-300">Cấp độ *</span>
+        <label className={labelClass}>
+          <span className={labelTextClass}>Cấp độ *</span>
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value as GrammarLevel)}
@@ -74,8 +76,8 @@ function NewLessonForm() {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-700 dark:text-zinc-300">Tiêu đề *</span>
+        <label className={labelClass}>
+          <span className={labelTextClass}>Tiêu đề *</span>
           <input
             required
             value={title}
@@ -83,8 +85,8 @@ function NewLessonForm() {
             className={inputClass}
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-700 dark:text-zinc-300">Tóm tắt</span>
+        <label className={labelClass}>
+          <span className={labelTextClass}>Tóm tắt</span>
           <textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
@@ -92,8 +94,8 @@ function NewLessonForm() {
             className={inputClass}
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-700 dark:text-zinc-300">Thứ tự</span>
+        <label className={labelClass}>
+          <span className={labelTextClass}>Thứ tự</span>
           <input
             type="number"
             min={0}
@@ -102,16 +104,10 @@ function NewLessonForm() {
             className={inputClass}
           />
         </label>
-        {error ? (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        ) : null}
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-        >
+        {error ? <p className={errorClass}>{error}</p> : null}
+        <GradientButton type="submit" disabled={loading} className="w-full py-2.5">
           {loading ? "Đang tạo…" : "Tạo và chỉnh sửa nội dung"}
-        </button>
+        </GradientButton>
       </form>
     </div>
   );

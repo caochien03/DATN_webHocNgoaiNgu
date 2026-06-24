@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { inputClass, formCardClass } from "@/components/ui-kit/form-styles";
+import { GradientButton } from "@/components/ui-kit/primitives";
 import { topikQuestionNoMax } from "@/lib/topik-question-limits";
 import {
   topikQuestionTypeLabel,
@@ -14,9 +16,6 @@ import type {
   TopikWritingPart,
 } from "@/lib/types";
 import { DEFAULT_SHORT_ANSWER_PARTS } from "@/lib/topik-writing-parts";
-
-const inputClass =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
 
 export type TopikQuestionFormValues = {
   tier: TopikTier;
@@ -222,7 +221,7 @@ export function TopikQuestionForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
+      className={formCardClass}
     >
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="flex flex-col gap-1 text-sm">
@@ -254,7 +253,7 @@ export function TopikQuestionForm({
           <span>
             Số câu
             {questionNoMax ? (
-              <span className="text-zinc-500"> (1–{questionNoMax})</span>
+              <span className="text-muted-foreground"> (1–{questionNoMax})</span>
             ) : null}
           </span>
           <input
@@ -402,7 +401,7 @@ export function TopikQuestionForm({
       </label>
 
       {section === "LISTENING" ? (
-        <div className="flex flex-col gap-2 rounded-md border border-dashed border-zinc-300 p-3 dark:border-zinc-700">
+        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border bg-secondary/30 p-3">
           <label className="flex flex-col gap-1 text-sm">
             <span>URL file nghe</span>
             <input
@@ -418,14 +417,14 @@ export function TopikQuestionForm({
               Trình duyệt không hỗ trợ audio.
             </audio>
           ) : (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               Dán link mp3 để nghe thử. Upload file sẽ bổ sung sau.
             </p>
           )}
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-2 rounded-md border border-dashed border-zinc-300 p-3 dark:border-zinc-700">
+      <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border bg-secondary/30 p-3">
         <label className="flex flex-col gap-1 text-sm">
           <span>URL ảnh đề bài / đoạn văn</span>
           <input
@@ -441,10 +440,10 @@ export function TopikQuestionForm({
           <img
             src={imageUrl.trim()}
             alt="Xem trước ảnh đề"
-            className="max-h-64 w-full rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
+            className="max-h-64 w-full rounded-xl border border-border object-contain"
           />
         ) : (
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Dùng cho đoạn đọc có bảng/hình hoặc minh họa trên câu hỏi.
           </p>
         )}
@@ -458,7 +457,7 @@ export function TopikQuestionForm({
           placeholder="vd. listen-25-26 — cùng ID cho cặp câu 25–26"
           className={inputClass}
         />
-        <span className="text-xs text-zinc-500">
+        <span className="text-xs text-muted-foreground">
           Hai câu cùng bundleId (liền kề trong đề) hiển thị chung một trang và
           một audio.
         </span>
@@ -467,13 +466,13 @@ export function TopikQuestionForm({
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">Đáp án</legend>
         {!isMcq ? (
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Câu viết không dùng đáp án trắc nghiệm.
           </p>
         ) : (
           <>
         {options.map((opt, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-md border border-zinc-100 p-2 dark:border-zinc-800">
+          <div key={i} className="flex flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-2">
             <div className="flex items-center gap-2">
               <input
                 type="radio"
@@ -511,7 +510,7 @@ export function TopikQuestionForm({
               <img
                 src={padOptionImageUrls(optionImageUrls, options.length)[i].trim()}
                 alt={`Xem trước đáp án ${i + 1}`}
-                className="max-h-32 rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
+                className="max-h-32 rounded-xl border border-border object-contain"
               />
             ) : null}
           </div>
@@ -519,7 +518,7 @@ export function TopikQuestionForm({
         <button
           type="button"
           onClick={addOption}
-          className="self-start text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+          className="self-start text-sm text-primary hover:underline"
         >
           + Thêm đáp án
         </button>
@@ -559,13 +558,9 @@ export function TopikQuestionForm({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900"
-        >
+        <GradientButton type="submit" disabled={loading}>
           {loading ? "Đang lưu…" : submitLabel}
-        </button>
+        </GradientButton>
         {footer}
       </div>
     </form>

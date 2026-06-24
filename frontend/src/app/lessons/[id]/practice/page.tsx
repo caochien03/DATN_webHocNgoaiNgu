@@ -4,6 +4,13 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
+import { scoreColor } from "@/components/ui-kit/brand";
+import {
+  backLinkClass,
+  errorClass,
+  ghostButtonClass,
+} from "@/components/ui-kit/form-styles";
+import { GradientButton } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { shuffle } from "@/lib/shuffle";
 import type { GrammarExercise } from "@/lib/types";
@@ -81,35 +88,34 @@ function PracticeContent() {
     setDone(false);
   }
 
+  const pct = queue.length > 0 ? Math.round((score / queue.length) * 100) : 0;
+
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-8">
-      <Link
-        href={`/lessons/${id}`}
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
-      >
+      <Link href={`/lessons/${id}`} className={backLinkClass}>
         ← Quay lại bài
       </Link>
 
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className={`mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 ${errorClass}`}>
           {error}
         </p>
       ) : null}
 
       {exercises && exercises.length === 0 ? (
-        <p className="mt-6 text-sm text-zinc-500">Bài này chưa có bài tập.</p>
+        <p className="mt-6 text-sm text-muted-foreground">Bài này chưa có bài tập.</p>
       ) : null}
 
       {queue.length > 0 && !done ? (
         <>
-          <p className="mt-4 text-sm text-zinc-500">
+          <p className="mt-4 text-sm text-muted-foreground">
             Câu {index + 1}/{queue.length} · Điểm: {score}
           </p>
-          <div className="mt-3 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-            <p className="text-xs uppercase tracking-wide text-zinc-500">
+          <div className="mt-3 rounded-2xl border border-border bg-card p-6">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
               Điền vào chỗ trống
             </p>
-            <p className="mt-1 text-lg font-medium text-zinc-900 dark:text-zinc-50">
+            <p className="mt-1 text-lg font-medium text-foreground">
               {queue[index].prompt}
             </p>
           </div>
@@ -120,19 +126,19 @@ function PracticeContent() {
               const isCorrect = i === queue[index].correctIndex;
               const isPicked = picked === i;
               const color = !revealed
-                ? "border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                ? "border-border bg-secondary/40 hover:bg-secondary"
                 : isCorrect
-                  ? "border-green-500 bg-green-50 dark:bg-green-950/50"
+                  ? "border-emerald-500/40 bg-emerald-500/10"
                   : isPicked
-                    ? "border-red-500 bg-red-50 dark:bg-red-950/50"
-                    : "border-zinc-300 dark:border-zinc-700";
+                    ? "border-red-500/40 bg-red-500/10"
+                    : "border-border bg-secondary/20";
               return (
                 <li key={`${queue[index].id}-${i}`}>
                   <button
                     type="button"
                     disabled={revealed}
                     onClick={() => choose(i)}
-                    className={`w-full rounded-md border px-3 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 disabled:cursor-default ${color}`}
+                    className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm text-foreground transition disabled:cursor-default ${color}`}
                   >
                     {opt}
                   </button>
@@ -144,18 +150,14 @@ function PracticeContent() {
           {picked !== null ? (
             <>
               {queue[index].explanation ? (
-                <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                <p className="mt-3 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
                   {queue[index].explanation}
                 </p>
               ) : null}
               <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  onClick={next}
-                  className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-                >
+                <GradientButton type="button" onClick={next}>
                   {index + 1 >= queue.length ? "Xem kết quả" : "Câu tiếp →"}
-                </button>
+                </GradientButton>
               </div>
             </>
           ) : null}
@@ -163,28 +165,27 @@ function PracticeContent() {
       ) : null}
 
       {done ? (
-        <div className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-sm text-zinc-500">Hoàn thành</p>
-          <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+        <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-center">
+          <p className="text-sm text-muted-foreground">Hoàn thành</p>
+          <p
+            className="mt-1 text-3xl font-bold"
+            style={{ color: scoreColor(pct) }}
+          >
             {score} / {queue.length}
           </p>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Sai {wrongList.length} câu.
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             {wrongList.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => restart(wrongList)}
-                className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-              >
+              <GradientButton type="button" onClick={() => restart(wrongList)}>
                 Làm lại {wrongList.length} câu sai
-              </button>
+              </GradientButton>
             ) : null}
             <button
               type="button"
               onClick={() => restart()}
-              className="rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              className={ghostButtonClass}
             >
               Làm lại toàn bài
             </button>

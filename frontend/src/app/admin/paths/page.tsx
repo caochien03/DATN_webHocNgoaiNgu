@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Plus } from "lucide-react";
 import { AdminGate } from "@/components/AdminGate";
+import { GRADIENT } from "@/components/ui-kit/brand";
+import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { languageLabel } from "@/lib/topic-labels";
 import type { AdminPathCatalogRow } from "@/lib/types";
@@ -48,39 +51,38 @@ function AdminPathsContent() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Quản trị lộ trình
-          </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Tạo, sửa, xóa lộ trình và các bước (chủ đề / bài học).
-          </p>
-        </div>
-        <Link
-          href="/admin/paths/new"
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-        >
-          + Tạo lộ trình mới
-        </Link>
-      </div>
+    <div className="mx-auto max-w-3xl">
+      <PageHeader
+        title="Quản trị lộ trình"
+        sub="Tạo, sửa, xóa lộ trình và các bước (chủ đề / bài học)"
+        action={
+          <Link
+            href="/admin/paths/new"
+            className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
+            style={{ background: GRADIENT }}
+          >
+            <Plus size={14} /> Tạo lộ trình mới
+          </Link>
+        }
+      />
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+          {error}
+        </p>
       ) : null}
 
       {paths === null ? (
-        <p className="mt-6 text-sm text-zinc-500">Đang tải…</p>
+        <p className="text-sm text-muted-foreground">Đang tải…</p>
       ) : paths.length === 0 ? (
-        <p className="mt-6 text-sm text-zinc-500">Chưa có lộ trình.</p>
+        <p className="text-sm text-muted-foreground">Chưa có lộ trình.</p>
       ) : (
-        <div className="mt-6 flex flex-col gap-8">
+        <div className="flex flex-col gap-8">
           {groups.map((group) => (
             <section key={group.label}>
-              <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              <h2 className="text-sm font-semibold text-foreground">
                 {group.label}
-                <span className="ml-2 font-normal text-zinc-500">
+                <span className="ml-2 font-normal text-muted-foreground">
                   ({group.items.length} lộ trình)
                 </span>
               </h2>
@@ -88,19 +90,17 @@ function AdminPathsContent() {
                 {group.items.map((p) => (
                   <li
                     key={p.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-4 py-3"
                   >
                     <div className="min-w-0">
-                      <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                        {p.title}
-                      </p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="font-semibold text-foreground">{p.title}</p>
+                      <p className="text-xs text-muted-foreground">
                         {languageLabel(p.languageCode)} · {p._count.steps} bước
                       </p>
                     </div>
                     <Link
                       href={`/admin/paths/${p.id}/edit`}
-                      className="shrink-0 text-sm text-zinc-700 hover:underline dark:text-zinc-300"
+                      className="shrink-0 text-sm font-medium text-primary hover:underline"
                     >
                       Sửa
                     </Link>

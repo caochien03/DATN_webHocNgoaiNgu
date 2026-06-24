@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
 import { WritingGradeView, WritingResultSummary } from "@/components/topik/WritingGradeView";
 import { WritingSubmitOverlay } from "@/components/topik/WritingSubmitOverlay";
+import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import {
   topikAttemptModeLabel,
@@ -87,18 +88,22 @@ function AttemptDetailContent() {
   }
 
   if (loadError) {
-    return <p className="px-4 py-8 text-sm text-red-600">{loadError}</p>;
+    return (
+      <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+        {loadError}
+      </p>
+    );
   }
 
   if (!attempt) {
-    return <p className="px-4 py-8 text-sm text-zinc-500">Đang tải…</p>;
+    return <p className="text-sm text-muted-foreground">Đang tải…</p>;
   }
 
   const answers = attempt.answers ?? [];
   const writingSummary = summarizeWritingGrades(answers);
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl">
       <WritingSubmitOverlay
         visible={regrading}
         hasWriting
@@ -106,14 +111,14 @@ function AttemptDetailContent() {
       />
       <Link
         href="/topik/attempts"
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Lịch sử
       </Link>
-      <h1 className="mt-4 text-xl font-semibold">
+      <h1 className="mt-4 text-2xl font-bold text-foreground">
         {topikAttemptModeLabel(attempt.mode)}
       </h1>
-      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="mt-1 text-sm text-muted-foreground">
         {topikTierLabel(attempt.tier)}
         {attempt.exam ? ` · ${attempt.exam.title}` : null}
         {writingSummary.writingCount === 0 ? (
@@ -141,22 +146,25 @@ function AttemptDetailContent() {
             type="button"
             disabled={regrading}
             onClick={() => void regradeWriting()}
-            className="rounded-md bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            style={{ background: GRADIENT }}
           >
             {regrading ? "Đang chấm…" : "Chấm lại bằng AI"}
           </button>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             {writingSummary.pendingCount} câu viết chưa có điểm AI
           </p>
         </div>
       ) : null}
 
       {regradeNote ? (
-        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">{regradeNote}</p>
+        <p className="mt-3 text-sm text-muted-foreground">{regradeNote}</p>
       ) : null}
 
       {regradeError ? (
-        <p className="mt-3 text-sm text-red-600 dark:text-red-400">{regradeError}</p>
+        <p className="mt-3 text-sm" style={{ color: BRAND.red }}>
+          {regradeError}
+        </p>
       ) : null}
 
       <ul className="mt-6 flex flex-col gap-3">
@@ -166,15 +174,19 @@ function AttemptDetailContent() {
           return (
           <li
             key={a.questionId}
-            className={`rounded-lg border p-3 text-sm ${
-              isMcq
-                ? a.isCorrect
-                  ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
-                  : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
-                : writingGradeCardClass(uiStatus)
+            className={`rounded-xl border p-4 text-sm ${
+              isMcq ? "" : writingGradeCardClass(uiStatus)
             }`}
+            style={
+              isMcq
+                ? {
+                    borderColor: `${a.isCorrect ? BRAND.green : BRAND.red}40`,
+                    backgroundColor: `${a.isCorrect ? BRAND.green : BRAND.red}12`,
+                  }
+                : undefined
+            }
           >
-            <p className="font-medium">
+            <p className="font-medium text-foreground">
               {topikSectionLabel(a.section)} câu {a.questionNo}{" "}
               {isMcq
                 ? a.isCorrect
@@ -186,12 +198,12 @@ function AttemptDetailContent() {
               <ul className="mt-2 flex flex-col gap-2">
                 {a.writingPartResults.map((part) => (
                   <li key={part.label} className="text-sm">
-                    <span className="font-medium">{part.label}</span>
-                    <p className="mt-1 whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">
+                    <span className="font-medium text-foreground">{part.label}</span>
+                    <p className="mt-1 whitespace-pre-wrap text-foreground/90">
                       {part.textAnswer}
                     </p>
                     {part.modelAnswer ? (
-                      <p className="mt-1 text-xs text-zinc-500">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Mẫu: {part.modelAnswer}
                       </p>
                     ) : null}
@@ -200,17 +212,17 @@ function AttemptDetailContent() {
               </ul>
             ) : null}
             {a.textAnswer ? (
-              <p className="mt-2 whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">
+              <p className="mt-2 whitespace-pre-wrap text-foreground/90">
                 {a.textAnswer}
               </p>
             ) : null}
             {isMcq && a.selectedIndex != null && a.correctIndex != null ? (
-              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Bạn chọn: {a.selectedIndex + 1} · Đúng: {a.correctIndex + 1}
               </p>
             ) : null}
             {a.modelAnswer ? (
-              <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+              <p className="mt-2 text-xs text-muted-foreground">
                 Đáp án mẫu: {a.modelAnswer}
               </p>
             ) : null}

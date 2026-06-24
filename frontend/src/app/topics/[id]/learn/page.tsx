@@ -43,27 +43,27 @@ function LearnMenu() {
   const { topic, error, loading } = useTopic(id);
 
   return (
-    <div className="mx-auto w-full max-w-lg px-4 py-8">
+    <div className="mx-auto max-w-lg">
       <Link
         href={`/topics/${id}`}
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Quay lại chủ đề
       </Link>
 
-      {loading ? <p className="mt-6 text-sm text-zinc-500">Đang tải…</p> : null}
+      {loading ? <p className="mt-6 text-sm text-muted-foreground">Đang tải…</p> : null}
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
 
       {topic ? (
         <>
-          <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <h1 className="mt-4 text-2xl font-bold text-foreground">
             Học chủ đề “{topic.title}”
           </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             {topic.words.length} từ · nội dung hệ thống, tiến độ chơi không được
             lưu lại.
           </p>
@@ -76,25 +76,21 @@ function LearnMenu() {
                   {enough ? (
                     <Link
                       href={`/topics/${id}/learn/${m.slug}`}
-                      className="flex items-start justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+                      className="flex items-start justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition-colors hover:border-primary/40"
                     >
                       <div>
-                        <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                          {m.title}
-                        </p>
-                        <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
+                        <p className="font-semibold text-foreground">{m.title}</p>
+                        <p className="mt-0.5 text-sm text-muted-foreground">
                           {m.description}
                         </p>
                       </div>
-                      <span className="self-center text-zinc-400">›</span>
+                      <span className="self-center text-muted-foreground">›</span>
                     </Link>
                   ) : (
-                    <div className="flex items-start justify-between gap-3 rounded-lg border border-dashed border-zinc-200 px-4 py-3 opacity-70 dark:border-zinc-800">
+                    <div className="flex items-start justify-between gap-3 rounded-2xl border border-dashed border-border px-4 py-3 opacity-70">
                       <div>
-                        <p className="font-medium text-zinc-700 dark:text-zinc-300">
-                          {m.title}
-                        </p>
-                        <p className="mt-0.5 text-sm text-zinc-500">
+                        <p className="font-semibold text-foreground/80">{m.title}</p>
+                        <p className="mt-0.5 text-sm text-muted-foreground">
                           Cần tối thiểu {m.minCards} thẻ để chơi.
                         </p>
                       </div>

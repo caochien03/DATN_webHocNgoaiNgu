@@ -9,11 +9,14 @@ import {
   parseApiError,
   uploadWithAuth,
 } from "@/lib/api-fetch";
+import { Plus } from "lucide-react";
+import { GRADIENT } from "@/components/ui-kit/brand";
+import { PageHeader } from "@/components/ui-kit/primitives";
 import { topikTierLabel } from "@/lib/topik-labels";
 import type { AdminTopikExamDetail, AdminTopikExamListRow, TopikTier } from "@/lib/types";
 
 const inputClass =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
+  "rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground outline-none focus:border-primary/50";
 
 function AdminTopikExamsContent() {
   const router = useRouter();
@@ -67,29 +70,24 @@ function AdminTopikExamsContent() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Quản trị đề TOPIK
-          </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Tạo đề thi thử cố định, import JSON, công bố để luyện dạng.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
+    <div className="mx-auto max-w-3xl">
+      <PageHeader
+        title="Quản trị đề TOPIK"
+        sub="Tạo đề thi thử cố định, import JSON, công bố để luyện dạng"
+        action={
           <Link
             href="/admin/topik/exams/new"
-            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+            className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
+            style={{ background: GRADIENT }}
           >
-            + Tạo đề mới
+            <Plus size={14} /> Tạo đề mới
           </Link>
-        </div>
-      </div>
+        }
+      />
 
-      <div className="mt-4 flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Lọc cấp độ</span>
+      <div className="mb-4 flex flex-wrap items-end gap-3">
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-muted-foreground">Lọc cấp độ</span>
           <select
             value={tier}
             onChange={(e) => setTier(e.target.value as TopikTier | "")}
@@ -102,23 +100,19 @@ function AdminTopikExamsContent() {
         </label>
         <Link
           href="/admin/topik/questions"
-          className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Sửa từng câu hỏi →
         </Link>
       </div>
 
-      <div className="mt-6 rounded-lg border border-dashed border-zinc-300 p-4 dark:border-zinc-700">
-        <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-          Import đề từ JSON
-        </h2>
-        <p className="mt-1 text-xs text-zinc-500">
+      <div className="mb-6 rounded-2xl border border-dashed border-border p-4">
+        <h2 className="text-sm font-semibold text-foreground">Import đề từ JSON</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
           File gồm metadata đề và mảng{" "}
-          <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">
-            questions
-          </code>
-          . Xem mẫu trong{" "}
-          <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">
+          <code className="rounded bg-secondary px-1">questions</code>. Xem mẫu
+          trong{" "}
+          <code className="rounded bg-secondary px-1">
             backend/prisma/templates/topik-exam-TOPIK_I.template.json
           </code>
           .
@@ -133,46 +127,48 @@ function AdminTopikExamsContent() {
               const file = e.target.files?.[0];
               if (file) void importJson(file);
             }}
-            className="text-sm"
+            className="text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:text-foreground"
           />
           {importing ? (
-            <span className="text-sm text-zinc-500">Đang import…</span>
+            <span className="text-sm text-muted-foreground">Đang import…</span>
           ) : null}
         </div>
       </div>
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+          {error}
+        </p>
       ) : null}
 
       {filtered === null ? (
-        <p className="mt-6 text-sm text-zinc-500">Đang tải…</p>
+        <p className="text-sm text-muted-foreground">Đang tải…</p>
       ) : filtered.length === 0 ? (
-        <p className="mt-6 text-sm text-zinc-500">Chưa có đề thi.</p>
+        <p className="text-sm text-muted-foreground">Chưa có đề thi.</p>
       ) : (
-        <ul className="mt-6 flex flex-col gap-2">
+        <ul className="flex flex-col gap-2">
           {filtered.map((exam) => (
             <li
               key={exam.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-4 py-3"
             >
               <div className="min-w-0">
-                <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="font-semibold text-foreground">
                   {exam.title}
                   {!exam.isPublished ? (
-                    <span className="ml-2 text-xs font-normal text-amber-700 dark:text-amber-400">
+                    <span className="ml-2 text-xs font-normal text-amber-300">
                       Nháp
                     </span>
                   ) : null}
                 </p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-muted-foreground">
                   {topikTierLabel(exam.tier)} · {exam._count.questions} câu ·{" "}
                   {exam.durationMinutes} phút
                 </p>
               </div>
               <Link
                 href={`/admin/topik/exams/${exam.id}/edit`}
-                className="shrink-0 text-sm text-zinc-700 hover:underline dark:text-zinc-300"
+                className="shrink-0 text-sm font-medium text-primary hover:underline"
               >
                 Sửa
               </Link>

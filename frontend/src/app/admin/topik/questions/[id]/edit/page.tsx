@@ -8,6 +8,7 @@ import {
   TopikQuestionForm,
   type TopikQuestionFormValues,
 } from "@/components/admin/TopikQuestionForm";
+import { backLinkClass, dangerButtonClass, errorClass } from "@/components/ui-kit/form-styles";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { topikSectionLabel, topikTierLabel } from "@/lib/topik-labels";
 import type { TopikQuestionAdminRow } from "@/lib/types";
@@ -73,7 +74,7 @@ function EditTopikQuestionContent() {
   }
 
   if (!question && !error) {
-    return <p className="px-4 py-8 text-sm text-zinc-500">Đang tải…</p>;
+    return <p className="px-4 py-8 text-sm text-muted-foreground">Đang tải…</p>;
   }
 
   const formInitial: TopikQuestionFormValues | null = question
@@ -106,21 +107,21 @@ function EditTopikQuestionContent() {
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
       <Link
         href="/admin/topik/questions"
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className={backLinkClass}
       >
         ← Danh sách câu hỏi
       </Link>
 
       {error ? (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className={`mt-4 `}>{error}</p>
       ) : null}
 
       {question && formInitial ? (
         <>
-          <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <h1 className="mt-4 text-xl font-semibold text-foreground">
             Sửa câu hỏi
           </h1>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             {topikTierLabel(question.tier)} ·{" "}
             {topikSectionLabel(question.section)} · câu {question.questionNo}
           </p>
@@ -136,7 +137,7 @@ function EditTopikQuestionContent() {
                 <button
                   type="button"
                   onClick={() => void removeQuestion()}
-                  className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:text-red-400"
+                  className={dangerButtonClass}
                 >
                   Xóa câu
                 </button>

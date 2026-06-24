@@ -24,10 +24,11 @@ import {
   getWritingPartCount,
 } from "@/lib/topik-writing-parts";
 import { buildWritingQuestionMapItems } from "@/lib/topik-question-map";
+import { GRADIENT } from "@/components/ui-kit/brand";
 import type { GradedTopikAnswer, TopikQuestion, TopikSubmitResult } from "@/lib/types";
 
 const textareaClass =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
+  "w-full rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
 
 type TopikWritingRunnerProps = {
   title: string;
@@ -112,7 +113,7 @@ export function TopikWritingRunner({
 
   if (sorted.length === 0) {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted-foreground">
         Chưa có câu hỏi. Quay lại và chọn dạng khác.
       </p>
     );
@@ -138,22 +139,20 @@ export function TopikWritingRunner({
       />
       <Link
         href={backHref}
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         onClick={(e) => {
           if (!confirmLeave()) e.preventDefault();
         }}
       >
         ← Quay lại
       </Link>
-      <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-        {title}
-      </h1>
+      <h1 className="mt-4 text-2xl font-bold text-foreground">{title}</h1>
       {subtitle ? (
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{subtitle}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
       ) : null}
 
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
@@ -164,8 +163,8 @@ export function TopikWritingRunner({
       />
 
       {current ? (
-        <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-xs text-zinc-500">
+        <section className="mt-6 rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs text-muted-foreground">
             Câu {current.questionNo} · {topikSectionLabel(current.section)} ·{" "}
             {topikQuestionTypeLabel(current.questionType)} · {pageIndex + 1}/
             {sorted.length}
@@ -184,7 +183,7 @@ export function TopikWritingRunner({
               type="button"
               disabled={pageIndex === 0}
               onClick={() => setPageIndex((x) => x - 1)}
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-50 dark:border-zinc-700"
+              className="rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
             >
               Câu trước
             </button>
@@ -193,7 +192,8 @@ export function TopikWritingRunner({
                 type="button"
                 disabled={!pageAnswered}
                 onClick={() => setPageIndex((x) => x + 1)}
-                className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: GRADIENT }}
               >
                 Câu sau
               </button>
@@ -202,7 +202,8 @@ export function TopikWritingRunner({
                 type="button"
                 disabled={!allAnswered || submitting}
                 onClick={() => void finish()}
-                className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: GRADIENT }}
               >
                 {submitting ? "Đang chấm…" : "Nộp bài"}
               </button>
@@ -232,7 +233,7 @@ export function WritingQuestionFields({
   return (
     <div className="mt-4">
       {question.passage ? (
-        <p className="whitespace-pre-wrap rounded-md bg-zinc-50 p-3 text-sm leading-relaxed text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+        <p className="whitespace-pre-wrap rounded-lg bg-secondary p-3 text-sm leading-relaxed text-foreground/90">
           {question.passage}
         </p>
       ) : null}
@@ -241,20 +242,18 @@ export function WritingQuestionFields({
         <img
           src={question.imageUrl}
           alt=""
-          className="mt-3 max-h-80 w-full rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
+          className="mt-3 max-h-80 w-full rounded-lg border border-border object-contain"
         />
       ) : null}
-      <h2 className="mt-3 text-base font-medium text-zinc-900 dark:text-zinc-100">
+      <h2 className="mt-3 text-base font-medium text-foreground">
         {question.prompt}
       </h2>
 
       {partCount > 1 ? (
         <div className="mt-4 flex flex-col gap-4">
           {parts.slice(0, partCount).map((part, i) => (
-            <label key={part.label} className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                {part.label}
-              </span>
+            <label key={part.label} className="flex flex-col gap-1.5 text-sm">
+              <span className="font-medium text-foreground">{part.label}</span>
               <input
                 type="text"
                 value={Array.isArray(value) ? (value[i] ?? "") : ""}
@@ -304,9 +303,7 @@ function CharCountHint({
   return (
     <p
       className={`mt-2 text-xs ${
-        belowMin || aboveMax
-          ? "text-amber-700 dark:text-amber-400"
-          : "text-zinc-500"
+        belowMin || aboveMax ? "text-amber-300" : "text-muted-foreground"
       }`}
     >
       {len} ký tự
@@ -344,9 +341,7 @@ function WritingResultView({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-        Đã nộp bài
-      </h2>
+      <h2 className="text-2xl font-bold text-foreground">Đã nộp bài</h2>
       <WritingResultSummary answers={graded} />
       <ul className="mt-4 flex flex-col gap-3">
         {graded.map((a) => {
@@ -355,21 +350,23 @@ function WritingResultView({
           return (
             <li
               key={a.questionId}
-              className={`rounded-lg border p-3 text-sm ${writingGradeCardClass(uiStatus)}`}
+              className={`rounded-xl border p-4 text-sm ${writingGradeCardClass(uiStatus)}`}
             >
-              <p className="font-medium">
+              <p className="font-medium text-foreground">
                 Câu {a.questionNo} · {topikSectionLabel(a.section)}{" "}
                 {writingGradeTitleSuffix(a)}
               </p>
               {q ? (
-                <p className="mt-1 text-zinc-700 dark:text-zinc-300">{q.prompt}</p>
+                <p className="mt-1 text-foreground/80">{q.prompt}</p>
               ) : null}
               {a.writingPartResults?.length ? (
                 <ul className="mt-2 flex flex-col gap-2">
                   {a.writingPartResults.map((part) => (
                     <li key={part.label}>
-                      <span className="text-xs font-medium">{part.label}</span>
-                      <p className="mt-1 whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
+                      <span className="text-xs font-medium text-foreground">
+                        {part.label}
+                      </span>
+                      <p className="mt-1 whitespace-pre-wrap text-foreground/80">
                         {part.textAnswer}
                       </p>
                     </li>
@@ -377,7 +374,7 @@ function WritingResultView({
                 </ul>
               ) : null}
               {a.textAnswer ? (
-                <p className="mt-2 whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
+                <p className="mt-2 whitespace-pre-wrap text-foreground/80">
                   {a.textAnswer}
                 </p>
               ) : null}
@@ -389,13 +386,14 @@ function WritingResultView({
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
           href={backHref}
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700"
+          className="rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Làm dạng khác
         </Link>
         <Link
           href={attemptHref}
-          className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
+          style={{ background: GRADIENT }}
         >
           Xem chi tiết
         </Link>

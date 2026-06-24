@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { Play } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { GRADIENT } from "@/components/ui-kit/brand";
 import { useTopic } from "@/lib/use-topic";
 
 function TopicDetailContent() {
@@ -11,17 +13,17 @@ function TopicDetailContent() {
   const { topic, error, loading } = useTopic(id);
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl">
       <Link
         href="/topics"
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Tất cả chủ đề
       </Link>
 
-      {loading ? <p className="mt-6 text-sm text-zinc-500">Đang tải…</p> : null}
+      {loading ? <p className="mt-6 text-sm text-muted-foreground">Đang tải…</p> : null}
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
@@ -30,50 +32,44 @@ function TopicDetailContent() {
         <>
           <div className="mt-4 flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-                {topic.title}
-              </h1>
-              <p className="mt-1 text-sm text-zinc-500">
+              <h1 className="text-2xl font-bold text-foreground">{topic.title}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
                 {topic.languageCode.toUpperCase()}
-                {topic.level ? ` · ${topic.level}` : ""} · {topic.words.length}{" "}
-                từ
+                {topic.level ? ` · ${topic.level}` : ""} · {topic.words.length} từ
               </p>
               {topic.description ? (
-                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="mt-2 text-sm text-muted-foreground">
                   {topic.description}
                 </p>
               ) : null}
             </div>
             <Link
               href={`/topics/${id}/learn`}
-              className="shrink-0 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+              className="flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
+              style={{ background: GRADIENT }}
             >
-              Học chủ đề
+              <Play size={14} /> Học chủ đề
             </Link>
           </div>
 
           <section className="mt-8">
-            <h2 className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <h2 className="mb-3 text-sm font-semibold text-foreground">
               Từ vựng trong chủ đề ({topic.words.length})
             </h2>
-            <ul className="mt-3 flex flex-col gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {topic.words.map((w) => (
-                <li
+                <div
                   key={w.id}
-                  className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
+                  className="rounded-xl border border-border bg-card px-4 py-3 text-sm"
                 >
-                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                    {w.frontText}
-                  </p>
-                  <p className="text-zinc-600 dark:text-zinc-400">
-                    {w.backText}
-                  </p>
+                  <p className="font-semibold text-foreground">{w.frontText}</p>
+                  <p className="text-muted-foreground">{w.backText}</p>
                   {w.note ? (
-                    <p className="mt-1 text-xs text-zinc-500">{w.note}</p>
+                    <p className="mt-1 text-xs text-muted-foreground/70">{w.note}</p>
                   ) : null}
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           </section>
         </>
       ) : null}

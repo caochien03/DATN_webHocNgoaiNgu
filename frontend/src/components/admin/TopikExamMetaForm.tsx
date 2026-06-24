@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { inputClass, formCardClass } from "@/components/ui-kit/form-styles";
+import { GradientButton } from "@/components/ui-kit/primitives";
 import { topikTierLabel } from "@/lib/topik-labels";
 import type { TopikTier } from "@/lib/types";
-
-const inputClass =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
 
 export type TopikExamMetaValues = {
   title: string;
@@ -55,10 +54,7 @@ export function TopikExamMetaForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
-    >
+    <form onSubmit={handleSubmit} className={formCardClass}>
       <label className="flex flex-col gap-1 text-sm">
         <span>Tên đề</span>
         <input
@@ -125,13 +121,9 @@ export function TopikExamMetaForm({
       </label>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900"
-        >
+        <GradientButton type="submit" disabled={loading}>
           {loading ? "Đang lưu…" : submitLabel}
-        </button>
+        </GradientButton>
         {footer}
       </div>
     </form>

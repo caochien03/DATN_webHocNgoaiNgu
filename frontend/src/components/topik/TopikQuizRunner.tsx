@@ -9,6 +9,7 @@ import {
   sharedAudioUrl,
 } from "@/lib/group-topik-pages";
 import { TopikQuestionMap } from "@/components/topik/TopikQuestionMap";
+import { BRAND, GRADIENT, scoreColor } from "@/components/ui-kit/brand";
 import { topikSectionLabel } from "@/lib/topik-labels";
 import { buildQuizQuestionMapItems } from "@/lib/topik-question-map";
 import type { GradedTopikAnswer, TopikQuestion, TopikSubmitResult } from "@/lib/types";
@@ -79,7 +80,7 @@ export function TopikQuizRunner({
 
   if (questions.length === 0) {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted-foreground">
         Chưa có câu hỏi. Quay lại và chọn dạng khác.
       </p>
     );
@@ -100,22 +101,20 @@ export function TopikQuizRunner({
     <div>
       <Link
         href={backHref}
-        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         onClick={(e) => {
           if (!confirmLeave()) e.preventDefault();
         }}
       >
         ← Quay lại
       </Link>
-      <h1 className="mt-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-        {title}
-      </h1>
+      <h1 className="mt-4 text-2xl font-bold text-foreground">{title}</h1>
       {subtitle ? (
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{subtitle}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
       ) : null}
 
       {error ? (
-        <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
@@ -126,8 +125,8 @@ export function TopikQuizRunner({
       />
 
       {currentPage.length > 0 ? (
-        <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-xs text-zinc-500">
+        <section className="mt-6 rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs text-muted-foreground">
             {pageLabel(currentPage, pageIndex)} · Trang {pageIndex + 1}/
             {pages.length}
             {currentPage.length === 1 ? (
@@ -162,7 +161,7 @@ export function TopikQuizRunner({
               type="button"
               disabled={pageIndex === 0}
               onClick={() => setPageIndex((x) => x - 1)}
-              className="rounded-md border border-zinc-300 px-3 py-2 text-sm disabled:opacity-50 dark:border-zinc-700"
+              className="rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
             >
               Trang trước
             </button>
@@ -171,7 +170,8 @@ export function TopikQuizRunner({
                 type="button"
                 disabled={!pageAnswered}
                 onClick={() => setPageIndex((x) => x + 1)}
-                className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: GRADIENT }}
               >
                 Trang sau
               </button>
@@ -180,7 +180,8 @@ export function TopikQuizRunner({
                 type="button"
                 disabled={!allAnswered || submitting}
                 onClick={() => void finish()}
-                className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: GRADIENT }}
               >
                 {submitting ? "Đang nộp…" : "Nộp bài"}
               </button>
@@ -206,12 +207,12 @@ export function QuestionBlock({
   const imageOptions = usesImageOptions(question);
 
   return (
-    <div className="border-t border-zinc-100 pt-4 first:border-t-0 first:pt-0 dark:border-zinc-800">
-      <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+    <div className="border-t border-border pt-4 first:border-t-0 first:pt-0">
+      <p className="text-xs font-medium text-muted-foreground">
         {topikSectionLabel(question.section)} · câu {question.questionNo}
       </p>
       {question.passage ? (
-        <p className="mt-2 whitespace-pre-wrap rounded-md bg-zinc-50 p-3 text-sm leading-relaxed text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+        <p className="mt-2 whitespace-pre-wrap rounded-lg bg-secondary p-3 text-sm leading-relaxed text-foreground/90">
           {question.passage}
         </p>
       ) : null}
@@ -220,7 +221,7 @@ export function QuestionBlock({
         <img
           src={question.imageUrl}
           alt=""
-          className="mt-2 max-h-80 w-full rounded-md border border-zinc-200 object-contain dark:border-zinc-700"
+          className="mt-2 max-h-80 w-full rounded-lg border border-border object-contain"
         />
       ) : null}
       {showAudio && question.audioUrl ? (
@@ -228,7 +229,7 @@ export function QuestionBlock({
           <track kind="captions" />
         </audio>
       ) : null}
-      <h2 className="mt-2 text-base font-medium text-zinc-900 dark:text-zinc-100">
+      <h2 className="mt-2 text-base font-medium text-foreground">
         {question.prompt}
       </h2>
       <div
@@ -242,11 +243,16 @@ export function QuestionBlock({
               key={i}
               type="button"
               onClick={() => onPick(i)}
-              className={`rounded-md border px-3 py-2 text-left text-sm transition ${
+              className="rounded-xl border px-3 py-2 text-left text-sm transition-colors"
+              style={
                 selected
-                  ? "border-zinc-900 bg-zinc-100 dark:border-zinc-300 dark:bg-zinc-800"
-                  : "border-zinc-300 text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
-              }`}
+                  ? {
+                      borderColor: BRAND.blue,
+                      backgroundColor: `${BRAND.blue}1a`,
+                      color: "#fff",
+                    }
+                  : { borderColor: "var(--border)" }
+              }
             >
               {optionImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -292,31 +298,33 @@ function ResultView({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-        Kết quả
-      </h2>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Đúng{" "}
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">
-          {result.correctCount}/{result.totalQuestions}
-        </span>{" "}
-        ({result.scorePercent}%)
-      </p>
+      <div className="rounded-2xl border border-border bg-card p-6 text-center">
+        <p
+          className="text-4xl font-bold"
+          style={{ color: scoreColor(result.scorePercent) }}
+        >
+          {result.scorePercent}%
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Đúng {result.correctCount}/{result.totalQuestions} câu
+        </p>
+      </div>
       <ul className="mt-4 flex flex-col gap-3">
         {graded.map((a) => {
           const q = byId.get(a.questionId);
+          const tint =
+            a.gradeStatus === "pending"
+              ? BRAND.cyan
+              : a.isCorrect
+                ? BRAND.green
+                : BRAND.red;
           return (
             <li
               key={a.questionId}
-              className={`rounded-lg border p-3 text-sm ${
-                a.gradeStatus === "pending"
-                  ? "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/30"
-                  : a.isCorrect
-                    ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30"
-                    : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
-              }`}
+              className="rounded-xl border p-4 text-sm"
+              style={{ borderColor: `${tint}40`, backgroundColor: `${tint}12` }}
             >
-              <p className="font-medium">
+              <p className="font-medium text-foreground">
                 Câu {a.questionNo} · {topikSectionLabel(a.section)}{" "}
                 {a.gradeStatus === "pending"
                   ? "· chờ chấm"
@@ -325,27 +333,27 @@ function ResultView({
                     : "✗"}
               </p>
               {q ? (
-                <p className="mt-1 text-zinc-700 dark:text-zinc-300">{q.prompt}</p>
+                <p className="mt-1 text-foreground/80">{q.prompt}</p>
               ) : null}
               {a.textAnswer ? (
-                <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
+                <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80">
                   {a.textAnswer}
                 </p>
               ) : null}
               {a.gradeStatus === "graded" &&
               a.selectedIndex != null &&
               a.correctIndex != null ? (
-                <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Đáp án đúng: {a.correctIndex + 1}
                 </p>
               ) : null}
               {a.modelAnswer ? (
-                <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Đáp án mẫu: {a.modelAnswer}
                 </p>
               ) : null}
               {a.explanation ? (
-                <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {a.explanation}
                 </p>
               ) : null}
@@ -356,13 +364,14 @@ function ResultView({
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
           href={backHref}
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700"
+          className="rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Làm dạng khác
         </Link>
         <Link
           href={attemptHref}
-          className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
+          style={{ background: GRADIENT }}
         >
           Xem chi tiết
         </Link>

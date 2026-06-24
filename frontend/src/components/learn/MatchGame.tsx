@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { GRADIENT } from "@/components/ui-kit/brand";
 import { shuffle } from "@/lib/shuffle";
 import type { LearnCard } from "./types";
 
@@ -56,7 +57,7 @@ export function MatchGame({ cards }: { cards: LearnCard[] }) {
 
   if (cards.length < 2) {
     return (
-      <p className="mt-6 text-sm text-zinc-500">
+      <p className="mt-6 text-sm text-muted-foreground">
         Cần tối thiểu 2 thẻ để chơi ghép cặp.
       </p>
     );
@@ -88,13 +89,13 @@ export function MatchGame({ cards }: { cards: LearnCard[] }) {
   return (
     <>
       <div className="mt-4 flex items-center justify-between">
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted-foreground">
           Ghép cặp · {matched.size}/{total}
         </p>
         <button
           type="button"
           onClick={newRound}
-          className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Ván mới
         </button>
@@ -106,19 +107,15 @@ export function MatchGame({ cards }: { cards: LearnCard[] }) {
           const isSelected = selected?.key === t.key;
           const isWrong = wrongPair?.includes(t.key);
           let cls =
-            "rounded-lg border px-3 py-4 text-sm min-h-[72px] text-left transition-colors";
+            "rounded-xl border px-3 py-4 text-sm min-h-[72px] text-left transition-colors ";
           if (isMatched) {
-            cls +=
-              " border-zinc-200 bg-zinc-100 text-zinc-400 line-through dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500";
+            cls += "border-border bg-secondary text-muted-foreground/60 line-through";
           } else if (isWrong) {
-            cls +=
-              " border-red-400 bg-red-50 text-red-800 dark:border-red-700 dark:bg-red-950/50 dark:text-red-200";
+            cls += "border-red-500 bg-red-500/10 text-red-300";
           } else if (isSelected) {
-            cls +=
-              " border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900";
+            cls += "border-primary bg-primary/15 text-white";
           } else {
-            cls +=
-              " border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900";
+            cls += "border-border bg-card text-foreground hover:border-primary/40";
           }
           return (
             <button
@@ -135,12 +132,13 @@ export function MatchGame({ cards }: { cards: LearnCard[] }) {
       </div>
 
       {doneRound ? (
-        <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 text-center dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-sm text-zinc-500">Hoàn thành ván này</p>
+        <div className="mt-6 rounded-2xl border border-border bg-card p-4 text-center">
+          <p className="text-sm text-muted-foreground">Hoàn thành ván này</p>
           <button
             type="button"
             onClick={newRound}
-            className="mt-3 rounded-md bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+            className="mt-3 rounded-xl px-4 py-2 text-sm font-semibold text-white"
+            style={{ background: GRADIENT }}
           >
             Ván mới
           </button>
