@@ -29,7 +29,8 @@ import {
   type AuthUser,
 } from "@/lib/auth-storage";
 import { cn } from "@/lib/cn";
-import { BRAND } from "./brand";
+import { AppMark, AvatarCircle } from "./AppMark";
+import { APP, BRAND } from "./brand";
 
 const AUTH_PATHS = new Set(["/login", "/register"]);
 
@@ -102,26 +103,16 @@ function Sidebar({ user }: { user: AuthUser | null }) {
         href="/"
         className="flex items-center gap-3 border-b border-border px-5 py-6"
       >
-        <span
-          className="flex h-9 w-9 items-center justify-center rounded-xl text-lg font-bold text-white"
-          style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.cyan})` }}
-        >
-          한
-        </span>
+        <AppMark className="h-9 w-9 rounded-xl text-lg" />
         <div>
-          <p className="text-sm font-bold leading-none text-foreground">Chín Chín</p>
-          <p className="mt-0.5 text-[10px] text-muted-foreground">Học tiếng Hàn</p>
+          <p className="text-sm font-bold leading-none text-foreground">{APP.name}</p>
+          <p className="mt-0.5 text-[10px] text-muted-foreground">{APP.tagline}</p>
         </div>
       </Link>
 
       {user ? (
         <div className="flex items-center gap-3 border-b border-border px-5 py-4">
-          <span
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-            style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.cyan})` }}
-          >
-            {initial}
-          </span>
+          <AvatarCircle label={initial} className="h-8 w-8 flex-shrink-0 text-sm" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-foreground">
               {user.name || user.email}
@@ -242,15 +233,12 @@ const TITLES: { match: (p: string) => boolean; title: string }[] = [
 ];
 
 function pageTitle(pathname: string) {
-  return TITLES.find((t) => t.match(pathname))?.title ?? "Chín Chín";
+  return TITLES.find((t) => t.match(pathname))?.title ?? APP.name;
 }
 
 function TopBar({ title }: { title: string }) {
   return (
-    <div
-      className="flex flex-shrink-0 items-center justify-between border-b border-border px-8 py-4"
-      style={{ backgroundColor: "#080B12" }}
-    >
+    <div className="flex flex-shrink-0 items-center justify-between border-b border-border bg-background px-8 py-4">
       <AnimatePresence mode="wait">
         <motion.h2
           key={title}

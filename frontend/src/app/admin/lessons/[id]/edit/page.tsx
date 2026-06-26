@@ -12,7 +12,6 @@ import {
   formCardClass,
   inputClass,
   listItemClass,
-  sectionTitleClass,
 } from "@/components/ui-kit/form-styles";
 import { GradientButton } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";

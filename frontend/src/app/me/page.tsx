@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { Mail, Shield, UserRound } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
-import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import { AvatarCircle } from "@/components/ui-kit/AppMark";
+import { GRADIENT } from "@/components/ui-kit/brand";
+import { errorClass, inputClass } from "@/components/ui-kit/form-styles";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import {
@@ -70,12 +72,7 @@ function ProfileContent() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col items-center rounded-2xl border border-border bg-card p-6 text-center">
-          <span
-            className="mb-4 flex h-20 w-20 items-center justify-center rounded-full text-3xl font-bold text-white"
-            style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.cyan})` }}
-          >
-            {initial}
-          </span>
+          <AvatarCircle label={initial} className="mb-4 h-20 w-20 text-3xl" />
           <p className="text-lg font-bold text-foreground">
             {user.name || "(chưa đặt tên)"}
           </p>
@@ -120,7 +117,7 @@ function ProfileContent() {
                   setSaved(false);
                 }}
                 placeholder="Nhập tên hiển thị"
-                className="flex-1 rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                className={`flex-1 ${inputClass}`}
               />
               <button
                 type="button"
@@ -132,15 +129,9 @@ function ProfileContent() {
                 {saving ? "Đang lưu…" : "Lưu"}
               </button>
             </div>
-            {error ? (
-              <p className="mt-2 text-sm" style={{ color: BRAND.red }}>
-                {error}
-              </p>
-            ) : null}
+            {error ? <p className={`mt-2 ${errorClass}`}>{error}</p> : null}
             {saved ? (
-              <p className="mt-2 text-sm" style={{ color: BRAND.green }}>
-                Đã lưu thay đổi.
-              </p>
+              <p className="mt-2 text-sm text-emerald-300">Đã lưu thay đổi.</p>
             ) : null}
           </div>
         </div>

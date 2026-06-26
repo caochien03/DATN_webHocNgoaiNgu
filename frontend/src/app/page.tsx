@@ -16,7 +16,8 @@ import {
   Trophy,
 } from "lucide-react";
 import { Bar, Stat } from "@/components/ui-kit/primitives";
-import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import { AppMark } from "@/components/ui-kit/AppMark";
+import { APP, BRAND, GRADIENT } from "@/components/ui-kit/brand";
 import { fetchWithAuth } from "@/lib/api-fetch";
 import { getStoredAuth } from "@/lib/auth-storage";
 import type { DecksTotals, GoalMeResponse } from "@/lib/types";
@@ -65,14 +66,9 @@ export default function Home() {
   if (!authed) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-        <span
-          className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl text-3xl font-bold text-white"
-          style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.cyan})` }}
-        >
-          한
-        </span>
+        <AppMark className="mb-5 h-16 w-16 rounded-2xl text-3xl" />
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Học tiếng Hàn cùng Chín Chín
+          Học tiếng Hàn cùng {APP.name}
         </h1>
         <p className="mt-3 max-w-md text-muted-foreground">
           Từ vựng theo chủ đề, ôn tập SRS, luyện thi TOPIK và chấm viết bằng AI —

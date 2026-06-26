@@ -6,6 +6,8 @@ export const labelTextClass = "text-muted-foreground";
 export const backLinkClass =
   "text-sm text-muted-foreground transition hover:text-foreground";
 export const errorClass = "text-sm text-destructive";
+export const errorBannerClass =
+  "mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive";
 export const sectionTitleClass = "text-sm font-semibold text-foreground";
 export const ghostButtonClass =
   "rounded-xl border border-border bg-secondary/40 px-4 py-2 text-sm text-foreground transition hover:bg-secondary";

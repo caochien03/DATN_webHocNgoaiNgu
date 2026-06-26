@@ -6,22 +6,16 @@ import { useCallback, useEffect, useState } from "react";
 import { Play, Plus, Trash2 } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import {
+  backLinkClass,
+  errorBannerClass,
+  inputClass,
+  listItemClass,
+  sectionTitleClass,
+} from "@/components/ui-kit/form-styles";
+import { GradientButton } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
-
-type CardRow = {
-  id: string;
-  frontText: string;
-  backText: string;
-  note: string | null;
-  sortOrder: number;
-};
-
-type DeckDetail = {
-  id: string;
-  title: string;
-  description: string | null;
-  cards: CardRow[];
-};
+import type { DeckDetail } from "@/lib/types";
 
 function DeckDetailContent() {
   const params = useParams();
@@ -119,23 +113,13 @@ function DeckDetailContent() {
     }
   }
 
-  const inputClass =
-    "rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
-
   return (
     <div className="mx-auto max-w-lg">
-      <Link
-        href="/decks"
-        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
+      <Link href="/decks" className={backLinkClass}>
         ← Danh sách bộ
       </Link>
 
-      {error ? (
-        <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
-          {error}
-        </p>
-      ) : null}
+      {error ? <p className={errorBannerClass}>{error}</p> : null}
 
       {deck === null && !error ? (
         <p className="mt-6 text-sm text-muted-foreground">Đang tải…</p>
@@ -174,7 +158,7 @@ function DeckDetailContent() {
           </div>
 
           <section className="mt-8 rounded-2xl border border-border bg-card p-5">
-            <h2 className="mb-3 text-sm font-semibold text-foreground">Thêm thẻ</h2>
+            <h2 className={`mb-3 ${sectionTitleClass}`}>Thêm thẻ</h2>
             <form onSubmit={addCard} className="flex flex-col gap-3">
               <input
                 required
@@ -196,19 +180,18 @@ function DeckDetailContent() {
                 placeholder="Ghi chú (tuỳ chọn)"
                 className={inputClass}
               />
-              <button
+              <GradientButton
                 type="submit"
                 disabled={adding}
-                className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-                style={{ background: GRADIENT }}
+                className="flex w-full items-center justify-center gap-1.5 py-2.5"
               >
                 <Plus size={14} /> {adding ? "Đang thêm…" : "Thêm thẻ"}
-              </button>
+              </GradientButton>
             </form>
           </section>
 
           <section className="mt-8">
-            <h2 className="mb-3 text-sm font-semibold text-foreground">
+            <h2 className={`mb-3 ${sectionTitleClass}`}>
               Danh sách thẻ ({deck.cards.length})
             </h2>
             {deck.cards.length === 0 ? (
@@ -218,7 +201,7 @@ function DeckDetailContent() {
                 {deck.cards.map((c) => (
                   <div
                     key={c.id}
-                    className="flex justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3"
+                    className={`flex justify-between gap-2 ${listItemClass}`}
                   >
                     <div className="min-w-0 text-sm">
                       <p className="font-semibold text-foreground">{c.frontText}</p>

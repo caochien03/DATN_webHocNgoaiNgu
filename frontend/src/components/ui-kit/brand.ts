@@ -8,7 +8,16 @@ export const BRAND = {
   muted: "#7480A0",
 } as const;
 
+/** Tên và metadata ứng dụng — sửa tại đây để đổi toàn app */
+export const APP = {
+  name: "Cao Chiến",
+  tagline: "Học tiếng Hàn",
+  description: "Nền tảng học ngoại ngữ theo lộ trình",
+  logoChar: "한",
+} as const;
+
 export const GRADIENT = `linear-gradient(90deg, ${BRAND.blue}, ${BRAND.cyan})`;
+export const GRADIENT_DIAGONAL = `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`;
 
 export function pct(done: number, total: number) {
   return total > 0 ? Math.round((done / total) * 100) : 0;

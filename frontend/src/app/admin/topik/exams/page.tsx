@@ -11,12 +11,10 @@ import {
 } from "@/lib/api-fetch";
 import { Plus } from "lucide-react";
 import { GRADIENT } from "@/components/ui-kit/brand";
+import { inputClass } from "@/components/ui-kit/form-styles";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { topikTierLabel } from "@/lib/topik-labels";
 import type { AdminTopikExamDetail, AdminTopikExamListRow, TopikTier } from "@/lib/types";
-
-const inputClass =
-  "rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground outline-none focus:border-primary/50";
 
 function AdminTopikExamsContent() {
   const router = useRouter();

@@ -7,6 +7,7 @@ import { AuthGate } from "@/components/AuthGate";
 import { TopikQuizRunner } from "@/components/topik/TopikQuizRunner";
 import { TopikWritingRunner } from "@/components/topik/TopikWritingRunner";
 import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import { inputClass } from "@/components/ui-kit/form-styles";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { TopikAnswerPayload } from "@/lib/topik-answers";
 import { topikSectionLabel } from "@/lib/topik-labels";
@@ -29,9 +30,6 @@ function formatLoadError(e: unknown): string {
   }
   return "Không tải được câu hỏi";
 }
-
-const inputClass =
-  "rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
 
 function PracticeContent() {
   const router = useRouter();
