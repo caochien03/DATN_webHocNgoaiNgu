@@ -12,9 +12,9 @@ export const sectionTitleClass = "text-sm font-semibold text-foreground";
 export const ghostButtonClass =
   "rounded-xl border border-border bg-secondary/40 px-4 py-2 text-sm text-foreground transition hover:bg-secondary";
 export const dangerButtonClass =
-  "rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300 transition hover:bg-red-500/20";
+  "rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-700 transition hover:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/20";
 export const successButtonClass =
-  "rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 transition hover:bg-emerald-500/20";
+  "rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-700 transition hover:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/20";
 export const formCardClass =
   "flex flex-col gap-3 rounded-2xl border border-border bg-card p-5";
 export const listItemClass =

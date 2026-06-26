@@ -3,6 +3,40 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --background: #f4f6fc;
+  --foreground: #0f1424;
+  --card: #ffffff;
+  --card-foreground: #0f1424;
+  --popover: #ffffff;
+  --popover-foreground: #0f1424;
+  --primary: #3b6eff;
+  --primary-foreground: #ffffff;
+  --secondary: #e8ecf8;
+  --secondary-foreground: #0f1424;
+  --muted: #e8ecf8;
+  --muted-foreground: #5c6680;
+  --accent: #00c2ff;
+  --accent-foreground: #ffffff;
+  --success: #059669;
+  --warning: #d97706;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: rgba(59, 110, 255, 0.14);
+  --input: #e8ecf8;
+  --ring: #3b6eff;
+  --sidebar: #ffffff;
+  --radius: 0.75rem;
+
+  --brand-blue: #3b6eff;
+  --brand-cyan: #00c2ff;
+  --brand-green: #34d399;
+  --brand-yellow: #ffd93d;
+  --brand-purple: #a78bfa;
+  --brand-red: #f87171;
+}
+
+.dark,
+html.dark {
   --background: #080b12;
   --foreground: #eef0f8;
   --card: #111520;
@@ -25,15 +59,6 @@
   --input: #131829;
   --ring: #3b6eff;
   --sidebar: #070a13;
-  --radius: 0.75rem;
-
-  /* Brand palette (also referenced from TS) */
-  --brand-blue: #3b6eff;
-  --brand-cyan: #00c2ff;
-  --brand-green: #34d399;
-  --brand-yellow: #ffd93d;
-  --brand-purple: #a78bfa;
-  --brand-red: #f87171;
 }
 
 @theme inline {
@@ -84,18 +109,21 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), "Noto Sans KR", system-ui, sans-serif;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
-/* Thin, themed scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(116, 128, 160, 0.3) transparent;
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 35%, transparent)
+    transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background-color: rgba(116, 128, 160, 0.3);
+  background-color: color-mix(in srgb, var(--muted-foreground) 35%, transparent);
   border-radius: 9999px;
 }

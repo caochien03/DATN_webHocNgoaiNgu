@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import { BookOpen, Brain, Sparkles, Trophy } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppMark } from "@/components/ui-kit/AppMark";
 import { APP, BRAND } from "@/components/ui-kit/brand";
 
@@ -24,23 +25,25 @@ type AuthShellProps = {
 export function AuthShell({ title, subtitle, children, footer }: AuthShellProps) {
   return (
     <div className="flex min-h-dvh bg-background text-foreground">
-      <aside className="relative hidden w-[46%] max-w-xl flex-col overflow-hidden border-r border-border lg:flex">
+      <aside className="relative hidden w-[46%] max-w-xl flex-col overflow-hidden border-r border-border bg-secondary lg:flex">
         <div
-          className="absolute inset-0"
+          className="pointer-events-none absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse 80% 60% at 20% 20%, ${BRAND.blue}28, transparent),
-              radial-gradient(ellipse 60% 50% at 80% 80%, ${BRAND.cyan}18, transparent),
-              linear-gradient(160deg, #070a13 0%, #0c1224 50%, #080b12 100%)`,
+            background: `radial-gradient(ellipse 80% 60% at 20% 20%, ${BRAND.blue}22, transparent),
+              radial-gradient(ellipse 60% 50% at 80% 80%, ${BRAND.cyan}14, transparent)`,
           }}
         />
         <div className="relative flex flex-1 flex-col px-10 py-12">
-          <Link href="/" className="flex items-center gap-3">
-            <AppMark className="h-10 w-10 rounded-xl text-xl" />
-            <div>
-              <p className="text-sm font-bold leading-none">{APP.name}</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">{APP.tagline}</p>
-            </div>
-          </Link>
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/" className="flex items-center gap-3">
+              <AppMark className="h-10 w-10 rounded-xl text-xl" />
+              <div>
+                <p className="text-sm font-bold leading-none">{APP.name}</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{APP.tagline}</p>
+              </div>
+            </Link>
+            <ThemeToggle />
+          </div>
 
           <div className="my-auto py-10">
             <motion.div
@@ -93,7 +96,10 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
         </div>
       </aside>
 
-      <main className="flex flex-1 flex-col items-center justify-center px-5 py-10 sm:px-8">
+      <main className="relative flex flex-1 flex-col items-center justify-center px-5 py-10 sm:px-8">
+        <div className="absolute right-5 top-5 lg:hidden">
+          <ThemeToggle />
+        </div>
         <motion.div
           className="w-full max-w-md"
           initial={{ opacity: 0, y: 16 }}
@@ -108,7 +114,7 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-xl shadow-black/20 sm:p-8">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-lg shadow-black/5 sm:p-8 dark:shadow-xl dark:shadow-black/20">
             <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
             <p className="mt-1.5 text-sm text-muted-foreground">{subtitle}</p>
             <div className="mt-6">{children}</div>

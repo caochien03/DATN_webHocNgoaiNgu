@@ -52,10 +52,7 @@ export function Bar({
 }) {
   const w = pct(done, total);
   return (
-    <div
-      className="h-1.5 overflow-hidden rounded-full"
-      style={{ backgroundColor: "rgba(255,255,255,0.07)" }}
-    >
+    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
       <motion.div
         className="h-full rounded-full"
         style={{ backgroundColor: color }}

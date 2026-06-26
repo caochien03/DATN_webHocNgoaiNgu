@@ -28,6 +28,7 @@ import {
   isAdminUser,
   type AuthUser,
 } from "@/lib/auth-storage";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/cn";
 import { AppMark, AvatarCircle } from "./AppMark";
 import { APP, BRAND } from "./brand";
@@ -262,6 +263,7 @@ function TopBar({ title }: { title: string }) {
             placeholder="Tìm kiếm..."
           />
         </div>
+        <ThemeToggle />
         <button
           type="button"
           className="relative rounded-xl p-2 text-muted-foreground transition-colors hover:text-foreground"
