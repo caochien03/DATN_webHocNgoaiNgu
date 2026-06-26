@@ -3,8 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AuthShell } from "@/components/auth/AuthShell";
+import {
+  errorBannerClass,
+  inputClass,
+  labelClass,
+  labelTextClass,
+} from "@/components/ui-kit/form-styles";
+import { GradientButton } from "@/components/ui-kit/primitives";
+import { parseAuthMessage, type AuthResponse } from "@/lib/auth-api";
 import { getApiUrl } from "@/lib/api-url";
-import { setStoredAuth, type AuthUser } from "@/lib/auth-storage";
+import { setStoredAuth } from "@/lib/auth-storage";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,16 +39,9 @@ export default function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = (await res.json()) as {
-        accessToken?: string;
-        user?: AuthUser;
-        message?: string | string[];
-      };
+      const data = (await res.json()) as AuthResponse;
       if (!res.ok) {
-        const msg = data.message;
-        setError(
-          Array.isArray(msg) ? msg.join(", ") : (msg ?? "Đăng ký thất bại"),
-        );
+        setError(parseAuthMessage(data, "Đăng ký thất bại"));
         return;
       }
       if (!data.accessToken || !data.user) {
@@ -57,29 +59,33 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-12">
-      <div>
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Đăng ký
-        </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Mật khẩu tối thiểu 8 ký tự.
-        </p>
-      </div>
+    <AuthShell
+      title="Tạo tài khoản"
+      subtitle="Miễn phí — mật khẩu tối thiểu 8 ký tự."
+      footer={
+        <>
+          Đã có tài khoản?{" "}
+          <Link href="/login" className="font-semibold text-primary hover:underline">
+            Đăng nhập
+          </Link>
+        </>
+      }
+    >
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-700 dark:text-zinc-300">Email</span>
+        <label className={labelClass}>
+          <span className={labelTextClass}>Email</span>
           <input
             type="email"
             autoComplete="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+            className={inputClass}
+            placeholder="ban@email.com"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-700 dark:text-zinc-300">Mật khẩu</span>
+        <label className={labelClass}>
+          <span className={labelTextClass}>Mật khẩu</span>
           <input
             type="password"
             autoComplete="new-password"
@@ -87,39 +93,29 @@ export default function RegisterPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+            className={inputClass}
+            placeholder="Ít nhất 8 ký tự"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-700 dark:text-zinc-300">
+        <label className={labelClass}>
+          <span className={labelTextClass}>
             Tên hiển thị{" "}
-            <span className="font-normal text-zinc-500">(tuỳ chọn)</span>
+            <span className="font-normal text-muted-foreground/70">(tuỳ chọn)</span>
           </span>
           <input
             type="text"
             autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+            className={inputClass}
+            placeholder="Tên bạn muốn hiển thị"
           />
         </label>
-        {error ? (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        ) : null}
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-        >
+        {error ? <p className={errorBannerClass}>{error}</p> : null}
+        <GradientButton type="submit" disabled={loading} className="w-full py-2.5">
           {loading ? "Đang xử lý…" : "Tạo tài khoản"}
-        </button>
+        </GradientButton>
       </form>
-      <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-        Đã có tài khoản?{" "}
-        <Link href="/login" className="font-medium text-zinc-900 underline dark:text-zinc-200">
-          Đăng nhập
-        </Link>
-      </p>
-    </div>
+    </AuthShell>
   );
 }
