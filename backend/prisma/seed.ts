@@ -1,5 +1,6 @@
 import { GrammarLevel, PrismaClient } from '@prisma/client';
 import { seedTopik } from './seed-topik';
+import { seedSpeaking } from './seed-speaking';
 
 const prisma = new PrismaClient();
 
@@ -997,6 +998,7 @@ async function main() {
   await seedLessonVocabulary();
   await seedLearningPaths();
   await seedTopik(prisma);
+  await seedSpeaking(prisma);
 }
 
 main()

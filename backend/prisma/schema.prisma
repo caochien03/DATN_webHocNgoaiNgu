@@ -25,6 +25,7 @@ model User {
   pathProgress UserPathProgress[]
   quizAttempts     QuizAttempt[]
   topikAttempts    TopikExamAttempt[]
+  speakingSessions SpeakingSession[]
   goalSetting      UserGoalSetting?
   dailyProgress    UserDailyProgress[]
 }
@@ -405,4 +406,108 @@ model TopikExamAttempt {
 
   @@index([userId, finishedAt])
   @@index([examId])
+}
+
+/// Trình độ tự đánh giá khi bắt đầu phiên luyện nói.
+enum SpeakingSelfLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum SpeakingSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum SpeakingTurnSpeaker {
+  USER
+  NPC
+}
+
+/// Chủ đề khảo sát (ẩm thực, du lịch…) — dùng lọc tình huống.
+model SpeakingTopic {
+  id          String              @id @default(cuid())
+  title       String
+  titleKo     String?
+  description String?
+  sortOrder   Int                 @default(0)
+  isPublished Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  situations  SpeakingSituation[]
+
+  @@index([isPublished, sortOrder])
+}
+
+/// Tình huống giao tiếp — đơn vị nội dung chính của module luyện nói.
+model SpeakingSituation {
+  id            String              @id @default(cuid())
+  topicId       String?
+  topic         SpeakingTopic?      @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  title         String
+  contextVi     String
+  level         SpeakingSelfLevel
+  userRoleVi    String
+  npcRoleVi     String
+  openingLineKo String
+  /// Mục tiêu giao tiếp: [{ key, labelVi, required }]
+  goals         Json
+  systemPrompt  String
+  maxUserTurns  Int                 @default(5)
+  sortOrder     Int                 @default(0)
+  isPublished   Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  sessions      SpeakingSession[]
+
+  @@index([topicId])
+  @@index([level, isPublished])
+  @@index([isPublished, sortOrder])
+}
+
+/// Một lần user luyện hoàn chỉnh một tình huống.
+model SpeakingSession {
+  id               String                @id @default(cuid())
+  userId           String
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  situationId      String
+  situation        SpeakingSituation     @relation(fields: [situationId], references: [id], onDelete: Cascade)
+  status           SpeakingSessionStatus @default(IN_PROGRESS)
+  selectedTopicIds String[]              @default([])
+  selfLevel        SpeakingSelfLevel
+  /// Runtime: { party_size: "4", date_time: "내일 7시" }
+  filledGoals      Json                  @default("{}")
+  overallScore     Float?
+  estimatedLevel   String?
+  summaryFeedback  String?
+  goalsCompleted   Int?
+  goalsTotal       Int?
+  startedAt        DateTime              @default(now())
+  completedAt      DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  turns            SpeakingTurn[]
+
+  @@index([userId, createdAt])
+  @@index([situationId])
+  @@index([status])
+}
+
+/// Một lượt hội thoại (USER hoặc NPC) trong phiên.
+model SpeakingTurn {
+  id           String              @id @default(cuid())
+  sessionId    String
+  session      SpeakingSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  orderIndex   Int
+  speaker      SpeakingTurnSpeaker
+  text         String
+  /// Chấm lượt USER: { task, grammar, vocabulary, coherence, score, feedback }
+  grading      Json?
+  durationSecs Int?
+  createdAt    DateTime            @default(now())
+
+  @@unique([sessionId, orderIndex])
+  @@index([sessionId])
 }
