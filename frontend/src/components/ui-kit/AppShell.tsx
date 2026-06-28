@@ -9,7 +9,6 @@ import {
   BookOpen,
   Brain,
   FileText,
-  History,
   Home,
   Layers,
   LogOut,
@@ -60,7 +59,6 @@ const NAV: NavGroup[] = [
     group: "LUYỆN TẬP",
     items: [
       { href: "/topik/TOPIK_I", icon: Trophy, label: "TOPIK I & II" },
-      { href: "/topik/attempts", icon: History, label: "Lịch sử TOPIK" },
       { href: "/tests", icon: Brain, label: "Kiểm tra" },
     ],
   },
