@@ -10,6 +10,7 @@ import { LessonsModule } from './lessons/lessons.module';
 import { PathsModule } from './paths/paths.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { QuizAttemptsModule } from './quiz-attempts/quiz-attempts.module';
+import { SpeakingModule } from './speaking/speaking.module';
 import { TopikModule } from './topik/topik.module';
 import { TopicsModule } from './topics/topics.module';
 import { UsersModule } from './users/users.module';
@@ -27,6 +28,7 @@ import { UsersModule } from './users/users.module';
     LessonsModule,
     PathsModule,
     QuizAttemptsModule,
+    SpeakingModule,
     TopikModule,
   ],
   controllers: [AppController],
