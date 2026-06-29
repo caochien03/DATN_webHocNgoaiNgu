@@ -14,6 +14,7 @@ import {
   LogOut,
   type LucideIcon,
   Map,
+  Mic,
   RefreshCw,
   Route,
   Search,
@@ -59,6 +60,7 @@ const NAV: NavGroup[] = [
     group: "LUYỆN TẬP",
     items: [
       { href: "/topik/TOPIK_I", icon: Trophy, label: "TOPIK I & II" },
+      { href: "/speaking", icon: Mic, label: "Luyện nói" },
       { href: "/tests", icon: Brain, label: "Kiểm tra" },
     ],
   },

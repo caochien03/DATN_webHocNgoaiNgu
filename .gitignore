@@ -43,4 +43,7 @@ tmp/
 temp/
 *.pem
 
+# Ghi chú / kế hoạch local (không đưa lên repo)
+docs/
+
 Build User Interface/

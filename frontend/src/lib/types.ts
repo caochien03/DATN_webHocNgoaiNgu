@@ -472,3 +472,108 @@ export type GoalHistoryRow = {
   goalTarget: number;
   goalAchieved: boolean;
 };
+
+export type SpeakingSelfLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+
+export type SpeakingSessionStatus = "IN_PROGRESS" | "COMPLETED" | "ABANDONED";
+
+export type SpeakingTurnSpeaker = "USER" | "NPC";
+
+export type SpeakingTopicRow = {
+  id: string;
+  title: string;
+  titleKo: string | null;
+  description: string | null;
+  sortOrder: number;
+};
+
+export type SpeakingGoalStatus = {
+  key: string;
+  labelVi: string;
+  required: boolean;
+  filled?: string;
+  completed: boolean;
+};
+
+export type SpeakingSituationRow = {
+  id: string;
+  title: string;
+  contextVi: string;
+  level: SpeakingSelfLevel;
+  userRoleVi: string;
+  npcRoleVi: string;
+  maxUserTurns: number;
+  openingLineKo?: string;
+  topic: {
+    id: string;
+    title: string;
+    titleKo: string | null;
+  } | null;
+  goals: SpeakingGoalStatus[];
+  goalsCompleted: number;
+  goalsTotal: number;
+};
+
+export type SpeakingTurnGrading = {
+  task: number;
+  grammar: number;
+  vocabulary: number;
+  coherence: number;
+  score: number;
+  feedback: string;
+  sampleImprovement?: string;
+};
+
+export type SpeakingTurnRow = {
+  id: string;
+  orderIndex: number;
+  speaker: SpeakingTurnSpeaker;
+  text: string;
+  grading: SpeakingTurnGrading | null;
+  durationSecs: number | null;
+  createdAt: string;
+};
+
+export type SpeakingSessionDetail = {
+  id: string;
+  status: SpeakingSessionStatus;
+  selfLevel: SpeakingSelfLevel;
+  selectedTopicIds: string[];
+  filledGoals: Record<string, string>;
+  overallScore: number | null;
+  estimatedLevel: string | null;
+  summaryFeedback: string | null;
+  goalsCompleted: number | null;
+  goalsTotal: number | null;
+  startedAt: string;
+  completedAt: string | null;
+  situation: SpeakingSituationRow;
+  turns: SpeakingTurnRow[];
+  userTurnCount: number;
+};
+
+export type SpeakingSessionListItem = {
+  id: string;
+  status: SpeakingSessionStatus;
+  selfLevel: SpeakingSelfLevel;
+  overallScore: number | null;
+  estimatedLevel: string | null;
+  goalsCompleted: number | null;
+  goalsTotal: number | null;
+  startedAt: string;
+  completedAt: string | null;
+  situation: {
+    id: string;
+    title: string;
+    level: SpeakingSelfLevel;
+  };
+};
+
+export type SpeakingSubmitTurnResult = SpeakingSessionDetail & {
+  lastTurn?: {
+    transcript: string;
+    npcReply: string;
+    allRequiredGoalsMet: boolean;
+    shouldEnd: boolean;
+  };
+};

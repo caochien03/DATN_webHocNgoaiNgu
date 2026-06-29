@@ -21,7 +21,8 @@ export type SpeakingTurnGrading = {
   sampleImprovement?: string;
 };
 
-export type SpeakingTurnInput = {
+/** Ngữ cảnh xử lý một lượt (không gồm transcript — audio hoặc text riêng). */
+export type SpeakingTurnContext = {
   situationTitle: string;
   contextVi: string;
   userRoleVi: string;
@@ -32,15 +33,15 @@ export type SpeakingTurnInput = {
   maxUserTurns: number;
   /** Số lượt user đã nói, bao gồm lượt hiện tại. */
   userTurnCount: number;
-  transcript: string;
   history: SpeakingTurnHistoryItem[];
 };
 
-export type SpeakingTurnResult = {
+/** Kết quả xử lý audio một lượt — không chấm điểm (chấm cuối phiên). */
+export type SpeakingAudioTurnResult = {
+  transcript: string;
   goalUpdates: Record<string, string>;
   filledGoals: Record<string, string>;
   npcReply: string;
-  grading: SpeakingTurnGrading;
   allRequiredGoalsMet: boolean;
   shouldEnd: boolean;
 };
@@ -48,7 +49,6 @@ export type SpeakingTurnResult = {
 export type SpeakingSessionTurnSummary = {
   orderIndex: number;
   transcript: string;
-  grading: SpeakingTurnGrading;
 };
 
 export type SpeakingSessionSummaryInput = {
@@ -59,12 +59,18 @@ export type SpeakingSessionSummaryInput = {
   turns: SpeakingSessionTurnSummary[];
 };
 
+export type SpeakingTurnGradingResult = {
+  orderIndex: number;
+  grading: SpeakingTurnGrading;
+};
+
 export type SpeakingSessionSummaryResult = {
   overallScore: number;
   estimatedLevel: string;
   summaryFeedback: string;
   goalsCompleted: number;
   goalsTotal: number;
+  turnGradings: SpeakingTurnGradingResult[];
 };
 
 const SELF_LEVEL_LABEL: Record<SpeakingSelfLevel, string> = {
@@ -158,23 +164,27 @@ function formatHistory(history: SpeakingTurnHistoryItem[]): string {
     .join('\n');
 }
 
-/** Prompt xử lý một lượt user: cập nhật mục tiêu, chấm điểm, sinh câu NPC. */
-export function buildSpeakingTurnPrompt(input: SpeakingTurnInput): string {
-  const goalStatus = formatGoalsForPrompt(input.goals, input.filledGoals);
-  const historyText = formatHistory(input.history);
+/** Prompt xử lý audio một lượt: STT + mục tiêu + NPC (không chấm điểm). */
+export function buildSpeakingAudioTurnPrompt(ctx: SpeakingTurnContext): string {
+  const goalStatus = formatGoalsForPrompt(ctx.goals, ctx.filledGoals);
+  const historyText = formatHistory(ctx.history);
 
   return [
     'Bạn là engine xử lý luyện nói tiếng Hàn theo tình huống giao tiếp.',
-    'Nhiệm vụ: (1) trích xuất thông tin mới từ câu user, (2) chấm lượt nói, (3) sinh câu NPC tiếp theo.',
+    'Người học vừa gửi một đoạn audio (tiếng Hàn). Nhiệm vụ:',
+    '(1) Chuyển audio thành transcript tiếng Hàn (Hangul).',
+    '(2) Trích xuất thông tin mới vào goalUpdates.',
+    '(3) Sinh câu NPC tiếp theo.',
+    'KHÔNG chấm điểm hay nhận xét — chỉ xử lý hội thoại.',
     '',
     '=== Tình huống ===',
-    `Tiêu đề: ${input.situationTitle}`,
-    `Bối cảnh: ${input.contextVi}`,
-    `Vai user: ${input.userRoleVi}`,
-    `Vai NPC: ${input.npcRoleVi}`,
+    `Tiêu đề: ${ctx.situationTitle}`,
+    `Bối cảnh: ${ctx.contextVi}`,
+    `Vai user: ${ctx.userRoleVi}`,
+    `Vai NPC: ${ctx.npcRoleVi}`,
     '',
     '=== Hướng dẫn vai NPC ===',
-    input.systemPrompt,
+    ctx.systemPrompt,
     '',
     '=== Mục tiêu giao tiếp ===',
     goalStatus,
@@ -182,33 +192,21 @@ export function buildSpeakingTurnPrompt(input: SpeakingTurnInput): string {
     '=== Lịch sử hội thoại ===',
     historyText,
     '',
-    '=== Lượt user vừa nói (STT) ===',
-    input.transcript.trim() || '(trống / không nghe rõ)',
-    '',
-    `Lượt user: ${input.userTurnCount}/${input.maxUserTurns}`,
+    `Lượt user: ${ctx.userTurnCount}/${ctx.maxUserTurns}`,
     '',
     'Quy tắc:',
-    '- goalUpdates chỉ gồm key hợp lệ trong danh sách mục tiêu; giá trị là chuỗi tiếng Hàn hoặc mô tả ngắn.',
+    '- transcript: chỉ nội dung tiếng Hàn nghe được; nếu im lặng trả "".',
+    '- goalUpdates chỉ gồm key hợp lệ; giá trị tiếng Hàn hoặc mô tả ngắn.',
     '- Không hỏi lại thông tin đã có trong mục tiêu.',
     '- npcReply: 1–2 câu tiếng Hàn, đúng vai NPC.',
-    '- Chấm theo rubric 0–5 (task, grammar, vocabulary, coherence); score tổng 0–100.',
-    '- feedback và sampleImprovement: tiếng Việt, ngắn gọn.',
-    '- allRequiredGoalsMet: true khi mọi mục tiêu bắt buộc đã đủ thông tin.',
+    '- allRequiredGoalsMet: true khi mọi mục tiêu bắt buộc đã đủ.',
     '- shouldEnd: true khi đủ mục tiêu bắt buộc và đã xác nhận, hoặc không còn gì cần hỏi.',
     '',
-    'Chỉ trả về JSON đúng định dạng sau, không kèm giải thích ngoài JSON:',
+    'Chỉ trả về JSON:',
     '{',
+    '  "transcript": "<tiếng Hàn>",',
     '  "goalUpdates": { "<goal_key>": "<giá trị>" },',
     '  "npcReply": "<câu NPC tiếng Hàn>",',
-    '  "grading": {',
-    '    "task": <0-5>,',
-    '    "grammar": <0-5>,',
-    '    "vocabulary": <0-5>,',
-    '    "coherence": <0-5>,',
-    '    "score": <0-100>,',
-    '    "feedback": "<nhận xét tiếng Việt>",',
-    '    "sampleImprovement": "<câu Hàn gợi ý, tuỳ chọn>"',
-    '  },',
     '  "allRequiredGoalsMet": <boolean>,',
     '  "shouldEnd": <boolean>',
     '}',
@@ -260,20 +258,26 @@ function parseGrading(raw: unknown): SpeakingTurnGrading {
   };
 }
 
-/** Parse phản hồi Gemini cho một lượt user. */
-export function parseSpeakingTurnResponse(
+/** Parse phản hồi Gemini cho một lượt audio (STT + NPC, không chấm). */
+export function parseSpeakingAudioTurnResponse(
   text: string,
-  input: SpeakingTurnInput,
-): SpeakingTurnResult {
+  ctx: SpeakingTurnContext,
+): SpeakingAudioTurnResult {
   const data = extractJson(text) as Record<string, unknown>;
   const allowedKeys = new Set([
-    ...input.goals.map((g) => g.key),
-    ...Object.keys(input.filledGoals),
+    ...ctx.goals.map((g) => g.key),
+    ...Object.keys(ctx.filledGoals),
   ]);
 
+  const transcript =
+    typeof data.transcript === 'string' ? data.transcript.trim() : '';
+  if (!transcript) {
+    throw new Error('AI response thiếu transcript hoặc audio không rõ');
+  }
+
   const goalUpdates = parseGoalUpdates(data.goalUpdates, allowedKeys);
-  const filledGoals = mergeGoalUpdates(input.filledGoals, goalUpdates);
-  const { allRequiredMet } = countRequiredGoals(input.goals, filledGoals);
+  const filledGoals = mergeGoalUpdates(ctx.filledGoals, goalUpdates);
+  const { allRequiredMet } = countRequiredGoals(ctx.goals, filledGoals);
 
   const npcReply =
     typeof data.npcReply === 'string' ? data.npcReply.trim() : '';
@@ -281,14 +285,14 @@ export function parseSpeakingTurnResponse(
     throw new Error('AI response thiếu npcReply');
   }
 
-  const atMaxTurns = input.userTurnCount >= input.maxUserTurns;
+  const atMaxTurns = ctx.userTurnCount >= ctx.maxUserTurns;
   const shouldEndFromAi = data.shouldEnd === true;
 
   return {
+    transcript,
     goalUpdates,
     filledGoals,
     npcReply,
-    grading: parseGrading(data.grading),
     allRequiredGoalsMet: allRequiredMet,
     shouldEnd: shouldEndFromAi || allRequiredMet || atMaxTurns,
   };
@@ -305,20 +309,15 @@ export function buildSpeakingSessionSummaryPrompt(
   );
 
   const turnLines = input.turns
-    .map((t) => {
-      const g = t.grading;
-      return [
-        `Lượt ${t.orderIndex}:`,
-        `  Transcript: ${t.transcript}`,
-        `  Điểm: ${g.score} (task ${g.task}, grammar ${g.grammar}, vocabulary ${g.vocabulary}, coherence ${g.coherence})`,
-        `  Nhận xét: ${g.feedback || '(không có)'}`,
-      ].join('\n');
-    })
+    .map(
+      (t) =>
+        `Lượt orderIndex ${t.orderIndex}:\n  Transcript: ${t.transcript}`,
+    )
     .join('\n\n');
 
   return [
     'Bạn là giám khảo tổng kết phiên luyện nói tiếng Hàn.',
-    'Hãy đánh giá toàn phiên và trả về JSON.',
+    'Hãy chấm từng lượt user và tổng kết toàn phiên. Trả về JSON.',
     '',
     `Tình huống: ${input.situationTitle}`,
     `Trình độ tự đánh giá của học viên: ${SELF_LEVEL_LABEL[input.selfLevel]}`,
@@ -327,14 +326,18 @@ export function buildSpeakingSessionSummaryPrompt(
     goalStatus,
     `Hoàn thành mục tiêu bắt buộc: ${completed}/${total}`,
     '',
-    '=== Các lượt user ===',
+    '=== Các lượt user (chưa chấm) ===',
     turnLines || '(không có)',
     '',
-    'Quy tắc:',
-    '- overallScore: 0–100.',
-    '- estimatedLevel: một trong "Sơ cấp", "Trung bình", "Khá".',
-    '- summaryFeedback: tiếng Việt, 3–5 câu, nêu điểm mạnh và cần cải thiện.',
-    '- goalsCompleted / goalsTotal: số mục tiêu bắt buộc đã đạt / tổng bắt buộc.',
+    'Quy tắc chấm từng lượt:',
+    '- Rubric 0–5: task, grammar, vocabulary, coherence; score 0–100.',
+    '- feedback tiếng Việt ngắn; sampleImprovement: câu Hàn gợi ý (tuỳ chọn).',
+    '- turnGradings phải có đủ mỗi orderIndex trong danh sách lượt.',
+    '',
+    'Quy tắc tổng kết:',
+    '- overallScore: 0–100 (trung bình có trọng số hoặc tổng hợp toàn phiên).',
+    '- estimatedLevel: "Sơ cấp" | "Trung bình" | "Khá".',
+    '- summaryFeedback: tiếng Việt, 3–5 câu.',
     '',
     'Chỉ trả về JSON:',
     '{',
@@ -342,7 +345,16 @@ export function buildSpeakingSessionSummaryPrompt(
     '  "estimatedLevel": "<Sơ cấp|Trung bình|Khá>",',
     '  "summaryFeedback": "<tiếng Việt>",',
     '  "goalsCompleted": <number>,',
-    '  "goalsTotal": <number>',
+    '  "goalsTotal": <number>,',
+    '  "turnGradings": [',
+    '    {',
+    '      "orderIndex": <number>,',
+    '      "grading": {',
+    '        "task": <0-5>, "grammar": <0-5>, "vocabulary": <0-5>, "coherence": <0-5>,',
+    '        "score": <0-100>, "feedback": "...", "sampleImprovement": "..."',
+    '      }',
+    '    }',
+    '  ]',
     '}',
   ].join('\n');
 }
@@ -363,6 +375,42 @@ export function parseSpeakingSessionSummaryResponse(
     ? estimatedLevelRaw
     : 'Trung bình';
 
+  const expectedOrders = new Set(input.turns.map((t) => t.orderIndex));
+  const rawGradings = Array.isArray(data.turnGradings) ? data.turnGradings : [];
+  const turnGradings: SpeakingTurnGradingResult[] = [];
+
+  for (const item of rawGradings) {
+    if (typeof item !== 'object' || item === null) continue;
+    const row = item as Record<string, unknown>;
+    const orderIndex =
+      typeof row.orderIndex === 'number' ? row.orderIndex : Number(row.orderIndex);
+    if (!Number.isFinite(orderIndex) || !expectedOrders.has(orderIndex)) {
+      continue;
+    }
+    turnGradings.push({
+      orderIndex,
+      grading: parseGrading(row.grading),
+    });
+  }
+
+  for (const t of input.turns) {
+    if (!turnGradings.some((g) => g.orderIndex === t.orderIndex)) {
+      turnGradings.push({
+        orderIndex: t.orderIndex,
+        grading: {
+          task: 0,
+          grammar: 0,
+          vocabulary: 0,
+          coherence: 0,
+          score: 0,
+          feedback: '',
+        },
+      });
+    }
+  }
+
+  turnGradings.sort((a, b) => a.orderIndex - b.orderIndex);
+
   return {
     overallScore: clampInt(data.overallScore, 0, 100),
     estimatedLevel,
@@ -374,5 +422,6 @@ export function parseSpeakingSessionSummaryResponse(
       counts.total,
     ),
     goalsTotal: clampInt(data.goalsTotal ?? counts.total, 0, counts.total || 99),
+    turnGradings,
   };
 }

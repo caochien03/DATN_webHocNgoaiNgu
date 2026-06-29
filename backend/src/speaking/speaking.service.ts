@@ -23,7 +23,6 @@ import {
   mapSessionListItem,
   mapSituationSummary,
 } from './speaking.mapper';
-import { SpeakingSttService } from './speaking-stt.service';
 
 const HISTORY_TURN_LIMIT = 8;
 
@@ -31,7 +30,6 @@ const HISTORY_TURN_LIMIT = 8;
 export class SpeakingService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly stt: SpeakingSttService,
     private readonly ai: SpeakingAiService,
   ) {}
 
@@ -158,12 +156,11 @@ export class SpeakingService {
       throw new BadRequestException('Đã hết số lượt nói cho phép.');
     }
 
-    const transcript = await this.stt.transcribe(audio, mimeType);
     const filledGoals = (session.filledGoals ?? {}) as Record<string, string>;
     const goals = parseSpeakingGoals(session.situation.goals);
     const history = this.buildHistory(session.turns);
 
-    const turnResult = await this.ai.processTurn({
+    const turnResult = await this.ai.processAudioTurn(audio, mimeType, {
       situationTitle: session.situation.title,
       contextVi: session.situation.contextVi,
       userRoleVi: session.situation.userRoleVi,
@@ -173,9 +170,10 @@ export class SpeakingService {
       filledGoals,
       maxUserTurns: session.situation.maxUserTurns,
       userTurnCount,
-      transcript,
       history,
     });
+
+    const transcript = turnResult.transcript;
 
     const nextOrder =
       session.turns.length > 0
@@ -191,7 +189,6 @@ export class SpeakingService {
           orderIndex: nextOrder,
           speaker: SpeakingTurnSpeaker.USER,
           text: transcript,
-          grading: turnResult.grading as unknown as Prisma.InputJsonValue,
           durationSecs: durationSecs ?? null,
         },
       });
@@ -224,7 +221,6 @@ export class SpeakingService {
       ...updated,
       lastTurn: {
         transcript,
-        grading: turnResult.grading,
         npcReply: turnResult.npcReply,
         allRequiredGoalsMet: turnResult.allRequiredGoalsMet,
         shouldEnd: false,
@@ -248,14 +244,6 @@ export class SpeakingService {
     const turnSummaries: SpeakingSessionTurnSummary[] = userTurns.map((t) => ({
       orderIndex: t.orderIndex,
       transcript: t.text,
-      grading: (t.grading as SpeakingSessionTurnSummary['grading']) ?? {
-        task: 0,
-        grammar: 0,
-        vocabulary: 0,
-        coherence: 0,
-        score: 0,
-        feedback: '',
-      },
     }));
 
     const summary = await this.ai.summarizeSession({
@@ -267,26 +255,42 @@ export class SpeakingService {
     });
 
     const goalCounts = countRequiredGoals(goals, filledGoals);
+    const gradingByOrder = new Map(
+      summary.turnGradings.map((g) => [g.orderIndex, g.grading]),
+    );
 
-    const completed = await this.prisma.speakingSession.update({
-      where: { id: session.id },
-      data: {
-        status: SpeakingSessionStatus.COMPLETED,
-        completedAt: new Date(),
-        overallScore: summary.overallScore,
-        estimatedLevel: summary.estimatedLevel,
-        summaryFeedback: summary.summaryFeedback,
-        goalsCompleted: goalCounts.completed,
-        goalsTotal: goalCounts.total,
-      },
-      include: {
-        situation: {
-          include: {
-            topic: { select: { id: true, title: true, titleKo: true } },
+    const completed = await this.prisma.$transaction(async (tx) => {
+      for (const turn of userTurns) {
+        const grading = gradingByOrder.get(turn.orderIndex);
+        if (!grading) continue;
+        await tx.speakingTurn.update({
+          where: { id: turn.id },
+          data: {
+            grading: grading as unknown as Prisma.InputJsonValue,
           },
+        });
+      }
+
+      return tx.speakingSession.update({
+        where: { id: session.id },
+        data: {
+          status: SpeakingSessionStatus.COMPLETED,
+          completedAt: new Date(),
+          overallScore: summary.overallScore,
+          estimatedLevel: summary.estimatedLevel,
+          summaryFeedback: summary.summaryFeedback,
+          goalsCompleted: goalCounts.completed,
+          goalsTotal: goalCounts.total,
         },
-        turns: { orderBy: { orderIndex: 'asc' } },
-      },
+        include: {
+          situation: {
+            include: {
+              topic: { select: { id: true, title: true, titleKo: true } },
+            },
+          },
+          turns: { orderBy: { orderIndex: 'asc' } },
+        },
+      });
     });
 
     return mapSessionDetail(completed);

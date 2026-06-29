@@ -4,15 +4,16 @@ import {
   Logger,
 } from '@nestjs/common';
 import {
+  buildSpeakingAudioTurnPrompt,
   buildSpeakingSessionSummaryPrompt,
-  buildSpeakingTurnPrompt,
+  parseSpeakingAudioTurnResponse,
   parseSpeakingSessionSummaryResponse,
-  parseSpeakingTurnResponse,
+  type SpeakingAudioTurnResult,
   type SpeakingSessionSummaryInput,
   type SpeakingSessionSummaryResult,
-  type SpeakingTurnInput,
-  type SpeakingTurnResult,
+  type SpeakingTurnContext,
 } from './speaking-ai';
+import { validateSpeakingAudio } from './speaking-audio';
 import { SpeakingGeminiService } from './speaking-gemini.service';
 
 @Injectable()
@@ -25,16 +26,25 @@ export class SpeakingAiService {
     return this.gemini.enabled;
   }
 
-  async processTurn(input: SpeakingTurnInput): Promise<SpeakingTurnResult> {
+  async processAudioTurn(
+    audio: Buffer,
+    mimeType: string | undefined,
+    ctx: SpeakingTurnContext,
+  ): Promise<SpeakingAudioTurnResult> {
     this.gemini.assertEnabled();
-    const prompt = buildSpeakingTurnPrompt(input);
+    const normalizedMime = validateSpeakingAudio(audio, mimeType);
+    const prompt = buildSpeakingAudioTurnPrompt(ctx);
 
     try {
-      const text = await this.gemini.generateText(prompt);
-      return parseSpeakingTurnResponse(text, input);
+      const text = await this.gemini.generateFromAudio(
+        prompt,
+        audio,
+        normalizedMime,
+      );
+      return parseSpeakingAudioTurnResponse(text, ctx);
     } catch (e) {
       this.logger.error(
-        `Xử lý lượt nói thất bại: ${e instanceof Error ? e.message : String(e)}`,
+        `Xử lý audio lượt nói thất bại: ${e instanceof Error ? e.message : String(e)}`,
       );
       throw new BadRequestException(
         'AI không thể xử lý lượt nói. Vui lòng thử lại.',
