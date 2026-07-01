@@ -1,11 +1,25 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Globe, Mail, Plus, Shield, UserRound } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Flame,
+  Globe,
+  Mail,
+  Mic,
+  Plus,
+  Route,
+  Shield,
+  Target,
+  UserRound,
+} from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { AvatarCircle } from "@/components/ui-kit/AppMark";
-import { GRADIENT } from "@/components/ui-kit/brand";
+import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import { Bar } from "@/components/ui-kit/primitives";
 import { errorClass, inputClass } from "@/components/ui-kit/form-styles";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
@@ -14,17 +28,21 @@ import {
   learningLanguageLabel,
   type LearningLanguageCode,
 } from "@/lib/learning-language";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
 import {
   getStoredAuth,
   setStoredAuth,
   type AuthUser,
 } from "@/lib/auth-storage";
+import type { LanguageProgressResponse } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
 function ProfileContent() {
   const { languages, addLanguage, setActive, languageCode, refresh } =
     useLearningLanguage();
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [progress, setProgress] = useState<LanguageProgressResponse | null>(null);
+  const [progressLoading, setProgressLoading] = useState(true);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const [langBusy, setLangBusy] = useState<LearningLanguageCode | null>(null);
@@ -42,6 +60,28 @@ function ProfileContent() {
     setUser(u);
     setName(u?.name ?? "");
   }, []);
+
+  const loadProgress = useCallback(async () => {
+    setProgressLoading(true);
+    try {
+      const res = await fetchWithAuth(
+        appendLanguageQuery("/users/me/progress", languageCode),
+      );
+      if (!res.ok) {
+        setProgress(null);
+        return;
+      }
+      setProgress((await res.json()) as LanguageProgressResponse);
+    } catch {
+      setProgress(null);
+    } finally {
+      setProgressLoading(false);
+    }
+  }, [languageCode]);
+
+  useEffect(() => {
+    void loadProgress();
+  }, [loadProgress]);
 
   const handleAddLanguage = useCallback(
     async (code: LearningLanguageCode) => {
@@ -89,6 +129,10 @@ function ProfileContent() {
     : "—";
   const initial = (user.name || user.email).charAt(0).toUpperCase();
   const isAdmin = user.role === "ADMIN";
+  const goal = progress?.goal;
+  const examHref =
+    languageCode === "en" ? "/toeic/TOEIC_LR" : "/topik/TOPIK_I";
+  const examLabel = languageCode === "en" ? "TOEIC" : "TOPIK";
 
   async function saveProfile() {
     setSaving(true);
@@ -235,6 +279,163 @@ function ProfileContent() {
               </div>
             ) : null}
             {langError ? <p className={`mt-3 ${errorClass}`}>{langError}</p> : null}
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="font-semibold text-foreground">
+                  Tiến độ {learningLanguageLabel(languageCode)}
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Mục tiêu, ôn tập và hoạt động gần đây theo ngôn ngữ đang chọn.
+                </p>
+              </div>
+              <Link
+                href="/goals"
+                className="shrink-0 text-xs font-medium text-primary hover:underline"
+              >
+                Mục tiêu ngày
+              </Link>
+            </div>
+
+            {progressLoading ? (
+              <p className="text-sm text-muted-foreground">Đang tải tiến độ…</p>
+            ) : !progress ? (
+              <p className="text-sm text-muted-foreground">
+                Chưa có dữ liệu tiến độ cho ngôn ngữ này.
+              </p>
+            ) : (
+              <div className="space-y-5">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="rounded-xl border border-border bg-secondary/40 px-3 py-3">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Flame size={13} style={{ color: BRAND.yellow }} />
+                      Chuỗi
+                    </div>
+                    <p className="text-lg font-bold text-foreground">
+                      {goal?.streak ?? 0} ngày
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-secondary/40 px-3 py-3">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Target size={13} style={{ color: BRAND.blue }} />
+                      Hôm nay
+                    </div>
+                    <p className="text-lg font-bold text-foreground">
+                      {goal?.today.reviewedCards ?? 0}/{goal?.today.target ?? 0}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-secondary/40 px-3 py-3">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <BookOpen size={13} style={{ color: BRAND.cyan }} />
+                      Ôn hôm nay
+                    </div>
+                    <p className="text-lg font-bold text-foreground">
+                      {progress.reviewDue.dueCount} thẻ
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-secondary/40 px-3 py-3">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Route size={13} style={{ color: BRAND.green }} />
+                      Lộ trình
+                    </div>
+                    <p className="text-lg font-bold text-foreground">
+                      {progress.paths.avgPercent}%
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-border px-4 py-3">
+                    <p className="text-xs text-muted-foreground">Bộ thẻ</p>
+                    <p className="mt-1 text-sm text-foreground">
+                      {progress.decks.learnedCards}/{progress.decks.totalCards} từ đã thuộc
+                      {" · "}
+                      {progress.decks.deckCount} bộ
+                    </p>
+                    <Link
+                      href="/decks"
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    >
+                      Xem bộ thẻ <ArrowRight size={12} />
+                    </Link>
+                  </div>
+
+                  {progress.paths.primaryPath ? (
+                    <div className="rounded-xl border border-border px-4 py-3">
+                      <p className="text-xs text-muted-foreground">Lộ trình chính</p>
+                      <p className="mt-1 text-sm font-medium text-foreground">
+                        {progress.paths.primaryPath.title}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {progress.paths.primaryPath.completedSteps}/
+                        {progress.paths.primaryPath.totalSteps} bước
+                      </p>
+                      <Bar
+                        done={progress.paths.primaryPath.completedSteps}
+                        total={progress.paths.primaryPath.totalSteps}
+                        color={BRAND.green}
+                      />
+                      <Link
+                        href={`/paths/${progress.paths.primaryPath.id}`}
+                        className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                      >
+                        Tiếp tục <ArrowRight size={12} />
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="space-y-2 border-t border-border pt-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Hoạt động gần đây
+                  </p>
+                  {progress.recentQuiz ? (
+                    <p className="text-sm text-foreground">
+                      Quiz: {progress.recentQuiz.sourceTitle} —{" "}
+                      {progress.recentQuiz.scorePercent}%
+                    </p>
+                  ) : null}
+                  {progress.recentExam ? (
+                    <p className="text-sm text-foreground">
+                      {examLabel}: {progress.recentExam.scorePercent}% (
+                      {progress.recentExam.correctCount}/
+                      {progress.recentExam.totalQuestions})
+                      <Link
+                        href={examHref}
+                        className="ml-2 text-xs text-primary hover:underline"
+                      >
+                        Luyện thi
+                      </Link>
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Chưa có lần thi {examLabel} nào.
+                    </p>
+                  )}
+                  {progress.recentSpeaking ? (
+                    <p className="flex items-center gap-1.5 text-sm text-foreground">
+                      <Mic size={14} className="text-muted-foreground" />
+                      Nói: {progress.recentSpeaking.situationTitle}
+                      {progress.recentSpeaking.overallScore != null
+                        ? ` — ${Math.round(progress.recentSpeaking.overallScore)} điểm`
+                        : ""}
+                      <Link
+                        href="/speaking"
+                        className="ml-1 text-xs text-primary hover:underline"
+                      >
+                        Luyện nói
+                      </Link>
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Chưa có phiên luyện nói nào.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

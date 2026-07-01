@@ -56,19 +56,21 @@ model UserGoalSetting {
 }
 
 model UserDailyProgress {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date         DateTime
-  reviewedCards Int     @default(0)
-  quizAttempts Int      @default(0)
-  goalTarget   Int      @default(20)
-  goalAchieved Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime
+  languageCode  String   @default("ko")
+  reviewedCards Int      @default(0)
+  quizAttempts  Int      @default(0)
+  goalTarget    Int      @default(20)
+  goalAchieved  Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  @@unique([userId, date])
+  @@unique([userId, date, languageCode])
   @@index([userId, date])
+  @@index([userId, languageCode, date])
 }
 
 model Deck {

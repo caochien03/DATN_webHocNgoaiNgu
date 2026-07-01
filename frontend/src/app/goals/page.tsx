@@ -3,12 +3,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Calendar, Flame, Target } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, GRADIENT, pct } from "@/components/ui-kit/brand";
 import { PageHeader, Stat } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
+import { learningLanguageLabel } from "@/lib/learning-language";
 import type { GoalHistoryRow, GoalMeResponse } from "@/lib/types";
 
 function GoalsContent() {
+  const { languageCode } = useLearningLanguage();
   const [goal, setGoal] = useState<GoalMeResponse | null>(null);
   const [history, setHistory] = useState<GoalHistoryRow[]>([]);
   const [inputTarget, setInputTarget] = useState("20");
@@ -19,8 +23,10 @@ function GoalsContent() {
     setError(null);
     try {
       const [goalRes, historyRes] = await Promise.all([
-        fetchWithAuth("/goals/me"),
-        fetchWithAuth("/goals/me/history?days=30"),
+        fetchWithAuth(appendLanguageQuery("/goals/me", languageCode)),
+        fetchWithAuth(
+          appendLanguageQuery("/goals/me/history?days=30", languageCode),
+        ),
       ]);
       if (!goalRes.ok || !historyRes.ok) {
         const failed = !goalRes.ok ? goalRes : historyRes;
@@ -34,7 +40,7 @@ function GoalsContent() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được mục tiêu");
     }
-  }, []);
+  }, [languageCode]);
 
   useEffect(() => {
     void load();
@@ -49,10 +55,13 @@ function GoalsContent() {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetchWithAuth("/goals/me", {
-        method: "PATCH",
-        body: JSON.stringify({ dailyCardTarget }),
-      });
+      const res = await fetchWithAuth(
+        appendLanguageQuery("/goals/me", languageCode),
+        {
+          method: "PATCH",
+          body: JSON.stringify({ dailyCardTarget }),
+        },
+      );
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
@@ -77,7 +86,7 @@ function GoalsContent() {
     <div>
       <PageHeader
         title="Mục tiêu ngày"
-        sub="Đặt số thẻ ôn mỗi ngày và theo dõi chuỗi học liên tục"
+        sub={`Đặt số thẻ ôn mỗi ngày và theo dõi chuỗi học — ${learningLanguageLabel(languageCode)}`}
       />
 
       {error ? (
@@ -133,7 +142,7 @@ function GoalsContent() {
         <div className="flex-1">
           <h3 className="font-semibold text-foreground">Đặt mục tiêu mỗi ngày</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Số thẻ cần ôn để duy trì chuỗi học.
+            Số thẻ cần ôn ({learningLanguageLabel(languageCode)}) để duy trì chuỗi học.
           </p>
           <div className="mt-3 flex items-center gap-2">
             <input

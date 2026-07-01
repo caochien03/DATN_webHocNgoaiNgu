@@ -1,18 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateQuizAttemptDto } from './dto/create-quiz-attempt.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { toVnDayStart } from '../goals/vn-day';
 
 @Injectable()
 export class QuizAttemptsService {
   constructor(private readonly prisma: PrismaService) {}
-
-  private static toVnDayStart(date: Date) {
-    const tzOffsetMs = 7 * 60 * 60 * 1000;
-    const vn = new Date(date.getTime() + tzOffsetMs);
-    return new Date(
-      Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - tzOffsetMs,
-    );
-  }
 
   async list(userId: string, languageCode?: string) {
     return this.prisma.quizAttempt.findMany({
@@ -28,7 +21,8 @@ export class QuizAttemptsService {
   async create(userId: string, dto: CreateQuizAttemptDto) {
     const safeCorrectAnswers = Math.min(dto.correctAnswers, dto.totalQuestions);
     const now = new Date();
-    const day = QuizAttemptsService.toVnDayStart(now);
+    const day = toVnDayStart(now);
+    const lang = dto.languageCode ?? 'ko';
     const setting = await this.prisma.userGoalSetting.findUnique({
       where: { userId },
       select: { dailyCardTarget: true },
@@ -41,14 +35,20 @@ export class QuizAttemptsService {
           sourceType: dto.sourceType,
           sourceId: dto.sourceId,
           sourceTitle: dto.sourceTitle,
-          languageCode: dto.languageCode ?? 'ko',
+          languageCode: lang,
           totalQuestions: dto.totalQuestions,
           correctAnswers: safeCorrectAnswers,
           scorePercent: dto.scorePercent,
         },
       });
       const progress = await tx.userDailyProgress.upsert({
-        where: { userId_date: { userId, date: day } },
+        where: {
+          userId_date_languageCode: {
+            userId,
+            date: day,
+            languageCode: lang,
+          },
+        },
         update: {
           quizAttempts: { increment: 1 },
           goalTarget,
@@ -56,6 +56,7 @@ export class QuizAttemptsService {
         create: {
           userId,
           date: day,
+          languageCode: lang,
           quizAttempts: 1,
           goalTarget,
           goalAchieved: false,

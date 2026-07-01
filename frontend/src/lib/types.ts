@@ -586,6 +586,7 @@ export type QuizAttempt = {
 };
 
 export type GoalMeResponse = {
+  languageCode?: string;
   dailyCardTarget: number;
   timezone: string;
   today: {
@@ -603,6 +604,63 @@ export type GoalHistoryRow = {
   reviewedCards: number;
   goalTarget: number;
   goalAchieved: boolean;
+};
+
+export type LanguageProgressResponse = {
+  languageCode: string;
+  goal: GoalMeResponse;
+  reviewDue: { dueCount: number };
+  decks: { deckCount: number; totalCards: number; learnedCards: number };
+  paths: {
+    total: number;
+    started: number;
+    avgPercent: number;
+    primaryPath: {
+      id: string;
+      title: string;
+      percent: number;
+      completedSteps: number;
+      totalSteps: number;
+    } | null;
+  };
+  recentQuiz: {
+    id: string;
+    sourceType: string;
+    sourceTitle: string;
+    scorePercent: number;
+    correctAnswers: number;
+    totalQuestions: number;
+    createdAt: string;
+  } | null;
+  recentExam:
+    | ({
+        kind: "topik";
+        id: string;
+        mode: string;
+        tier: string;
+        scorePercent: number;
+        correctCount: number;
+        totalQuestions: number;
+        finishedAt: string | null;
+      })
+    | ({
+        kind: "toeic";
+        id: string;
+        mode: string;
+        scorePercent: number;
+        correctCount: number;
+        totalQuestions: number;
+        finishedAt: string | null;
+      })
+    | null;
+  recentSpeaking: {
+    id: string;
+    situationTitle: string;
+    overallScore: number | null;
+    goalsCompleted: number | null;
+    goalsTotal: number | null;
+    completedAt: string | null;
+  } | null;
 };
 
 export type SpeakingSelfLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";

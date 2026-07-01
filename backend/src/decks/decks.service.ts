@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { toVnDayStart } from '../goals/vn-day';
 import { CreateCardDto } from './dto/create-card.dto';
 import { CreateDeckDto } from './dto/create-deck.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -23,14 +24,6 @@ export class DecksService {
 
   private static addDays(from: Date, days: number) {
     return new Date(from.getTime() + days * 24 * 60 * 60 * 1000);
-  }
-
-  private static toVnDayStart(date: Date) {
-    const tzOffsetMs = 7 * 60 * 60 * 1000;
-    const vn = new Date(date.getTime() + tzOffsetMs);
-    return new Date(
-      Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - tzOffsetMs,
-    );
   }
 
   async listDecks(userId: string, languageCode?: string) {
@@ -217,7 +210,8 @@ export class DecksService {
       throw new ForbiddenException();
     }
     const now = new Date();
-    const day = DecksService.toVnDayStart(now);
+    const day = toVnDayStart(now);
+    const deckLanguage = card.deck.languageCode || 'ko';
     const setting = await this.prisma.userGoalSetting.findUnique({
       where: { userId },
       select: { dailyCardTarget: true },
@@ -229,7 +223,13 @@ export class DecksService {
       : DecksService.addDays(now, 1);
     const [progress, updatedCard] = await this.prisma.$transaction([
       this.prisma.userDailyProgress.upsert({
-        where: { userId_date: { userId, date: day } },
+        where: {
+          userId_date_languageCode: {
+            userId,
+            date: day,
+            languageCode: deckLanguage,
+          },
+        },
         update: {
           reviewedCards: { increment: 1 },
           goalTarget,
@@ -237,6 +237,7 @@ export class DecksService {
         create: {
           userId,
           date: day,
+          languageCode: deckLanguage,
           reviewedCards: 1,
           goalTarget,
           goalAchieved: goalTarget <= 1,

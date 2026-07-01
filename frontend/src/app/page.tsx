@@ -51,7 +51,7 @@ export default function Home() {
     setAuthed(true);
     setName(auth.user.name || auth.user.email);
 
-    void fetchWithAuth("/goals/me")
+    void fetchWithAuth(appendLanguageQuery("/goals/me", languageCode))
       .then((r) => (r.ok ? r.json() : null))
       .then((goal: GoalMeResponse | null) => setData((d) => ({ ...d, goal })))
       .catch(() => {});

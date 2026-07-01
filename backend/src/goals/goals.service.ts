@@ -1,36 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { addVnDays, toVnDayStart } from './vn-day';
 
 @Injectable()
 export class GoalsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private static toVnDayStart(date: Date) {
-    const tzOffsetMs = 7 * 60 * 60 * 1000;
-    const vn = new Date(date.getTime() + tzOffsetMs);
-    return new Date(
-      Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - tzOffsetMs,
-    );
-  }
-
-  private static addDays(date: Date, days: number) {
-    return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
-  }
-
-  async getMe(userId: string) {
+  async getMe(userId: string, languageCode = 'ko') {
+    const lang = languageCode || 'ko';
     const setting = await this.prisma.userGoalSetting.upsert({
       where: { userId },
       update: {},
       create: { userId },
     });
-    const todayDate = GoalsService.toVnDayStart(new Date());
+    const todayDate = toVnDayStart(new Date());
     const todayProgress = await this.prisma.userDailyProgress.findUnique({
-      where: { userId_date: { userId, date: todayDate } },
+      where: {
+        userId_date_languageCode: {
+          userId,
+          date: todayDate,
+          languageCode: lang,
+        },
+      },
     });
     const reviewedToday = todayProgress?.reviewedCards ?? 0;
     const achievedToday = reviewedToday >= setting.dailyCardTarget;
-    const { streak, bestStreak } = await this.getStreakStats(userId, todayDate);
+    const { streak, bestStreak } = await this.getStreakStats(
+      userId,
+      todayDate,
+      lang,
+    );
     return {
+      languageCode: lang,
       dailyCardTarget: setting.dailyCardTarget,
       timezone: setting.timezone,
       today: {
@@ -38,7 +39,10 @@ export class GoalsService {
         target: setting.dailyCardTarget,
         percent:
           setting.dailyCardTarget > 0
-            ? Math.min(100, Math.round((reviewedToday / setting.dailyCardTarget) * 100))
+            ? Math.min(
+                100,
+                Math.round((reviewedToday / setting.dailyCardTarget) * 100),
+              )
             : 0,
         achieved: achievedToday,
       },
@@ -47,19 +51,27 @@ export class GoalsService {
     };
   }
 
-  async updateMe(userId: string, dailyCardTarget: number) {
-    const setting = await this.prisma.userGoalSetting.upsert({
+  async updateMe(userId: string, dailyCardTarget: number, languageCode = 'ko') {
+    const lang = languageCode || 'ko';
+    await this.prisma.userGoalSetting.upsert({
       where: { userId },
       update: { dailyCardTarget },
       create: { userId, dailyCardTarget },
     });
-    const todayDate = GoalsService.toVnDayStart(new Date());
+    const todayDate = toVnDayStart(new Date());
     const today = await this.prisma.userDailyProgress.upsert({
-      where: { userId_date: { userId, date: todayDate } },
+      where: {
+        userId_date_languageCode: {
+          userId,
+          date: todayDate,
+          languageCode: lang,
+        },
+      },
       update: { goalTarget: dailyCardTarget },
       create: {
         userId,
         date: todayDate,
+        languageCode: lang,
         goalTarget: dailyCardTarget,
         goalAchieved: false,
       },
@@ -70,15 +82,16 @@ export class GoalsService {
         data: { goalAchieved: true },
       });
     }
-    return this.getMe(userId);
+    return this.getMe(userId, lang);
   }
 
-  async getHistory(userId: string, days = 30) {
+  async getHistory(userId: string, days = 30, languageCode = 'ko') {
+    const lang = languageCode || 'ko';
     const safeDays = Number.isFinite(days) ? Math.min(Math.max(days, 7), 90) : 30;
-    const today = GoalsService.toVnDayStart(new Date());
-    const start = GoalsService.addDays(today, -(safeDays - 1));
+    const today = toVnDayStart(new Date());
+    const start = addVnDays(today, -(safeDays - 1));
     const rows = await this.prisma.userDailyProgress.findMany({
-      where: { userId, date: { gte: start, lte: today } },
+      where: { userId, languageCode: lang, date: { gte: start, lte: today } },
       orderBy: { date: 'asc' },
     });
     return rows.map((r) => ({
@@ -89,9 +102,18 @@ export class GoalsService {
     }));
   }
 
-  private async getStreakStats(userId: string, todayDate: Date) {
+  private async getStreakStats(
+    userId: string,
+    todayDate: Date,
+    languageCode: string,
+  ) {
     const rows = await this.prisma.userDailyProgress.findMany({
-      where: { userId, goalAchieved: true, date: { lte: todayDate } },
+      where: {
+        userId,
+        languageCode,
+        goalAchieved: true,
+        date: { lte: todayDate },
+      },
       orderBy: { date: 'asc' },
       take: 365,
       select: { date: true },
@@ -101,7 +123,7 @@ export class GoalsService {
     let cursor = todayDate;
     while (achievedSet.has(cursor.getTime())) {
       streak += 1;
-      cursor = GoalsService.addDays(cursor, -1);
+      cursor = addVnDays(cursor, -1);
     }
     let bestStreak = 0;
     let run = 0;

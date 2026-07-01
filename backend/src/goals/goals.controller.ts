@@ -10,19 +10,30 @@ export class GoalsController {
   constructor(private readonly goalsService: GoalsService) {}
 
   @Get('me')
-  getMe(@CurrentUser('id') userId: string) {
-    return this.goalsService.getMe(userId);
+  getMe(
+    @CurrentUser('id') userId: string,
+    @Query('languageCode') languageCode?: string,
+  ) {
+    return this.goalsService.getMe(userId, languageCode);
   }
 
   @Patch('me')
-  updateMe(@CurrentUser('id') userId: string, @Body() dto: UpdateGoalDto) {
-    return this.goalsService.updateMe(userId, dto.dailyCardTarget);
+  updateMe(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateGoalDto,
+    @Query('languageCode') languageCode?: string,
+  ) {
+    return this.goalsService.updateMe(userId, dto.dailyCardTarget, languageCode);
   }
 
   @Get('me/history')
-  getHistory(@CurrentUser('id') userId: string, @Query('days') daysRaw?: string) {
+  getHistory(
+    @CurrentUser('id') userId: string,
+    @Query('days') daysRaw?: string,
+    @Query('languageCode') languageCode?: string,
+  ) {
     const parsed = Number(daysRaw);
     const days = Number.isFinite(parsed) ? Math.floor(parsed) : 30;
-    return this.goalsService.getHistory(userId, days);
+    return this.goalsService.getHistory(userId, days, languageCode);
   }
 }
