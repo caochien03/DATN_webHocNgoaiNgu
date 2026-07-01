@@ -22,10 +22,13 @@ const VALID_LEVELS = new Set<string>([
 export class LessonsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(level?: string) {
+  async list(level?: string, languageCode?: string) {
     const where: Prisma.GrammarLessonWhereInput = {};
     if (level && VALID_LEVELS.has(level)) {
       where.level = level as GrammarLevel;
+    }
+    if (languageCode) {
+      where.languageCode = languageCode;
     }
     return this.prisma.grammarLesson.findMany({
       where,

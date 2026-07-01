@@ -11,19 +11,25 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, pct } from "@/components/ui-kit/brand";
 import { Bar, PageHeader, Stat } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
+import { learningLanguageLabel } from "@/lib/learning-language";
 import type { DecksResponse } from "@/lib/types";
 
 function DecksContent() {
+  const { languageCode } = useLearningLanguage();
   const [data, setData] = useState<DecksResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetchWithAuth("/decks");
+      const res = await fetchWithAuth(
+        appendLanguageQuery("/decks", languageCode),
+      );
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
@@ -32,7 +38,7 @@ function DecksContent() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được danh sách");
     }
-  }, []);
+  }, [languageCode]);
 
   useEffect(() => {
     void load();
@@ -42,7 +48,7 @@ function DecksContent() {
     <div>
       <PageHeader
         title="Bộ thẻ của tôi"
-        sub="Tạo và quản lý bộ từ riêng — tiến độ học được ghi nhận"
+        sub={`Tạo và quản lý bộ từ riêng — ${learningLanguageLabel(languageCode)}`}
         action={
           <Link
             href="/decks/new"

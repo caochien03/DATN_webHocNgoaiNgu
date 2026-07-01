@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateQuizAttemptDto } from './dto/create-quiz-attempt.dto';
@@ -10,8 +10,11 @@ export class QuizAttemptsController {
   constructor(private readonly quizAttemptsService: QuizAttemptsService) {}
 
   @Get()
-  list(@CurrentUser('id') userId: string) {
-    return this.quizAttemptsService.list(userId);
+  list(
+    @CurrentUser('id') userId: string,
+    @Query('languageCode') languageCode?: string,
+  ) {
+    return this.quizAttemptsService.list(userId, languageCode);
   }
 
   @Post()

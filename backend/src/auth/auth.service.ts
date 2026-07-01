@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Prisma, User, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { LanguagesService } from '../languages/languages.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from './types/jwt-payload.type';
@@ -18,6 +19,7 @@ const BCRYPT_ROUNDS = 10;
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly languagesService: LanguagesService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
@@ -36,6 +38,7 @@ export class AuthService {
         name: dto.name,
         role,
       });
+      await this.languagesService.ensureDefaultForUser(user.id);
       return this.buildAuthResponse(user);
     } catch (e) {
       if (

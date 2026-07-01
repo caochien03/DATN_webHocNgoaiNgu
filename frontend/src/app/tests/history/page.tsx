@@ -4,9 +4,12 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BarChart3, CheckCircle2 } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, scoreColor } from "@/components/ui-kit/brand";
 import { PageHeader, Stat } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
+import { learningLanguageLabel } from "@/lib/learning-language";
 import type { QuizAttempt } from "@/lib/types";
 
 function label(sourceType: QuizAttempt["sourceType"]): string {
@@ -17,13 +20,16 @@ function label(sourceType: QuizAttempt["sourceType"]): string {
 }
 
 function TestsHistoryContent() {
+  const { languageCode } = useLearningLanguage();
   const [attempts, setAttempts] = useState<QuizAttempt[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetchWithAuth("/quiz-attempts");
+      const res = await fetchWithAuth(
+        appendLanguageQuery("/quiz-attempts", languageCode),
+      );
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
@@ -32,7 +38,7 @@ function TestsHistoryContent() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được lịch sử");
     }
-  }, []);
+  }, [languageCode]);
 
   useEffect(() => {
     void load();
@@ -48,7 +54,7 @@ function TestsHistoryContent() {
     <div className="mx-auto max-w-2xl">
       <PageHeader
         title="Lịch sử kiểm tra"
-        sub="Các lần làm bài kiểm tra tổng hợp gần đây"
+        sub={`Các lần làm bài kiểm tra — ${learningLanguageLabel(languageCode)}`}
         action={
           <Link
             href="/tests"

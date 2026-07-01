@@ -4,9 +4,12 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { History } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, GRADIENT, scoreColor } from "@/components/ui-kit/brand";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
+import { learningLanguageLabel } from "@/lib/learning-language";
 import { shuffle } from "@/lib/shuffle";
 import type { DeckWithStats, LessonRow, QuizSourceType, TopicRow } from "@/lib/types";
 
@@ -37,6 +40,7 @@ function sourceLabel(sourceType: QuizSourceType): string {
 }
 
 function TestsContent() {
+  const { languageCode } = useLearningLanguage();
   const [decks, setDecks] = useState<DeckWithStats[]>([]);
   const [topics, setTopics] = useState<TopicRow[]>([]);
   const [lessons, setLessons] = useState<LessonRow[]>([]);
@@ -53,9 +57,9 @@ function TestsContent() {
     setError(null);
     try {
       const [decksRes, topicsRes, lessonsRes] = await Promise.all([
-        fetchWithAuth("/decks"),
-        fetchWithAuth("/topics?language=ko"),
-        fetchWithAuth("/lessons"),
+        fetchWithAuth(appendLanguageQuery("/decks", languageCode)),
+        fetchWithAuth(appendLanguageQuery("/topics", languageCode)),
+        fetchWithAuth(appendLanguageQuery("/lessons", languageCode)),
       ]);
       if (!decksRes.ok || !topicsRes.ok || !lessonsRes.ok) {
         const firstFailed = [decksRes, topicsRes, lessonsRes].find((r) => !r.ok);
@@ -69,11 +73,18 @@ function TestsContent() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được nguồn kiểm tra");
     }
-  }, []);
+  }, [languageCode]);
 
   useEffect(() => {
     void loadSources();
   }, [loadSources]);
+
+  useEffect(() => {
+    setQuestions([]);
+    setFinished(false);
+    setCorrectCount(0);
+    setIndex(0);
+  }, [languageCode]);
 
   const options = useMemo<SourceOption[]>(() => {
     if (sourceType === "DECK") return decks.map((d) => ({ id: d.id, title: d.title }));
@@ -167,6 +178,7 @@ function TestsContent() {
           sourceType,
           sourceId,
           sourceTitle: selected?.title ?? "N/A",
+          languageCode,
           totalQuestions: questions.length,
           correctAnswers: nextCorrect,
           scorePercent,
@@ -191,7 +203,7 @@ function TestsContent() {
     <div className="mx-auto max-w-2xl">
       <PageHeader
         title="Bài kiểm tra tổng hợp"
-        sub={`Chọn nguồn và làm nhanh ${QUESTION_COUNT} câu trắc nghiệm`}
+        sub={`Chọn nguồn và làm nhanh ${QUESTION_COUNT} câu — ${learningLanguageLabel(languageCode)}`}
         action={
           <Link
             href="/tests/history"

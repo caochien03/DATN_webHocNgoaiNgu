@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { SpeakingGoalChecklist } from "@/components/speaking/SpeakingGoalChecklist";
 import { SpeakKoreanButton } from "@/components/speaking/SpeakKoreanButton";
 import { BRAND } from "@/components/ui-kit/brand";
@@ -23,6 +24,7 @@ type Step = "survey" | "situations" | "intro";
 
 function SpeakingNewContent() {
   const router = useRouter();
+  const { languageCode } = useLearningLanguage();
   const [step, setStep] = useState<Step>("survey");
   const [topics, setTopics] = useState<SpeakingTopicRow[]>([]);
   const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
@@ -35,12 +37,12 @@ function SpeakingNewContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    void fetchSpeakingTopics()
+    void fetchSpeakingTopics(languageCode)
       .then(setTopics)
       .catch((e) =>
         setError(e instanceof Error ? e.message : "Không tải được chủ đề"),
       );
-  }, []);
+  }, [languageCode]);
 
   const toggleTopic = (id: string) => {
     setSelectedTopicIds((prev) => {
@@ -61,6 +63,7 @@ function SpeakingNewContent() {
       const rows = await fetchSpeakingSituations({
         topicIds: selectedTopicIds,
         level: selfLevel,
+        languageCode,
       });
       setSituations(rows);
       setStep("situations");
@@ -69,7 +72,7 @@ function SpeakingNewContent() {
     } finally {
       setLoading(false);
     }
-  }, [selectedTopicIds, selfLevel]);
+  }, [selectedTopicIds, selfLevel, languageCode]);
 
   async function startSession() {
     if (!selectedSituation) return;
@@ -137,8 +140,8 @@ function SpeakingNewContent() {
                     )}
                   >
                     {t.title}
-                    {t.titleKo ? (
-                      <span className="ml-1 text-xs opacity-70">{t.titleKo}</span>
+                    {t.titleNative ? (
+                      <span className="ml-1 text-xs opacity-70">{t.titleNative}</span>
                     ) : null}
                   </button>
                 );
@@ -244,14 +247,17 @@ function SpeakingNewContent() {
                 {selectedSituation.npcRoleVi}
               </p>
             </div>
-            {selectedSituation.openingLineKo ? (
+            {selectedSituation.openingLine ? (
               <div className="mt-4 rounded-xl border border-border bg-muted/30 px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs text-muted-foreground">Câu mở đầu NPC</p>
-                  <SpeakKoreanButton text={selectedSituation.openingLineKo} />
+                  <SpeakKoreanButton
+                    text={selectedSituation.openingLine}
+                    languageCode={languageCode}
+                  />
                 </div>
                 <p className="mt-2 text-sm" style={{ color: BRAND.cyan }}>
-                  {selectedSituation.openingLineKo}
+                  {selectedSituation.openingLine}
                 </p>
               </div>
             ) : null}

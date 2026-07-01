@@ -92,7 +92,11 @@ export function SpeakingSessionReport({
 
       <div className="rounded-2xl border border-border bg-card p-4">
         <h2 className="mb-4 text-sm font-semibold text-foreground">Hội thoại</h2>
-        <SpeakingChat turns={session.turns} showGrading />
+        <SpeakingChat
+          turns={session.turns}
+          languageCode={session.languageCode}
+          showGrading
+        />
       </div>
 
       <div className="flex flex-wrap gap-3">

@@ -8,8 +8,12 @@ export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
   @Get()
-  list(@Query('level') level?: string) {
-    return this.lessonsService.list(level);
+  list(
+    @Query('level') level?: string,
+    @Query('languageCode') languageCode?: string,
+    @Query('language') language?: string,
+  ) {
+    return this.lessonsService.list(level, languageCode ?? language);
   }
 
   @Get(':id')

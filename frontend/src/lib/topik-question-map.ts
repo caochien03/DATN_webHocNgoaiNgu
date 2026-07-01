@@ -5,12 +5,12 @@ import {
 } from "@/lib/topik-answers";
 import type { TopikExamStep } from "@/lib/topik-exam-steps";
 import { groupTopikQuestionsIntoPages } from "@/lib/group-topik-pages";
-import type { TopikQuestion, TopikSection } from "@/lib/types";
+import type { ExamMcqQuestion, ToeicSection, TopikSection } from "@/lib/types";
 
 export type TopikQuestionMapItem = {
   questionId: string;
   questionNo: number;
-  section: TopikSection;
+  section: TopikSection | ToeicSection;
   answered: boolean;
   navigateTo: number;
   isCurrent: boolean;
@@ -42,7 +42,7 @@ export function questionIdsOnExamStep(
 }
 
 export function buildExamQuestionMapItems(
-  questions: TopikQuestion[],
+  questions: ExamMcqQuestion[],
   steps: TopikExamStep[],
   stepIndex: number,
   mcqSelections: Record<string, number>,
@@ -67,8 +67,8 @@ export function buildExamQuestionMapItems(
 }
 
 export function buildQuizQuestionMapItems(
-  questions: TopikQuestion[],
-  pages: TopikQuestion[][],
+  questions: ExamMcqQuestion[],
+  pages: ExamMcqQuestion[][],
   pageIndex: number,
   selections: Record<string, number>,
 ): TopikQuestionMapItem[] {
@@ -93,7 +93,7 @@ export function buildQuizQuestionMapItems(
 }
 
 export function buildWritingQuestionMapItems(
-  questions: TopikQuestion[],
+  questions: ExamMcqQuestion[],
   pageIndex: number,
   answers: WritingAnswerState,
 ): TopikQuestionMapItem[] {
@@ -111,8 +111,8 @@ export function buildWritingQuestionMapItems(
 
 export function groupMapItemsBySection(
   items: TopikQuestionMapItem[],
-): { section: TopikSection; items: TopikQuestionMapItem[] }[] {
-  const groups: { section: TopikSection; items: TopikQuestionMapItem[] }[] = [];
+): { section: TopikSection | ToeicSection; items: TopikQuestionMapItem[] }[] {
+  const groups: { section: TopikSection | ToeicSection; items: TopikQuestionMapItem[] }[] = [];
   for (const item of items) {
     const last = groups[groups.length - 1];
     if (last && last.section === item.section) {

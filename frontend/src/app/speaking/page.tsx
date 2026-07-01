@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Mic, Plus } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { scoreColor } from "@/components/ui-kit/brand";
 import { Card, GradientButton, PageHeader } from "@/components/ui-kit/primitives";
 import {
   fetchSpeakingSessions,
   speakingLevelLabel,
 } from "@/lib/speaking-api";
+import { learningLanguageLabel } from "@/lib/learning-language";
 import type { SpeakingSessionListItem } from "@/lib/types";
 
 function formatDate(iso: string) {
@@ -23,6 +25,7 @@ function formatDate(iso: string) {
 }
 
 function SpeakingHubContent() {
+  const { languageCode } = useLearningLanguage();
   const [sessions, setSessions] = useState<SpeakingSessionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,13 +34,13 @@ function SpeakingHubContent() {
     setLoading(true);
     setError(null);
     try {
-      setSessions(await fetchSpeakingSessions());
+      setSessions(await fetchSpeakingSessions(languageCode));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được dữ liệu");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [languageCode]);
 
   useEffect(() => {
     void load();
@@ -47,7 +50,7 @@ function SpeakingHubContent() {
     <div>
       <PageHeader
         title="Luyện nói"
-        sub="Hội thoại theo tình huống thực tế — AI chấm và phản hồi từng lượt"
+        sub={`Hội thoại theo tình huống — ${learningLanguageLabel(languageCode)}`}
         action={
           <Link href="/speaking/new">
             <GradientButton className="inline-flex items-center gap-2">

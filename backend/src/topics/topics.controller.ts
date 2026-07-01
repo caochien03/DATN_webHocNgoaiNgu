@@ -10,9 +10,13 @@ export class TopicsController {
   @Get()
   list(
     @Query('language') language?: string,
+    @Query('languageCode') languageCode?: string,
     @Query('level') level?: string,
   ) {
-    return this.topicsService.list({ language, level });
+    return this.topicsService.list({
+      language: languageCode ?? language,
+      level,
+    });
   }
 
   @Get(':id')

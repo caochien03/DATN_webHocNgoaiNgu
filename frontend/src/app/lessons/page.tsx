@@ -5,9 +5,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { ChevronRight, GraduationCap } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND } from "@/components/ui-kit/brand";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
+import { learningLanguageLabel } from "@/lib/learning-language";
 import type { GrammarLevel, LessonRow } from "@/lib/types";
 
 const LEVELS: { code: GrammarLevel; label: string }[] = [
@@ -20,6 +23,7 @@ const LEVELS: { code: GrammarLevel; label: string }[] = [
 ];
 
 function LessonsContent() {
+  const { languageCode } = useLearningLanguage();
   const [lessons, setLessons] = useState<LessonRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [level, setLevel] = useState<GrammarLevel>("BEGINNER_1");
@@ -27,7 +31,9 @@ function LessonsContent() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetchWithAuth("/lessons");
+      const res = await fetchWithAuth(
+        appendLanguageQuery("/lessons", languageCode),
+      );
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
@@ -36,7 +42,7 @@ function LessonsContent() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được bài học");
     }
-  }, []);
+  }, [languageCode]);
 
   useEffect(() => {
     void load();

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { LearningLanguageProvider } from "@/components/LearningLanguageProvider";
 import { AppShell } from "@/components/ui-kit/AppShell";
 import { APP } from "@/components/ui-kit/brand";
 import { themeInitScript } from "@/lib/theme";
@@ -35,7 +36,9 @@ export default function RootLayout({
       <body className="min-h-full">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <ThemeProvider>
-          <AppShell>{children}</AppShell>
+          <LearningLanguageProvider>
+            <AppShell>{children}</AppShell>
+          </LearningLanguageProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -23,6 +23,7 @@ export type DeckWithStats = {
   id: string;
   title: string;
   description: string | null;
+  languageCode: string;
   updatedAt: string;
   total: number;
   learned: number;
@@ -97,6 +98,7 @@ export type LessonRow = {
   level: GrammarLevel;
   title: string;
   summary: string | null;
+  languageCode: string;
   sortOrder: number;
   _count: { vocabulary: number; points: number; exercises: number };
 };
@@ -106,6 +108,7 @@ export type LessonDetail = {
   level: GrammarLevel;
   title: string;
   summary: string | null;
+  languageCode: string;
   sortOrder: number;
   vocabulary: LessonVocabulary[];
   points: GrammarPoint[];
@@ -439,6 +442,135 @@ export type TopikWritingSummary = {
   writingMax: number;
 };
 
+export type ToeicTier = "TOEIC_LR";
+export type ToeicSection = "LISTENING" | "READING";
+export type ToeicAttemptMode = "FULL_EXAM" | "PRACTICE";
+
+export type ToeicQuestionFormat = {
+  id: string;
+  tier: ToeicTier;
+  section: ToeicSection;
+  part: number;
+  fromNo: number;
+  toNo: number;
+  title: string;
+  titleEn: string | null;
+  description: string | null;
+  sortOrder: number;
+};
+
+export type ToeicQuestion = {
+  id: string;
+  tier: ToeicTier;
+  section: ToeicSection;
+  questionNo: number;
+  prompt: string;
+  passage: string | null;
+  options: string[];
+  audioUrl: string | null;
+  imageUrl: string | null;
+  optionImageUrls: string[];
+  bundleId?: string | null;
+  points: number;
+};
+
+export type ToeicExamRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  tier: ToeicTier;
+  durationMinutes: number;
+  questionCount: number;
+  sortOrder: number;
+};
+
+export type ToeicExamTake = {
+  id: string;
+  title: string;
+  description: string | null;
+  tier: ToeicTier;
+  durationMinutes: number;
+  questionCount: number;
+  sectionCounts?: Partial<Record<ToeicSection, number>>;
+  questions: ToeicQuestion[];
+};
+
+export type GradedToeicAnswer = {
+  questionId: string;
+  questionNo: number;
+  section: ToeicSection;
+  selectedIndex: number;
+  correctIndex: number;
+  isCorrect: boolean;
+  explanation: string | null;
+};
+
+export type ToeicSubmitResult = {
+  attemptId: string;
+  mode: ToeicAttemptMode;
+  tier: ToeicTier;
+  section?: ToeicSection;
+  formatFromNo?: number;
+  formatToNo?: number;
+  examId?: string;
+  examTitle?: string;
+  correctCount: number;
+  totalQuestions: number;
+  scorePercent: number;
+  answers: GradedToeicAnswer[];
+};
+
+export type ToeicAttemptRow = {
+  id: string;
+  mode: ToeicAttemptMode;
+  tier: ToeicTier;
+  section: ToeicSection | null;
+  formatFromNo: number | null;
+  formatToNo: number | null;
+  examId: string | null;
+  correctCount: number;
+  totalQuestions: number;
+  scorePercent: number;
+  startedAt: string;
+  finishedAt: string | null;
+  exam: { id: string; title: string } | null;
+};
+
+/** Câu trắc nghiệm dùng chung cho runner TOPIK / TOEIC. */
+export type ExamMcqQuestion = {
+  id: string;
+  section: TopikSection | ToeicSection;
+  questionNo: number;
+  questionType?: TopikQuestionType;
+  prompt: string;
+  passage: string | null;
+  options: string[];
+  audioUrl: string | null;
+  imageUrl: string | null;
+  optionImageUrls: string[];
+  bundleId?: string | null;
+  points: number;
+};
+
+export type ExamMcqSubmitResult = {
+  attemptId: string;
+  correctCount: number;
+  totalQuestions: number;
+  scorePercent: number;
+  answers: Array<{
+    questionId: string;
+    questionNo: number;
+    section: TopikSection | ToeicSection;
+    selectedIndex?: number;
+    correctIndex?: number;
+    isCorrect: boolean | null;
+    explanation?: string | null;
+    gradeStatus?: string;
+    textAnswer?: string;
+    modelAnswer?: string | null;
+  }>;
+};
+
 export type QuizSourceType = "DECK" | "TOPIC" | "LESSON" | "PATH";
 
 export type QuizAttempt = {
@@ -482,7 +614,7 @@ export type SpeakingTurnSpeaker = "USER" | "NPC";
 export type SpeakingTopicRow = {
   id: string;
   title: string;
-  titleKo: string | null;
+  titleNative: string | null;
   description: string | null;
   sortOrder: number;
 };
@@ -503,11 +635,11 @@ export type SpeakingSituationRow = {
   userRoleVi: string;
   npcRoleVi: string;
   maxUserTurns: number;
-  openingLineKo?: string;
+  openingLine?: string;
   topic: {
     id: string;
     title: string;
-    titleKo: string | null;
+    titleNative: string | null;
   } | null;
   goals: SpeakingGoalStatus[];
   goalsCompleted: number;
@@ -536,6 +668,7 @@ export type SpeakingTurnRow = {
 
 export type SpeakingSessionDetail = {
   id: string;
+  languageCode: string;
   status: SpeakingSessionStatus;
   selfLevel: SpeakingSelfLevel;
   selectedTopicIds: string[];

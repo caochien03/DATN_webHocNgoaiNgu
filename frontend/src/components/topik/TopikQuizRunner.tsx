@@ -12,16 +12,18 @@ import { TopikQuestionMap } from "@/components/topik/TopikQuestionMap";
 import { BRAND, GRADIENT, scoreColor } from "@/components/ui-kit/brand";
 import { topikSectionLabel } from "@/lib/topik-labels";
 import { buildQuizQuestionMapItems } from "@/lib/topik-question-map";
-import type { GradedTopikAnswer, TopikQuestion, TopikSubmitResult } from "@/lib/types";
+import type { ExamMcqQuestion, ExamMcqSubmitResult } from "@/lib/types";
 
 type TopikQuizRunnerProps = {
   title: string;
   subtitle?: string;
-  questions: TopikQuestion[];
+  questions: ExamMcqQuestion[];
   backHref: string;
+  /** Đường dẫn gốc tới trang chi tiết bài làm (mặc định TOPIK). */
+  attemptsBasePath?: string;
   onSubmit: (
     answers: { questionId: string; selectedIndex: number }[],
-  ) => Promise<TopikSubmitResult>;
+  ) => Promise<ExamMcqSubmitResult>;
 };
 
 export function TopikQuizRunner({
@@ -29,6 +31,7 @@ export function TopikQuizRunner({
   subtitle,
   questions,
   backHref,
+  attemptsBasePath = "/topik/attempts",
   onSubmit,
 }: TopikQuizRunnerProps) {
   const pages = useMemo(
@@ -39,7 +42,7 @@ export function TopikQuizRunner({
   const [selections, setSelections] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<TopikSubmitResult | null>(null);
+  const [result, setResult] = useState<ExamMcqSubmitResult | null>(null);
 
   const currentPage = pages[pageIndex] ?? [];
   const allAnswered = questions.every((q) => selections[q.id] !== undefined);
@@ -92,7 +95,7 @@ export function TopikQuizRunner({
         result={result}
         questions={questions}
         backHref={backHref}
-        attemptHref={`/topik/attempts/${result.attemptId}`}
+        attemptHref={`${attemptsBasePath}/${result.attemptId}`}
       />
     );
   }
@@ -199,7 +202,7 @@ export function QuestionBlock({
   selectedIndex,
   onPick,
 }: {
-  question: TopikQuestion;
+  question: ExamMcqQuestion;
   showAudio: boolean;
   selectedIndex: number | undefined;
   onPick: (index: number) => void;
@@ -273,12 +276,12 @@ export function QuestionBlock({
   );
 }
 
-function optionImageAt(question: TopikQuestion, index: number): string | null {
+function optionImageAt(question: ExamMcqQuestion, index: number): string | null {
   const url = question.optionImageUrls?.[index]?.trim();
   return url || null;
 }
 
-function usesImageOptions(question: TopikQuestion): boolean {
+function usesImageOptions(question: ExamMcqQuestion): boolean {
   return question.options.some((_, i) => optionImageAt(question, i) != null);
 }
 
@@ -288,13 +291,13 @@ function ResultView({
   backHref,
   attemptHref,
 }: {
-  result: TopikSubmitResult;
-  questions: TopikQuestion[];
+  result: ExamMcqSubmitResult;
+  questions: ExamMcqQuestion[];
   backHref: string;
   attemptHref: string;
 }) {
   const byId = new Map(questions.map((q) => [q.id, q]));
-  const graded = result.answers as GradedTopikAnswer[];
+  const graded = result.answers;
 
   return (
     <div>

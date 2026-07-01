@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
 import { Bar, PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError, recordAttempt } from "@/lib/api-fetch";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
 import { shuffle } from "@/lib/shuffle";
 
 type ReviewCard = {
@@ -21,6 +23,7 @@ type ReviewCard = {
 };
 
 function ReviewTodayContent() {
+  const { languageCode } = useLearningLanguage();
   const [cards, setCards] = useState<ReviewCard[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +35,9 @@ function ReviewTodayContent() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchWithAuth("/review/today?limit=20");
+      const res = await fetchWithAuth(
+        `${appendLanguageQuery("/review/today", languageCode)}&limit=20`,
+      );
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
@@ -43,7 +48,7 @@ function ReviewTodayContent() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [languageCode]);
 
   useEffect(() => {
     void load();

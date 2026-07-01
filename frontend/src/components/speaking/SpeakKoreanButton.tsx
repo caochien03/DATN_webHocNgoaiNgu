@@ -4,16 +4,18 @@ import { useEffect, useState } from "react";
 import { Volume2 } from "lucide-react";
 import {
   isKoreanTtsSupported,
-  speakKorean,
+  speakLearningLanguage,
   warmUpKoreanTts,
 } from "@/lib/korean-tts";
 
 export function SpeakKoreanButton({
   text,
+  languageCode = "ko",
   label = "Nghe",
   className = "",
 }: {
   text: string;
+  languageCode?: string;
   label?: string;
   className?: string;
 }) {
@@ -29,9 +31,9 @@ export function SpeakKoreanButton({
   return (
     <button
       type="button"
-      onClick={() => speakKorean(text)}
+      onClick={() => speakLearningLanguage(text, languageCode)}
       className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted/50 hover:text-foreground ${className}`}
-      title="Nghe câu tiếng Hàn"
+      title="Nghe câu NPC"
     >
       <Volume2 size={14} />
       {label}

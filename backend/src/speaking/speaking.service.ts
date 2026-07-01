@@ -33,14 +33,17 @@ export class SpeakingService {
     private readonly ai: SpeakingAiService,
   ) {}
 
-  listTopics() {
+  listTopics(languageCode?: string) {
     return this.prisma.speakingTopic.findMany({
-      where: { isPublished: true },
+      where: {
+        isPublished: true,
+        ...(languageCode && { languageCode }),
+      },
       orderBy: { sortOrder: 'asc' },
       select: {
         id: true,
         title: true,
-        titleKo: true,
+        titleNative: true,
         description: true,
         sortOrder: true,
       },
@@ -50,11 +53,13 @@ export class SpeakingService {
   listSituations(params: {
     topicIds?: string[];
     level?: SpeakingSelfLevel;
+    languageCode?: string;
   }) {
-    const { topicIds, level } = params;
+    const { topicIds, level, languageCode } = params;
     return this.prisma.speakingSituation.findMany({
       where: {
         isPublished: true,
+        ...(languageCode && { languageCode }),
         ...(level && { level }),
         ...(topicIds &&
           topicIds.length > 0 && {
@@ -64,14 +69,11 @@ export class SpeakingService {
       orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
       include: {
         topic: {
-          select: { id: true, title: true, titleKo: true },
+          select: { id: true, title: true, titleNative: true },
         },
       },
     }).then((rows) =>
-      rows.map((s) => ({
-        ...mapSituationSummary(s),
-        openingLineKo: s.openingLineKo,
-      })),
+      rows.map((s) => mapSituationSummary(s)),
     );
   }
 
@@ -79,7 +81,7 @@ export class SpeakingService {
     const situation = await this.prisma.speakingSituation.findFirst({
       where: { id: dto.situationId, isPublished: true },
       include: {
-        topic: { select: { id: true, title: true, titleKo: true } },
+        topic: { select: { id: true, title: true, titleNative: true } },
       },
     });
     if (!situation) {
@@ -99,6 +101,7 @@ export class SpeakingService {
           filledGoals: {},
           goalsTotal: total,
           goalsCompleted: 0,
+          languageCode: situation.languageCode,
           status: SpeakingSessionStatus.IN_PROGRESS,
         },
       });
@@ -108,7 +111,7 @@ export class SpeakingService {
           sessionId: created.id,
           orderIndex: 0,
           speaker: SpeakingTurnSpeaker.NPC,
-          text: situation.openingLineKo,
+          text: situation.openingLine,
         },
       });
 
@@ -118,9 +121,12 @@ export class SpeakingService {
     return this.getSession(userId, session.id);
   }
 
-  async listSessions(userId: string) {
+  async listSessions(userId: string, languageCode?: string) {
     const rows = await this.prisma.speakingSession.findMany({
-      where: { userId },
+      where: {
+        userId,
+        ...(languageCode && { languageCode }),
+      },
       orderBy: { createdAt: 'desc' },
       take: 50,
       include: {
@@ -161,6 +167,7 @@ export class SpeakingService {
     const history = this.buildHistory(session.turns);
 
     const turnResult = await this.ai.processAudioTurn(audio, mimeType, {
+      targetLanguage: session.situation.languageCode,
       situationTitle: session.situation.title,
       contextVi: session.situation.contextVi,
       userRoleVi: session.situation.userRoleVi,
@@ -247,6 +254,7 @@ export class SpeakingService {
     }));
 
     const summary = await this.ai.summarizeSession({
+      targetLanguage: session.situation.languageCode,
       situationTitle: session.situation.title,
       selfLevel: session.selfLevel,
       goals,
@@ -285,7 +293,7 @@ export class SpeakingService {
         include: {
           situation: {
             include: {
-              topic: { select: { id: true, title: true, titleKo: true } },
+              topic: { select: { id: true, title: true, titleNative: true } },
             },
           },
           turns: { orderBy: { orderIndex: 'asc' } },
@@ -302,7 +310,7 @@ export class SpeakingService {
       include: {
         situation: {
           include: {
-            topic: { select: { id: true, title: true, titleKo: true } },
+            topic: { select: { id: true, title: true, titleNative: true } },
           },
         },
         turns: { orderBy: { orderIndex: 'asc' } },

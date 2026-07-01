@@ -9,14 +9,21 @@ export class ReviewController {
   constructor(private readonly decksService: DecksService) {}
 
   @Get('today/summary')
-  summary(@CurrentUser('id') userId: string) {
-    return this.decksService.getReviewTodaySummary(userId);
+  summary(
+    @CurrentUser('id') userId: string,
+    @Query('languageCode') languageCode?: string,
+  ) {
+    return this.decksService.getReviewTodaySummary(userId, languageCode);
   }
 
   @Get('today')
-  today(@CurrentUser('id') userId: string, @Query('limit') limitRaw?: string) {
+  today(
+    @CurrentUser('id') userId: string,
+    @Query('limit') limitRaw?: string,
+    @Query('languageCode') languageCode?: string,
+  ) {
     const parsed = Number(limitRaw);
     const limit = Number.isFinite(parsed) ? Math.floor(parsed) : 20;
-    return this.decksService.listReviewToday(userId, limit);
+    return this.decksService.listReviewToday(userId, limit, languageCode);
   }
 }

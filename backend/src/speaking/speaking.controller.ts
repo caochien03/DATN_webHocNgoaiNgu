@@ -34,24 +34,29 @@ export class SpeakingController {
   constructor(private readonly speakingService: SpeakingService) {}
 
   @Get('topics')
-  listTopics() {
-    return this.speakingService.listTopics();
+  listTopics(@Query('languageCode') languageCode?: string) {
+    return this.speakingService.listTopics(languageCode);
   }
 
   @Get('situations')
   listSituations(
     @Query('topicIds') topicIdsRaw?: string | string[],
     @Query('level') level?: SpeakingSelfLevel,
+    @Query('languageCode') languageCode?: string,
   ) {
     return this.speakingService.listSituations({
       topicIds: parseTopicIds(topicIdsRaw),
       level,
+      languageCode,
     });
   }
 
   @Get('sessions')
-  listSessions(@CurrentUser('id') userId: string) {
-    return this.speakingService.listSessions(userId);
+  listSessions(
+    @CurrentUser('id') userId: string,
+    @Query('languageCode') languageCode?: string,
+  ) {
+    return this.speakingService.listSessions(userId, languageCode);
   }
 
   @Post('sessions')

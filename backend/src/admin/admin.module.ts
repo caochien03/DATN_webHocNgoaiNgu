@@ -10,6 +10,8 @@ import { AdminTopikExamsController } from './topik/admin-topik-exams.controller'
 import { AdminTopikExamsService } from './topik/admin-topik-exams.service';
 import { AdminTopikQuestionsController } from './topik/admin-topik-questions.controller';
 import { AdminTopikQuestionsService } from './topik/admin-topik-questions.service';
+import { AdminToeicExamsController } from './toeic/admin-toeic-exams.controller';
+import { AdminToeicExamsService } from './toeic/admin-toeic-exams.service';
 import { AdminTopicsController } from './topics/admin-topics.controller';
 import { AdminTopicsService } from './topics/admin-topics.service';
 
@@ -21,6 +23,7 @@ import { AdminTopicsService } from './topics/admin-topics.service';
     AdminPathsController,
     AdminTopikQuestionsController,
     AdminTopikExamsController,
+    AdminToeicExamsController,
   ],
   providers: [
     AdminLessonsService,
@@ -28,6 +31,7 @@ import { AdminTopicsService } from './topics/admin-topics.service';
     AdminPathsService,
     AdminTopikQuestionsService,
     AdminTopikExamsService,
+    AdminToeicExamsService,
   ],
 })
 export class AdminModule {}

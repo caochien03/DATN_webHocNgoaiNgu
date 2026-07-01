@@ -27,19 +27,21 @@ import { buildExamQuestionMapItems } from "@/lib/topik-question-map";
 import { BRAND, GRADIENT, scoreColor } from "@/components/ui-kit/brand";
 import { topikSectionLabel } from "@/lib/topik-labels";
 import type {
+  ExamMcqQuestion,
+  ExamMcqSubmitResult,
   GradedTopikAnswer,
   TopikQuestion,
   TopikSection,
-  TopikSubmitResult,
 } from "@/lib/types";
 
 type TopikExamRunnerProps = {
   title: string;
   subtitle?: string;
   durationMinutes?: number;
-  questions: TopikQuestion[];
+  questions: ExamMcqQuestion[];
   backHref: string;
-  onSubmit: (answers: TopikAnswerPayload[]) => Promise<TopikSubmitResult>;
+  attemptsBasePath?: string;
+  onSubmit: (answers: TopikAnswerPayload[]) => Promise<ExamMcqSubmitResult>;
 };
 
 const SECTION_INTRO: Record<TopikSection, string> = {
@@ -54,6 +56,7 @@ export function TopikExamRunner({
   durationMinutes,
   questions,
   backHref,
+  attemptsBasePath = "/topik/attempts",
   onSubmit,
 }: TopikExamRunnerProps) {
   const steps = useMemo(() => buildTopikExamSteps(questions), [questions]);
@@ -72,7 +75,7 @@ export function TopikExamRunner({
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<TopikSubmitResult | null>(null);
+  const [result, setResult] = useState<ExamMcqSubmitResult | null>(null);
   const [timeExpired, setTimeExpired] = useState(false);
 
   const currentStep = steps[stepIndex];
@@ -201,7 +204,7 @@ export function TopikExamRunner({
         result={result}
         questions={questions}
         backHref={backHref}
-        attemptHref={`/topik/attempts/${result.attemptId}`}
+        attemptHref={`${attemptsBasePath}/${result.attemptId}`}
       />
     );
   }
@@ -389,13 +392,13 @@ function ExamResultView({
   backHref,
   attemptHref,
 }: {
-  result: TopikSubmitResult;
-  questions: TopikQuestion[];
+  result: ExamMcqSubmitResult;
+  questions: ExamMcqQuestion[];
   backHref: string;
   attemptHref: string;
 }) {
   const byId = new Map(questions.map((q) => [q.id, q]));
-  const graded = result.answers as GradedTopikAnswer[];
+  const graded = result.answers;
 
   return (
     <div>
@@ -411,7 +414,7 @@ function ExamResultView({
         </p>
         <div className="mt-2">
           <WritingResultSummary
-            answers={graded}
+            answers={graded as GradedTopikAnswer[]}
             mcqLine={{
               correctCount: result.correctCount,
               totalQuestions: result.totalQuestions,
@@ -421,7 +424,8 @@ function ExamResultView({
         </div>
       </div>
       <ul className="mt-4 flex flex-col gap-3">
-        {graded.map((a) => {
+        {graded.map((raw) => {
+          const a = raw as GradedTopikAnswer;
           const q = byId.get(a.questionId);
           const uiStatus = writingGradeUiStatus(a);
           const isPending = a.gradeStatus === "pending";

@@ -2,16 +2,18 @@
 
 import { useEffect, useRef } from "react";
 import type { SpeakingTurnRow } from "@/lib/types";
-import { speakKorean, warmUpKoreanTts } from "@/lib/korean-tts";
+import { speakLearningLanguage, warmUpKoreanTts } from "@/lib/korean-tts";
 import { SpeakKoreanButton } from "./SpeakKoreanButton";
 import { SpeakingTurnFeedback } from "./SpeakingTurnFeedback";
 
 export function SpeakingChat({
   turns,
+  languageCode = "ko",
   autoSpeakLatestNpc = false,
   showGrading = false,
 }: {
   turns: SpeakingTurnRow[];
+  languageCode?: string;
   autoSpeakLatestNpc?: boolean;
   showGrading?: boolean;
 }) {
@@ -26,8 +28,8 @@ export function SpeakingChat({
     const last = turns[turns.length - 1];
     if (last.speaker !== "NPC" || last.id === lastSpokenId.current) return;
     lastSpokenId.current = last.id;
-    speakKorean(last.text);
-  }, [turns, autoSpeakLatestNpc]);
+    speakLearningLanguage(last.text, languageCode);
+  }, [turns, autoSpeakLatestNpc, languageCode]);
 
   if (turns.length === 0) {
     return (
@@ -52,7 +54,9 @@ export function SpeakingChat({
               <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                 {isUser ? "Bạn" : "NPC"}
               </span>
-              {!isUser ? <SpeakKoreanButton text={turn.text} /> : null}
+              {!isUser ? (
+                <SpeakKoreanButton text={turn.text} languageCode={languageCode} />
+              ) : null}
             </div>
             <div
               className={`max-w-[92%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${

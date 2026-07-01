@@ -24,6 +24,7 @@ describe('speaking-ai', () => {
   ];
 
   const turnContext: SpeakingTurnContext = {
+    targetLanguage: 'ko',
     situationTitle: 'Đặt bàn nhà hàng',
     contextVi: 'Bạn đặt bàn buổi tối.',
     userRoleVi: 'Khách hàng',
@@ -149,6 +150,7 @@ describe('speaking-ai', () => {
 
   describe('session summary', () => {
     const summaryInput = {
+      targetLanguage: 'ko' as const,
       situationTitle: 'Đặt bàn nhà hàng',
       selfLevel: SpeakingSelfLevel.INTERMEDIATE,
       goals,

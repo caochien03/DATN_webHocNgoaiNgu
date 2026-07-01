@@ -1,16 +1,16 @@
-import type { TopikQuestion } from "@/lib/types";
+import type { ExamMcqQuestion } from "@/lib/types";
 
 /** Gom câu liền kề cùng bundleId thành một trang (thi thử / luyện đã xếp thứ tự). */
 export function groupTopikQuestionsIntoPages(
-  questions: TopikQuestion[],
-): TopikQuestion[][] {
-  const pages: TopikQuestion[][] = [];
+  questions: ExamMcqQuestion[],
+): ExamMcqQuestion[][] {
+  const pages: ExamMcqQuestion[][] = [];
   let i = 0;
 
   while (i < questions.length) {
     const q = questions[i];
     if (q.bundleId) {
-      const page: TopikQuestion[] = [q];
+      const page: ExamMcqQuestion[] = [q];
       let j = i + 1;
       while (j < questions.length && questions[j].bundleId === q.bundleId) {
         page.push(questions[j]);
@@ -27,7 +27,7 @@ export function groupTopikQuestionsIntoPages(
   return pages;
 }
 
-export function pageLabel(page: TopikQuestion[], pageIndex: number): string {
+export function pageLabel(page: ExamMcqQuestion[], pageIndex: number): string {
   if (page.length === 1) {
     return `Câu ${pageIndex + 1}`;
   }
@@ -35,7 +35,7 @@ export function pageLabel(page: TopikQuestion[], pageIndex: number): string {
   return `Câu ${nums}`;
 }
 
-export function sharedAudioUrl(page: TopikQuestion[]): string | null {
+export function sharedAudioUrl(page: ExamMcqQuestion[]): string | null {
   for (const q of page) {
     if (q.audioUrl) return q.audioUrl;
   }

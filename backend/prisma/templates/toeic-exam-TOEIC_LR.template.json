@@ -1,0 +1,33 @@
+{
+  "title": "TOEIC LR — Đề mẫu import",
+  "description": "Ví dụ import đề TOEIC qua admin API",
+  "tier": "TOEIC_LR",
+  "durationMinutes": 45,
+  "isPublished": true,
+  "sortOrder": 2,
+  "questions": [
+    {
+      "sortOrder": 0,
+      "section": "LISTENING",
+      "questionNo": 1,
+      "prompt": "Look at the picture. Which sentence best describes it?",
+      "options": [
+        "They are having a meeting.",
+        "People are waiting at a bus stop.",
+        "A chef is cooking in a kitchen.",
+        "Students are reading in a library."
+      ],
+      "correctIndex": 1,
+      "explanation": "Part 1 sample."
+    },
+    {
+      "sortOrder": 1,
+      "section": "READING",
+      "questionNo": 1,
+      "prompt": "All staff must wear their ID badges _____ entering the building.",
+      "options": ["before", "between", "under", "without"],
+      "correctIndex": 0,
+      "explanation": "Part 5 sample."
+    }
+  ]
+}

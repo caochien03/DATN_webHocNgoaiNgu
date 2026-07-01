@@ -33,14 +33,19 @@ export class DecksService {
     );
   }
 
-  async listDecks(userId: string) {
+  async listDecks(userId: string, languageCode?: string) {
     const decks = await this.prisma.deck.findMany({
-      where: { userId, sourceTopicId: null },
+      where: {
+        userId,
+        sourceTopicId: null,
+        ...(languageCode && { languageCode }),
+      },
       orderBy: { updatedAt: 'desc' },
       select: {
         id: true,
         title: true,
         description: true,
+        languageCode: true,
         updatedAt: true,
         cards: {
           select: { lastResult: true, lastReviewedAt: true },
@@ -88,6 +93,7 @@ export class DecksService {
         id: d.id,
         title: d.title,
         description: d.description,
+        languageCode: d.languageCode,
         updatedAt: d.updatedAt,
         total: d.cards.length,
         learned,
@@ -129,6 +135,7 @@ export class DecksService {
         userId,
         title: dto.title,
         description: dto.description,
+        languageCode: dto.languageCode ?? 'ko',
       },
     });
   }
@@ -257,14 +264,18 @@ export class DecksService {
     return updatedCard;
   }
 
-  async listReviewToday(userId: string, limit = 20) {
+  async listReviewToday(userId: string, limit = 20, languageCode?: string) {
     const safeLimit = Number.isFinite(limit)
       ? Math.min(Math.max(limit, 1), 100)
       : 20;
     const now = new Date();
     const cards = await this.prisma.card.findMany({
       where: {
-        deck: { userId, sourceTopicId: null },
+        deck: {
+          userId,
+          sourceTopicId: null,
+          ...(languageCode && { languageCode }),
+        },
         OR: [{ nextReviewAt: null }, { nextReviewAt: { lte: now } }],
       },
       include: { deck: { select: { id: true, title: true } } },
@@ -298,11 +309,15 @@ export class DecksService {
     }));
   }
 
-  async getReviewTodaySummary(userId: string) {
+  async getReviewTodaySummary(userId: string, languageCode?: string) {
     const now = new Date();
     const dueCount = await this.prisma.card.count({
       where: {
-        deck: { userId, sourceTopicId: null },
+        deck: {
+          userId,
+          sourceTopicId: null,
+          ...(languageCode && { languageCode }),
+        },
         OR: [{ nextReviewAt: null }, { nextReviewAt: { lte: now } }],
       },
     });

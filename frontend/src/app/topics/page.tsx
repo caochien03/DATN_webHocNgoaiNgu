@@ -4,12 +4,16 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, levelColor } from "@/components/ui-kit/brand";
 import { LevelBadge, PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
+import { learningLanguageLabel } from "@/lib/learning-language";
 import type { TopicRow } from "@/lib/types";
 
 function TopicsContent() {
+  const { languageCode } = useLearningLanguage();
   const [topics, setTopics] = useState<TopicRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [level, setLevel] = useState("Tất cả");
@@ -17,7 +21,9 @@ function TopicsContent() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetchWithAuth("/topics?language=ko");
+      const res = await fetchWithAuth(
+        appendLanguageQuery("/topics", languageCode),
+      );
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
@@ -26,7 +32,7 @@ function TopicsContent() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được chủ đề");
     }
-  }, []);
+  }, [languageCode]);
 
   useEffect(() => {
     void load();

@@ -14,9 +14,12 @@ export class QuizAttemptsService {
     );
   }
 
-  async list(userId: string) {
+  async list(userId: string, languageCode?: string) {
     return this.prisma.quizAttempt.findMany({
-      where: { userId },
+      where: {
+        userId,
+        ...(languageCode && { languageCode }),
+      },
       orderBy: { createdAt: 'desc' },
       take: 100,
     });
@@ -38,6 +41,7 @@ export class QuizAttemptsService {
           sourceType: dto.sourceType,
           sourceId: dto.sourceId,
           sourceTitle: dto.sourceTitle,
+          languageCode: dto.languageCode ?? 'ko',
           totalQuestions: dto.totalQuestions,
           correctAnswers: safeCorrectAnswers,
           scorePercent: dto.scorePercent,

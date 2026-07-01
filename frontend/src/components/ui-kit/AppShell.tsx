@@ -29,13 +29,21 @@ import {
   type AuthUser,
 } from "@/lib/auth-storage";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LearningLanguageSelector } from "@/components/LearningLanguageSelector";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { cn } from "@/lib/cn";
 import { AppMark, AvatarCircle } from "./AppMark";
 import { APP, BRAND } from "./brand";
 
 const AUTH_PATHS = new Set(["/login", "/register"]);
 
-type NavItem = { href: string; icon: LucideIcon; label: string; admin?: boolean };
+type NavItem = {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  admin?: boolean;
+  examPrep?: "ko" | "en";
+};
 type NavGroup = { group: string; items: NavItem[] };
 
 const NAV: NavGroup[] = [
@@ -59,7 +67,8 @@ const NAV: NavGroup[] = [
   {
     group: "LUYỆN TẬP",
     items: [
-      { href: "/topik/TOPIK_I", icon: Trophy, label: "TOPIK I & II" },
+      { href: "/topik/TOPIK_I", icon: Trophy, label: "TOPIK I & II", examPrep: "ko" as const },
+      { href: "/toeic/TOEIC_LR", icon: Trophy, label: "TOEIC LR", examPrep: "en" as const },
       { href: "/speaking", icon: Mic, label: "Luyện nói" },
       { href: "/tests", icon: Brain, label: "Kiểm tra" },
     ],
@@ -71,6 +80,7 @@ const NAV: NavGroup[] = [
       { href: "/admin/topics", icon: Layers, label: "Chủ đề từ vựng", admin: true },
       { href: "/admin/paths", icon: Map, label: "Lộ trình", admin: true },
       { href: "/admin/topik/exams", icon: Brain, label: "Đề TOPIK", admin: true },
+      { href: "/admin/toeic/exams", icon: Brain, label: "Đề TOEIC", admin: true },
     ],
   },
 ];
@@ -80,7 +90,15 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function Sidebar({ user }: { user: AuthUser | null }) {
+function Sidebar({
+  user,
+  showTopik,
+  showToeic,
+}: {
+  user: AuthUser | null;
+  showTopik: boolean;
+  showToeic: boolean;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const admin = isAdminUser(user);
@@ -127,7 +145,12 @@ function Sidebar({ user }: { user: AuthUser | null }) {
 
       <nav className="flex-1 space-y-6 px-3 py-4">
         {NAV.map((grp) => {
-          const items = grp.items.filter((it) => !it.admin || admin);
+          const items = grp.items.filter((it) => {
+            if (it.admin && !admin) return false;
+            if (it.examPrep === "ko" && !showTopik) return false;
+            if (it.examPrep === "en" && !showToeic) return false;
+            return true;
+          });
           if (items.length === 0) return null;
           return (
             <div key={grp.group}>
@@ -226,6 +249,8 @@ const TITLES: { match: (p: string) => boolean; title: string }[] = [
   { match: (p) => p.startsWith("/review"), title: "Ôn tập SRS" },
   { match: (p) => p.startsWith("/lessons"), title: "Ngữ pháp" },
   { match: (p) => p.startsWith("/paths"), title: "Lộ trình" },
+  { match: (p) => p.startsWith("/toeic/attempts"), title: "Lịch sử TOEIC" },
+  { match: (p) => p.startsWith("/toeic"), title: "Luyện thi TOEIC" },
   { match: (p) => p.startsWith("/topik/attempts"), title: "Lịch sử TOPIK" },
   { match: (p) => p.startsWith("/topik"), title: "Luyện thi TOPIK" },
   { match: (p) => p.startsWith("/tests"), title: "Kiểm tra" },
@@ -253,6 +278,7 @@ function TopBar({ title }: { title: string }) {
         </motion.h2>
       </AnimatePresence>
       <div className="flex items-center gap-3">
+        <LearningLanguageSelector className="hidden sm:block" />
         <div className="relative hidden sm:block">
           <Search
             size={14}
@@ -278,6 +304,9 @@ function TopBar({ title }: { title: string }) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [user, setUser] = useState<AuthUser | null>(null);
+  const { languageCode } = useLearningLanguage();
+  const showTopik = languageCode === "ko";
+  const showToeic = languageCode === "en";
 
   useEffect(() => {
     function sync() {
@@ -298,7 +327,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-background text-foreground">
-      <Sidebar user={user} />
+      <Sidebar user={user} showTopik={showTopik} showToeic={showToeic} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar title={pageTitle(pathname)} />
         <main className="flex-1 overflow-y-auto p-6 md:p-8">

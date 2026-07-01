@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PathsService } from './paths.service';
@@ -9,8 +9,11 @@ export class PathsController {
   constructor(private readonly pathsService: PathsService) {}
 
   @Get()
-  list(@CurrentUser('id') userId: string) {
-    return this.pathsService.list(userId);
+  list(
+    @CurrentUser('id') userId: string,
+    @Query('languageCode') languageCode?: string,
+  ) {
+    return this.pathsService.list(userId, languageCode);
   }
 
   @Get(':id')

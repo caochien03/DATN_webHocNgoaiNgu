@@ -2,7 +2,7 @@ import {
   DEFAULT_SHORT_ANSWER_PARTS,
   getWritingPartCount,
 } from "@/lib/topik-writing-parts";
-import type { TopikQuestion } from "@/lib/types";
+import type { ExamMcqQuestion, TopikQuestion } from "@/lib/types";
 
 export type TopikAnswerPayload = {
   questionId: string;
@@ -11,7 +11,7 @@ export type TopikAnswerPayload = {
   textAnswers?: string[];
 };
 
-export function isWritingQuestion(question: TopikQuestion): boolean {
+export function isWritingQuestion(question: ExamMcqQuestion): boolean {
   return (
     question.questionType === "SHORT_ANSWER" ||
     question.questionType === "ESSAY"
@@ -21,15 +21,16 @@ export function isWritingQuestion(question: TopikQuestion): boolean {
 export type WritingAnswerState = Record<string, string | string[]>;
 
 export function initWritingAnswerState(
-  questions: TopikQuestion[],
+  questions: ExamMcqQuestion[],
 ): WritingAnswerState {
   const state: WritingAnswerState = {};
   for (const q of questions) {
     if (!isWritingQuestion(q)) continue;
-    if (getWritingPartCount(q) > 1) {
+    const wq = q as TopikQuestion;
+    if (getWritingPartCount(wq) > 1) {
       const parts =
-        q.writingParts && q.writingParts.length > 0
-          ? q.writingParts
+        wq.writingParts && wq.writingParts.length > 0
+          ? wq.writingParts
           : DEFAULT_SHORT_ANSWER_PARTS;
       state[q.id] = parts.map(() => "");
     } else {
@@ -40,7 +41,7 @@ export function initWritingAnswerState(
 }
 
 export function isWritingAnswerComplete(
-  question: TopikQuestion,
+  question: ExamMcqQuestion,
   state: WritingAnswerState,
 ): boolean {
   const val = state[question.id];
@@ -52,7 +53,7 @@ export function isWritingAnswerComplete(
 }
 
 export function buildTopikSubmitAnswers(
-  questions: TopikQuestion[],
+  questions: ExamMcqQuestion[],
   mcqSelections: Record<string, number>,
   writingAnswers: WritingAnswerState,
 ): TopikAnswerPayload[] {

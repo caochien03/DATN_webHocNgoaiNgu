@@ -5,19 +5,25 @@ import { useCallback, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Route } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND } from "@/components/ui-kit/brand";
 import { Bar, PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
+import { learningLanguageLabel } from "@/lib/learning-language";
 import type { LearningPathRow } from "@/lib/types";
 
 function PathsContent() {
+  const { languageCode } = useLearningLanguage();
   const [paths, setPaths] = useState<LearningPathRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetchWithAuth("/paths");
+      const res = await fetchWithAuth(
+        appendLanguageQuery("/paths", languageCode),
+      );
       if (!res.ok) {
         setError(await parseApiError(res));
         return;
@@ -26,7 +32,7 @@ function PathsContent() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được lộ trình");
     }
-  }, []);
+  }, [languageCode]);
 
   useEffect(() => {
     void load();
@@ -36,7 +42,7 @@ function PathsContent() {
     <div>
       <PageHeader
         title="Lộ trình học"
-        sub="Theo từng bước từ từ vựng nền tảng tới bài học ngữ pháp"
+        sub={`Theo từng bước — ${learningLanguageLabel(languageCode)}`}
       />
 
       {error ? (

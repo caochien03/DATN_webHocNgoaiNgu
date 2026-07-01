@@ -1,4 +1,8 @@
 import { GrammarLevel, PrismaClient } from '@prisma/client';
+import { seedEnglish } from './seed-english';
+import { seedEnglishGrammar } from './seed-english-grammar';
+import { seedEnglishSpeaking } from './seed-english-speaking';
+import { seedToeic } from './seed-toeic';
 import { seedTopik } from './seed-topik';
 import { seedSpeaking } from './seed-speaking';
 
@@ -997,8 +1001,12 @@ async function main() {
   await seedGrammar();
   await seedLessonVocabulary();
   await seedLearningPaths();
+  await seedEnglish(prisma);
+  await seedEnglishGrammar(prisma);
   await seedTopik(prisma);
+  await seedToeic(prisma);
   await seedSpeaking(prisma);
+  await seedEnglishSpeaking(prisma);
 }
 
 main()

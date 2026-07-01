@@ -21,8 +21,32 @@ export type SpeakingTurnGrading = {
   sampleImprovement?: string;
 };
 
+/** Ngôn ngữ đích của phiên luyện nói (`ko`, `en`, …). */
+export type SpeakingTargetLanguage = 'ko' | 'en' | (string & {});
+
+const TARGET_LANGUAGE_META: Record<
+  string,
+  { label: string; script: string; sampleLabel: string }
+> = {
+  ko: {
+    label: 'tiếng Hàn',
+    script: 'Hangul',
+    sampleLabel: 'câu Hàn',
+  },
+  en: {
+    label: 'tiếng Anh',
+    script: 'chữ Latin',
+    sampleLabel: 'câu Anh',
+  },
+};
+
+function targetLanguageMeta(code?: string) {
+  return TARGET_LANGUAGE_META[code ?? 'ko'] ?? TARGET_LANGUAGE_META.ko;
+}
+
 /** Ngữ cảnh xử lý một lượt (không gồm transcript — audio hoặc text riêng). */
 export type SpeakingTurnContext = {
+  targetLanguage: SpeakingTargetLanguage;
   situationTitle: string;
   contextVi: string;
   userRoleVi: string;
@@ -52,6 +76,7 @@ export type SpeakingSessionTurnSummary = {
 };
 
 export type SpeakingSessionSummaryInput = {
+  targetLanguage: SpeakingTargetLanguage;
   situationTitle: string;
   selfLevel: SpeakingSelfLevel;
   goals: SpeakingGoal[];
@@ -168,11 +193,12 @@ function formatHistory(history: SpeakingTurnHistoryItem[]): string {
 export function buildSpeakingAudioTurnPrompt(ctx: SpeakingTurnContext): string {
   const goalStatus = formatGoalsForPrompt(ctx.goals, ctx.filledGoals);
   const historyText = formatHistory(ctx.history);
+  const lang = targetLanguageMeta(ctx.targetLanguage);
 
   return [
-    'Bạn là engine xử lý luyện nói tiếng Hàn theo tình huống giao tiếp.',
-    'Người học vừa gửi một đoạn audio (tiếng Hàn). Nhiệm vụ:',
-    '(1) Chuyển audio thành transcript tiếng Hàn (Hangul).',
+    `Bạn là engine xử lý luyện nói ${lang.label} theo tình huống giao tiếp.`,
+    `Người học vừa gửi một đoạn audio (${lang.label}). Nhiệm vụ:`,
+    `(1) Chuyển audio thành transcript ${lang.label} (${lang.script}).`,
     '(2) Trích xuất thông tin mới vào goalUpdates.',
     '(3) Sinh câu NPC tiếp theo.',
     'KHÔNG chấm điểm hay nhận xét — chỉ xử lý hội thoại.',
@@ -195,18 +221,18 @@ export function buildSpeakingAudioTurnPrompt(ctx: SpeakingTurnContext): string {
     `Lượt user: ${ctx.userTurnCount}/${ctx.maxUserTurns}`,
     '',
     'Quy tắc:',
-    '- transcript: chỉ nội dung tiếng Hàn nghe được; nếu im lặng trả "".',
-    '- goalUpdates chỉ gồm key hợp lệ; giá trị tiếng Hàn hoặc mô tả ngắn.',
+    `- transcript: chỉ nội dung ${lang.label} nghe được; nếu im lặng trả "".`,
+    `- goalUpdates chỉ gồm key hợp lệ; giá trị ${lang.label} hoặc mô tả ngắn.`,
     '- Không hỏi lại thông tin đã có trong mục tiêu.',
-    '- npcReply: 1–2 câu tiếng Hàn, đúng vai NPC.',
+    `- npcReply: 1–2 câu ${lang.label}, đúng vai NPC.`,
     '- allRequiredGoalsMet: true khi mọi mục tiêu bắt buộc đã đủ.',
     '- shouldEnd: true khi đủ mục tiêu bắt buộc và đã xác nhận, hoặc không còn gì cần hỏi.',
     '',
     'Chỉ trả về JSON:',
     '{',
-    '  "transcript": "<tiếng Hàn>",',
+    `  "transcript": "<${lang.label}>",`,
     '  "goalUpdates": { "<goal_key>": "<giá trị>" },',
-    '  "npcReply": "<câu NPC tiếng Hàn>",',
+    `  "npcReply": "<câu NPC ${lang.label}>",`,
     '  "allRequiredGoalsMet": <boolean>,',
     '  "shouldEnd": <boolean>',
     '}',
@@ -307,6 +333,7 @@ export function buildSpeakingSessionSummaryPrompt(
     input.goals,
     input.filledGoals,
   );
+  const lang = targetLanguageMeta(input.targetLanguage);
 
   const turnLines = input.turns
     .map(
@@ -316,7 +343,7 @@ export function buildSpeakingSessionSummaryPrompt(
     .join('\n\n');
 
   return [
-    'Bạn là giám khảo tổng kết phiên luyện nói tiếng Hàn.',
+    `Bạn là giám khảo tổng kết phiên luyện nói ${lang.label}.`,
     'Hãy chấm từng lượt user và tổng kết toàn phiên. Trả về JSON.',
     '',
     `Tình huống: ${input.situationTitle}`,
@@ -331,7 +358,7 @@ export function buildSpeakingSessionSummaryPrompt(
     '',
     'Quy tắc chấm từng lượt:',
     '- Rubric 0–5: task, grammar, vocabulary, coherence; score 0–100.',
-    '- feedback tiếng Việt ngắn; sampleImprovement: câu Hàn gợi ý (tuỳ chọn).',
+    `- feedback tiếng Việt ngắn; sampleImprovement: ${lang.sampleLabel} gợi ý (tuỳ chọn).`,
     '- turnGradings phải có đủ mỗi orderIndex trong danh sách lượt.',
     '',
     'Quy tắc tổng kết:',

@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { DecksService } from './decks.service';
@@ -21,8 +12,11 @@ export class DecksController {
   constructor(private readonly decksService: DecksService) {}
 
   @Get()
-  list(@CurrentUser('id') userId: string) {
-    return this.decksService.listDecks(userId);
+  list(
+    @CurrentUser('id') userId: string,
+    @Query('languageCode') languageCode?: string,
+  ) {
+    return this.decksService.listDecks(userId, languageCode);
   }
 
   @Post()

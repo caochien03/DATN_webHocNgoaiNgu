@@ -28,8 +28,9 @@ export class PathsService {
     return path;
   }
 
-  async list(userId: string) {
+  async list(userId: string, languageCode?: string) {
     const paths = await this.prisma.learningPath.findMany({
+      where: languageCode ? { languageCode } : undefined,
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       include: {
         steps: { select: { id: true } },

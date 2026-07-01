@@ -41,6 +41,7 @@ export class AdminLessonsService {
         level: dto.level,
         title: dto.title,
         summary: dto.summary,
+        languageCode: dto.languageCode ?? 'ko',
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },
     });
@@ -54,6 +55,7 @@ export class AdminLessonsService {
         ...(dto.level !== undefined && { level: dto.level }),
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.summary !== undefined && { summary: dto.summary }),
+        ...(dto.languageCode !== undefined && { languageCode: dto.languageCode }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },
     });

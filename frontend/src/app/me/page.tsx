@@ -1,31 +1,80 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Mail, Shield, UserRound } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Globe, Mail, Plus, Shield, UserRound } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { AvatarCircle } from "@/components/ui-kit/AppMark";
 import { GRADIENT } from "@/components/ui-kit/brand";
 import { errorClass, inputClass } from "@/components/ui-kit/form-styles";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import {
+  LEARNING_LANGUAGE_OPTIONS,
+  learningLanguageLabel,
+  type LearningLanguageCode,
+} from "@/lib/learning-language";
+import {
   getStoredAuth,
   setStoredAuth,
   type AuthUser,
 } from "@/lib/auth-storage";
+import { cn } from "@/lib/cn";
 
 function ProfileContent() {
+  const { languages, addLanguage, setActive, languageCode, refresh } =
+    useLearningLanguage();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [langBusy, setLangBusy] = useState<LearningLanguageCode | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [langError, setLangError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  const enrolled = new Set(languages.map((l) => l.languageCode));
+  const availableToAdd = LEARNING_LANGUAGE_OPTIONS.filter(
+    (o) => !enrolled.has(o.code),
+  );
 
   useEffect(() => {
     const u = getStoredAuth()?.user ?? null;
     setUser(u);
     setName(u?.name ?? "");
   }, []);
+
+  const handleAddLanguage = useCallback(
+    async (code: LearningLanguageCode) => {
+      setLangBusy(code);
+      setLangError(null);
+      try {
+        await addLanguage(code);
+        await setActive(code);
+      } catch (e) {
+        setLangError(e instanceof Error ? e.message : "Không thêm được ngôn ngữ");
+      } finally {
+        setLangBusy(null);
+      }
+    },
+    [addLanguage, setActive],
+  );
+
+  const handleSetActive = useCallback(
+    async (code: LearningLanguageCode) => {
+      if (code === languageCode) return;
+      setLangBusy(code);
+      setLangError(null);
+      try {
+        await setActive(code);
+      } catch (e) {
+        setLangError(e instanceof Error ? e.message : "Không đổi được ngôn ngữ");
+        await refresh();
+      } finally {
+        setLangBusy(null);
+      }
+    },
+    [languageCode, setActive, refresh],
+  );
 
   if (!user) {
     return (
@@ -133,6 +182,59 @@ function ProfileContent() {
             {saved ? (
               <p className="mt-2 text-sm text-emerald-300">Đã lưu thay đổi.</p>
             ) : null}
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <Globe size={18} className="text-muted-foreground" />
+              <h3 className="font-semibold text-foreground">Ngôn ngữ đang học</h3>
+            </div>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Bạn có thể học nhiều ngôn ngữ song song. Chọn ngôn ngữ đang xem
+              trong header hoặc tại đây.
+            </p>
+            <div className="space-y-2">
+              {languages.map((lang) => (
+                <button
+                  key={lang.languageCode}
+                  type="button"
+                  disabled={langBusy !== null}
+                  onClick={() =>
+                    void handleSetActive(lang.languageCode as LearningLanguageCode)
+                  }
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm transition-colors",
+                    lang.languageCode === languageCode
+                      ? "border-primary/50 bg-primary/10 font-semibold text-foreground"
+                      : "border-border hover:border-primary/30 hover:bg-secondary",
+                  )}
+                >
+                  <span>{learningLanguageLabel(lang.languageCode)}</span>
+                  {lang.languageCode === languageCode ? (
+                    <span className="text-xs text-primary">Đang học</span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Chọn</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {availableToAdd.length > 0 ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {availableToAdd.map((opt) => (
+                  <button
+                    key={opt.code}
+                    type="button"
+                    disabled={langBusy !== null}
+                    onClick={() => void handleAddLanguage(opt.code)}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                  >
+                    <Plus size={14} />
+                    {langBusy === opt.code ? "Đang thêm…" : `Thêm ${opt.nameVi}`}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {langError ? <p className={`mt-3 ${errorClass}`}>{langError}</p> : null}
           </div>
         </div>
       </div>

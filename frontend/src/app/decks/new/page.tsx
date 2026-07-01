@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthGate } from "@/components/AuthGate";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import {
   backLinkClass,
   errorClass,
@@ -16,6 +17,7 @@ import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 
 function NewDeckForm() {
   const router = useRouter();
+  const { languageCode } = useLearningLanguage();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +32,7 @@ function NewDeckForm() {
         method: "POST",
         body: JSON.stringify({
           title: title.trim(),
+          languageCode,
           ...(description.trim() && { description: description.trim() }),
         }),
       });

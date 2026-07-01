@@ -1,6 +1,7 @@
 import { GrammarLevel } from '@prisma/client';
 import {
   IsEnum,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -8,6 +9,9 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { SUPPORTED_LANGUAGES } from '../../../languages/supported-languages';
+
+const LANGUAGE_CODES = SUPPORTED_LANGUAGES.map((l) => l.code);
 
 export class UpdateLessonDto {
   @IsOptional()
@@ -24,6 +28,11 @@ export class UpdateLessonDto {
   @IsString()
   @MaxLength(2000)
   summary?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(LANGUAGE_CODES)
+  languageCode?: string;
 
   @IsOptional()
   @IsInt()

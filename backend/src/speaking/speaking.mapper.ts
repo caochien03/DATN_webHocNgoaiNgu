@@ -12,7 +12,7 @@ import {
 } from './speaking-ai';
 
 type SituationWithTopic = SpeakingSituation & {
-  topic: Pick<SpeakingTopic, 'id' | 'title' | 'titleKo'> | null;
+  topic: Pick<SpeakingTopic, 'id' | 'title' | 'titleNative'> | null;
 };
 
 export type SpeakingGoalStatus = SpeakingGoal & {
@@ -52,12 +52,13 @@ export function mapSituationSummary(
     level: situation.level,
     userRoleVi: situation.userRoleVi,
     npcRoleVi: situation.npcRoleVi,
+    openingLine: situation.openingLine,
     maxUserTurns: situation.maxUserTurns,
     topic: situation.topic
       ? {
           id: situation.topic.id,
           title: situation.topic.title,
-          titleKo: situation.topic.titleKo,
+          titleNative: situation.topic.titleNative,
         }
       : null,
     goals,
@@ -88,6 +89,7 @@ export function mapSessionDetail(
 
   return {
     id: session.id,
+    languageCode: session.languageCode,
     status: session.status,
     selfLevel: session.selfLevel,
     selectedTopicIds: session.selectedTopicIds,

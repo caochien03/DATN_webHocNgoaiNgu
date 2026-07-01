@@ -1,4 +1,5 @@
 import { fetchWithAuth, parseApiError, uploadWithAuth } from "./api-fetch";
+import { appendLanguageQuery } from "./learning-language-api";
 import type {
   SpeakingSelfLevel,
   SpeakingSessionDetail,
@@ -39,27 +40,39 @@ async function jsonOrThrow<T>(res: Response): Promise<T> {
   return (await res.json()) as T;
 }
 
-export async function fetchSpeakingTopics(): Promise<SpeakingTopicRow[]> {
-  return jsonOrThrow(await fetchWithAuth("/speaking/topics"));
+export async function fetchSpeakingTopics(
+  languageCode?: string,
+): Promise<SpeakingTopicRow[]> {
+  const path = languageCode
+    ? appendLanguageQuery("/speaking/topics", languageCode)
+    : "/speaking/topics";
+  return jsonOrThrow(await fetchWithAuth(path));
 }
 
 export async function fetchSpeakingSituations(params: {
   topicIds: string[];
   level?: SpeakingSelfLevel;
+  languageCode?: string;
 }): Promise<SpeakingSituationRow[]> {
   const q = new URLSearchParams();
   if (params.topicIds.length > 0) {
     q.set("topicIds", params.topicIds.join(","));
   }
   if (params.level) q.set("level", params.level);
+  if (params.languageCode) q.set("languageCode", params.languageCode);
   const query = q.toString();
   return jsonOrThrow(
     await fetchWithAuth(`/speaking/situations${query ? `?${query}` : ""}`),
   );
 }
 
-export async function fetchSpeakingSessions(): Promise<SpeakingSessionListItem[]> {
-  return jsonOrThrow(await fetchWithAuth("/speaking/sessions"));
+export async function fetchSpeakingSessions(
+  languageCode?: string,
+): Promise<SpeakingSessionListItem[]> {
+  const path = languageCode
+    ? appendLanguageQuery("/speaking/sessions", languageCode)
+    : "/speaking/sessions";
+  return jsonOrThrow(await fetchWithAuth(path));
 }
 
 export async function fetchSpeakingSession(

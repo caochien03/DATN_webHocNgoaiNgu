@@ -15,11 +15,13 @@ import {
   Target,
   Trophy,
 } from "lucide-react";
+import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { Bar, Stat } from "@/components/ui-kit/primitives";
 import { AppMark } from "@/components/ui-kit/AppMark";
 import { APP, BRAND, GRADIENT } from "@/components/ui-kit/brand";
 import { fetchWithAuth } from "@/lib/api-fetch";
 import { getStoredAuth } from "@/lib/auth-storage";
+import { appendLanguageQuery } from "@/lib/learning-language-api";
 import type { DecksTotals, GoalMeResponse } from "@/lib/types";
 
 type Loaded = {
@@ -28,14 +30,14 @@ type Loaded = {
   totals: DecksTotals | null;
 };
 
-const QUICK = [
+const QUICK_BASE = [
   { label: "Học từ vựng", sub: "Chủ đề theo cấp độ", icon: BookOpen, color: BRAND.blue, href: "/topics" },
-  { label: "Luyện TOPIK", sub: "Nghe · Đọc · Viết · Thi", icon: Brain, color: BRAND.purple, href: "/topik/TOPIK_I" },
   { label: "Bài ngữ pháp", sub: "Điểm ngữ pháp & bài tập", icon: GraduationCap, color: BRAND.cyan, href: "/lessons" },
   { label: "Lộ trình học", sub: "Theo từng bước", icon: Route, color: BRAND.yellow, href: "/paths" },
-];
+] as const;
 
 export default function Home() {
+  const { languageCode } = useLearningLanguage();
   const [name, setName] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
   const [data, setData] = useState<Loaded>({ goal: null, due: null, totals: null });
@@ -53,26 +55,26 @@ export default function Home() {
       .then((r) => (r.ok ? r.json() : null))
       .then((goal: GoalMeResponse | null) => setData((d) => ({ ...d, goal })))
       .catch(() => {});
-    void fetchWithAuth("/review/today/summary")
+    void fetchWithAuth(appendLanguageQuery("/review/today/summary", languageCode))
       .then((r) => (r.ok ? r.json() : null))
       .then((s) => setData((d) => ({ ...d, due: s?.dueCount ?? null })))
       .catch(() => {});
-    void fetchWithAuth("/decks")
+    void fetchWithAuth(appendLanguageQuery("/decks", languageCode))
       .then((r) => (r.ok ? r.json() : null))
       .then((res) => setData((d) => ({ ...d, totals: res?.totals ?? null })))
       .catch(() => {});
-  }, []);
+  }, [languageCode]);
 
   if (!authed) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
         <AppMark className="mb-5 h-16 w-16 rounded-2xl text-3xl" />
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Học tiếng Hàn cùng {APP.name}
+          Học ngoại ngữ cùng {APP.name}
         </h1>
         <p className="mt-3 max-w-md text-muted-foreground">
-          Từ vựng theo chủ đề, ôn tập SRS, luyện thi TOPIK và chấm viết bằng AI —
-          bắt đầu hành trình từ số 0.
+          Từ vựng theo chủ đề, ôn tập SRS, luyện thi TOPIK / TOEIC — học song song
+          nhiều ngôn ngữ.
         </p>
         <div className="mt-6 flex gap-3">
           <Link
@@ -98,6 +100,25 @@ export default function Home() {
   const reviewed = goal?.today.reviewedCards ?? 0;
   const target = goal?.today.target ?? 0;
   const percent = goal?.today.percent ?? 0;
+
+  const examQuick =
+    languageCode === "en"
+      ? {
+          label: "Luyện TOEIC",
+          sub: "Nghe · Đọc · Thi",
+          icon: Brain,
+          color: BRAND.purple,
+          href: "/toeic/TOEIC_LR",
+        }
+      : {
+          label: "Luyện TOPIK",
+          sub: "Nghe · Đọc · Viết · Thi",
+          icon: Brain,
+          color: BRAND.purple,
+          href: "/topik/TOPIK_I",
+        };
+
+  const quickLinks = [QUICK_BASE[0], examQuick, QUICK_BASE[1], QUICK_BASE[2]];
 
   return (
     <div>
@@ -170,7 +191,7 @@ export default function Home() {
           </motion.div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {QUICK.map((a, i) => {
+            {quickLinks.map((a, i) => {
               const Icon = a.icon;
               return (
                 <motion.div
@@ -213,8 +234,12 @@ export default function Home() {
           <div className="rounded-2xl border border-border bg-card p-5">
             <h3 className="mb-3 text-sm font-semibold text-foreground">Tiếp tục học</h3>
             <div className="space-y-2 text-sm">
-              <Link href="/topik/TOPIK_I" className="flex items-center justify-between border-b border-border py-2 text-muted-foreground transition-colors last:border-0 hover:text-foreground">
-                Thi thử TOPIK <ArrowRight size={13} />
+              <Link
+                href={languageCode === "en" ? "/toeic/TOEIC_LR" : "/topik/TOPIK_I"}
+                className="flex items-center justify-between border-b border-border py-2 text-muted-foreground transition-colors last:border-0 hover:text-foreground"
+              >
+                {languageCode === "en" ? "Thi thử TOEIC" : "Thi thử TOPIK"}{" "}
+                <ArrowRight size={13} />
               </Link>
               <Link href="/decks" className="flex items-center justify-between border-b border-border py-2 text-muted-foreground transition-colors last:border-0 hover:text-foreground">
                 Bộ thẻ của tôi <ArrowRight size={13} />

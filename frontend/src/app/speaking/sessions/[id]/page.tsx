@@ -110,7 +110,11 @@ function SpeakingSessionContent() {
 
           <div className="order-1 flex min-h-[420px] flex-col gap-4 lg:order-2">
             <div className="flex-1 rounded-2xl border border-border bg-card p-4">
-              <SpeakingChat turns={session.turns} autoSpeakLatestNpc />
+              <SpeakingChat
+                turns={session.turns}
+                languageCode={session.languageCode}
+                autoSpeakLatestNpc
+              />
             </div>
 
             {!atMaxTurns ? (

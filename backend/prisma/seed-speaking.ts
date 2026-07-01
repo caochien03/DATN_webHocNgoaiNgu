@@ -18,7 +18,7 @@ type SpeakingSituationSeed = {
   level: SpeakingSelfLevel;
   userRoleVi: string;
   npcRoleVi: string;
-  openingLineKo: string;
+  openingLine: string;
   goals: SpeakingGoalSeed[];
   systemPrompt: string;
   maxUserTurns?: number;
@@ -28,7 +28,7 @@ type SpeakingSituationSeed = {
 type SpeakingTopicSeed = {
   slug: string;
   title: string;
-  titleKo?: string;
+  titleNative?: string;
   description?: string;
   sortOrder: number;
   situations: SpeakingSituationSeed[];
@@ -38,7 +38,7 @@ const SEED_SPEAKING: SpeakingTopicSeed[] = [
   {
     slug: 'food',
     title: 'Ẩm thực',
-    titleKo: '음식',
+    titleNative: '음식',
     description: 'Gọi món, đặt bàn, nhà hàng.',
     sortOrder: 1,
     situations: [
@@ -51,7 +51,7 @@ const SEED_SPEAKING: SpeakingTopicSeed[] = [
         level: SpeakingSelfLevel.INTERMEDIATE,
         userRoleVi: 'Khách hàng',
         npcRoleVi: 'Nhân viên nhà hàng',
-        openingLineKo: '안녕하세요, 예약 도와드릴게요. 몇 분이세요?',
+        openingLine: '안녕하세요, 예약 도와드릴게요. 몇 분이세요?',
         goals: [
           { key: 'party_size', labelVi: 'Số người', required: true },
           { key: 'date_time', labelVi: 'Ngày giờ đến', required: true },
@@ -77,7 +77,7 @@ const SEED_SPEAKING: SpeakingTopicSeed[] = [
   {
     slug: 'travel',
     title: 'Du lịch',
-    titleKo: '여행',
+    titleNative: '여행',
     description: 'Hỏi đường, giao thông, địa điểm.',
     sortOrder: 2,
     situations: [
@@ -90,7 +90,7 @@ const SEED_SPEAKING: SpeakingTopicSeed[] = [
         level: SpeakingSelfLevel.BEGINNER,
         userRoleVi: 'Du khách',
         npcRoleVi: 'Người địa phương',
-        openingLineKo: '네, 무엇을 도와드릴까요?',
+        openingLine: '네, 무엇을 도와드릴까요?',
         goals: [
           { key: 'destination', labelVi: 'Nói rõ điểm đến (ga tàu)', required: true },
           { key: 'direction', labelVi: 'Hiểu / nhận chỉ dẫn đường', required: true },
@@ -115,16 +115,18 @@ export async function seedSpeaking(prisma: PrismaClient): Promise<void> {
       create: {
         id: `seed-speaking-topic-${topicSeed.slug}`,
         title: topicSeed.title,
-        titleKo: topicSeed.titleKo,
+        titleNative: topicSeed.titleNative,
         description: topicSeed.description,
         sortOrder: topicSeed.sortOrder,
+        languageCode: 'ko',
         isPublished: true,
       },
       update: {
         title: topicSeed.title,
-        titleKo: topicSeed.titleKo,
+        titleNative: topicSeed.titleNative,
         description: topicSeed.description,
         sortOrder: topicSeed.sortOrder,
+        languageCode: 'ko',
         isPublished: true,
       },
     });
@@ -135,12 +137,13 @@ export async function seedSpeaking(prisma: PrismaClient): Promise<void> {
         create: {
           id: `seed-speaking-situation-${situationSeed.slug}`,
           topicId: topic.id,
+          languageCode: 'ko',
           title: situationSeed.title,
           contextVi: situationSeed.contextVi,
           level: situationSeed.level,
           userRoleVi: situationSeed.userRoleVi,
           npcRoleVi: situationSeed.npcRoleVi,
-          openingLineKo: situationSeed.openingLineKo,
+          openingLine: situationSeed.openingLine,
           goals: situationSeed.goals as unknown as Prisma.InputJsonValue,
           systemPrompt: situationSeed.systemPrompt,
           maxUserTurns: situationSeed.maxUserTurns ?? 5,
@@ -149,12 +152,13 @@ export async function seedSpeaking(prisma: PrismaClient): Promise<void> {
         },
         update: {
           topicId: topic.id,
+          languageCode: 'ko',
           title: situationSeed.title,
           contextVi: situationSeed.contextVi,
           level: situationSeed.level,
           userRoleVi: situationSeed.userRoleVi,
           npcRoleVi: situationSeed.npcRoleVi,
-          openingLineKo: situationSeed.openingLineKo,
+          openingLine: situationSeed.openingLine,
           goals: situationSeed.goals as unknown as Prisma.InputJsonValue,
           systemPrompt: situationSeed.systemPrompt,
           maxUserTurns: situationSeed.maxUserTurns ?? 5,

@@ -27,7 +27,7 @@ const MODES = [
   {
     slug: "write",
     title: "Nhìn nghĩa, viết từ",
-    description: "Gõ từ tiếng Hàn khi thấy nghĩa tiếng Việt.",
+    description: "Gõ từ khi thấy nghĩa tiếng Việt.",
     minCards: 1,
   },
 ];

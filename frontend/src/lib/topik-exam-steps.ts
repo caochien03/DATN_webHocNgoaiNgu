@@ -1,16 +1,16 @@
 import { groupTopikQuestionsIntoPages } from "@/lib/group-topik-pages";
 import { isWritingQuestion } from "@/lib/topik-answers";
-import type { TopikQuestion } from "@/lib/types";
+import type { ExamMcqQuestion, TopikQuestion } from "@/lib/types";
 
 export type TopikExamStep =
-  | { kind: "section-intro"; section: TopikQuestion["section"]; questionCount: number }
-  | { kind: "mcq"; section: TopikQuestion["section"]; questions: TopikQuestion[] }
+  | { kind: "section-intro"; section: ExamMcqQuestion["section"]; questionCount: number }
+  | { kind: "mcq"; section: ExamMcqQuestion["section"]; questions: ExamMcqQuestion[] }
   | { kind: "writing"; section: TopikQuestion["section"]; question: TopikQuestion };
 
 function groupQuestionsBySection(
-  questions: TopikQuestion[],
-): { section: TopikQuestion["section"]; questions: TopikQuestion[] }[] {
-  const groups: { section: TopikQuestion["section"]; questions: TopikQuestion[] }[] = [];
+  questions: ExamMcqQuestion[],
+): { section: ExamMcqQuestion["section"]; questions: ExamMcqQuestion[] }[] {
+  const groups: { section: ExamMcqQuestion["section"]; questions: ExamMcqQuestion[] }[] = [];
   for (const q of questions) {
     const last = groups[groups.length - 1];
     if (last && last.section === q.section) {
@@ -23,11 +23,11 @@ function groupQuestionsBySection(
 }
 
 function stepsForSection(
-  section: TopikQuestion["section"],
-  sectionQuestions: TopikQuestion[],
+  section: ExamMcqQuestion["section"],
+  sectionQuestions: ExamMcqQuestion[],
 ): TopikExamStep[] {
   const steps: TopikExamStep[] = [];
-  let mcqBuffer: TopikQuestion[] = [];
+  let mcqBuffer: ExamMcqQuestion[] = [];
 
   function flushMcq() {
     if (mcqBuffer.length === 0) return;
@@ -40,7 +40,7 @@ function stepsForSection(
   for (const q of sectionQuestions) {
     if (isWritingQuestion(q)) {
       flushMcq();
-      steps.push({ kind: "writing", section, question: q });
+      steps.push({ kind: "writing", section, question: q as TopikQuestion });
     } else {
       mcqBuffer.push(q);
     }
@@ -50,7 +50,7 @@ function stepsForSection(
 }
 
 /** Xây luồng thi: intro từng phần → trang MCQ / câu viết. */
-export function buildTopikExamSteps(questions: TopikQuestion[]): TopikExamStep[] {
+export function buildTopikExamSteps(questions: ExamMcqQuestion[]): TopikExamStep[] {
   if (questions.length === 0) return [];
 
   const groups = groupQuestionsBySection(questions);
