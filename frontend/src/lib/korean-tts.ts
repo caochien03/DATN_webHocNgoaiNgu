@@ -1,40 +1,92 @@
+/**
+ * TTS (Text-to-Speech) helper cho tính năng luyện nói.
+ *
+ * Chiến lược:
+ * 1. Thử gọi Server TTS (Google Cloud Neural2) trước — chất lượng cao nhất.
+ * 2. Nếu Server TTS không cấu hình (503) hoặc lỗi → fallback sang Web Speech API.
+ */
+
+import { fetchWithAuth } from './api-fetch';
+
+
+// ────────────────────────────────────────────────────
+// Server TTS (Google Cloud TTS Neural2 qua Backend)
+// ────────────────────────────────────────────────────
+
+let serverTtsAvailable: boolean | null = null; // null = chưa kiểm tra
+let currentAudio: HTMLAudioElement | null = null;
+
+function stopCurrentAudio() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+    currentAudio = null;
+  }
+}
+
+async function speakFromServer(
+  text: string,
+  languageCode: string,
+): Promise<boolean> {
+  try {
+    const res = await fetchWithAuth('/speaking/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, languageCode }),
+    });
+
+    if (!res.ok) {
+      // 503 = TTS chưa cấu hình → tắt hẳn, không retry
+      if (res.status === 503) serverTtsAvailable = false;
+      return false;
+    }
+
+    serverTtsAvailable = true;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    stopCurrentAudio();
+    const audio = new Audio(url);
+    currentAudio = audio;
+    audio.onended = () => {
+      URL.revokeObjectURL(url);
+      if (currentAudio === audio) currentAudio = null;
+    };
+    audio.onerror = () => {
+      URL.revokeObjectURL(url);
+      if (currentAudio === audio) currentAudio = null;
+    };
+    void audio.play();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ────────────────────────────────────────────────────
+// Web Speech API fallback
+// ────────────────────────────────────────────────────
+
 let preferredVoice: SpeechSynthesisVoice | null | undefined;
 
+const SPEECH_LANG: Record<string, string> = {
+  ko: 'ko-KR',
+  en: 'en-US',
+};
+
 function getVoices(): SpeechSynthesisVoice[] {
-  if (typeof window === "undefined" || !window.speechSynthesis) return [];
+  if (typeof window === 'undefined' || !window.speechSynthesis) return [];
   return window.speechSynthesis.getVoices();
 }
 
-function pickKoreanVoice(): SpeechSynthesisVoice | null {
-  if (preferredVoice !== undefined) return preferredVoice;
-  const voices = getVoices();
-  preferredVoice =
-    voices.find((v) => v.lang === "ko-KR") ??
-    voices.find((v) => v.lang.startsWith("ko")) ??
-    null;
-  return preferredVoice;
+export function isWebSpeechSupported(): boolean {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
-export function isKoreanTtsSupported(): boolean {
-  return typeof window !== "undefined" && "speechSynthesis" in window;
-}
-
-export function stopKoreanSpeech(): void {
-  if (!isKoreanTtsSupported()) return;
-  window.speechSynthesis.cancel();
-}
-
-/** BCP-47 cho Web Speech theo ngôn ngữ học. */
-const SPEECH_LANG: Record<string, string> = {
-  ko: "ko-KR",
-  en: "en-US",
-};
-
-export function speakLearningLanguage(text: string, languageCode = "ko"): boolean {
+function speakFromWebSpeech(text: string, languageCode = 'ko'): boolean {
   const trimmed = text.trim();
-  if (!trimmed || !isKoreanTtsSupported()) return false;
+  if (!trimmed || !isWebSpeechSupported()) return false;
 
-  stopKoreanSpeech();
+  window.speechSynthesis.cancel();
 
   const utter = new SpeechSynthesisUtterance(trimmed);
   utter.lang = SPEECH_LANG[languageCode] ?? SPEECH_LANG.ko;
@@ -42,7 +94,7 @@ export function speakLearningLanguage(text: string, languageCode = "ko"): boolea
   utter.pitch = 1;
 
   const voices = getVoices();
-  const prefix = utter.lang.split("-")[0];
+  const prefix = utter.lang.split('-')[0];
   const voice =
     voices.find((v) => v.lang === utter.lang) ??
     voices.find((v) => v.lang.startsWith(prefix)) ??
@@ -53,17 +105,51 @@ export function speakLearningLanguage(text: string, languageCode = "ko"): boolea
   return true;
 }
 
-/** Đọc câu tiếng Hàn bằng giọng hệ thống (Web Speech API). */
-export function speakKorean(text: string): boolean {
-  return speakLearningLanguage(text, "ko");
+// ────────────────────────────────────────────────────
+// Public API
+// ────────────────────────────────────────────────────
+
+export function stopSpeech(): void {
+  stopCurrentAudio();
+  if (isWebSpeechSupported()) window.speechSynthesis.cancel();
 }
 
-/** Gọi sau mount để nạp danh sách voice (Safari / Chrome). */
+/**
+ * Đọc văn bản bằng ngôn ngữ đang học.
+ * Tự động chọn Server TTS (Neural2) hoặc fallback Web Speech API.
+ */
+export async function speakLearningLanguage(
+  text: string,
+  languageCode = 'ko',
+): Promise<void> {
+  const trimmed = text.trim();
+  if (!trimmed) return;
+
+  stopSpeech();
+
+  // Nếu đã biết Server TTS không hoạt động → dùng Web Speech luôn
+  if (serverTtsAvailable === false) {
+    speakFromWebSpeech(trimmed, languageCode);
+    return;
+  }
+
+  // Thử Server TTS trước
+  const ok = await speakFromServer(trimmed, languageCode);
+  if (!ok) {
+    speakFromWebSpeech(trimmed, languageCode);
+  }
+}
+
+/** Đọc tiếng Hàn (backward-compat). */
+export async function speakKorean(text: string): Promise<void> {
+  return speakLearningLanguage(text, 'ko');
+}
+
+/** Gọi sau mount để nạp danh sách voice cho Web Speech (Safari/Chrome). */
 export function warmUpKoreanTts(): void {
-  if (!isKoreanTtsSupported()) return;
+  if (!isWebSpeechSupported()) return;
   void getVoices();
   window.speechSynthesis.onvoiceschanged = () => {
     preferredVoice = undefined;
-    pickKoreanVoice();
   };
 }

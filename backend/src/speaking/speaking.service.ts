@@ -56,25 +56,25 @@ export class SpeakingService {
     languageCode?: string;
   }) {
     const { topicIds, level, languageCode } = params;
-    return this.prisma.speakingSituation.findMany({
-      where: {
-        isPublished: true,
-        ...(languageCode && { languageCode }),
-        ...(level && { level }),
-        ...(topicIds &&
-          topicIds.length > 0 && {
-            OR: [{ topicId: { in: topicIds } }, { topicId: null }],
-          }),
-      },
-      orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
-      include: {
-        topic: {
-          select: { id: true, title: true, titleNative: true },
+    return this.prisma.speakingSituation
+      .findMany({
+        where: {
+          isPublished: true,
+          ...(languageCode && { languageCode }),
+          ...(level && { level }),
+          ...(topicIds &&
+            topicIds.length > 0 && {
+              OR: [{ topicId: { in: topicIds } }, { topicId: null }],
+            }),
         },
-      },
-    }).then((rows) =>
-      rows.map((s) => mapSituationSummary(s)),
-    );
+        orderBy: [{ sortOrder: 'asc' }, { title: 'asc' }],
+        include: {
+          topic: {
+            select: { id: true, title: true, titleNative: true },
+          },
+        },
+      })
+      .then((rows) => rows.map((s) => mapSituationSummary(s)));
   }
 
   async createSession(userId: string, dto: CreateSpeakingSessionDto) {

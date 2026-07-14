@@ -1,12 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Volume2 } from "lucide-react";
-import {
-  isKoreanTtsSupported,
-  speakLearningLanguage,
-  warmUpKoreanTts,
-} from "@/lib/korean-tts";
+import { speakLearningLanguage, warmUpKoreanTts } from "@/lib/korean-tts";
+import { useEffect } from "react";
 
 export function SpeakKoreanButton({
   text,
@@ -19,19 +15,16 @@ export function SpeakKoreanButton({
   label?: string;
   className?: string;
 }) {
-  const [supported, setSupported] = useState(false);
-
   useEffect(() => {
     warmUpKoreanTts();
-    setSupported(isKoreanTtsSupported());
   }, []);
 
-  if (!supported || !text.trim()) return null;
+  if (!text.trim()) return null;
 
   return (
     <button
       type="button"
-      onClick={() => speakLearningLanguage(text, languageCode)}
+      onClick={() => void speakLearningLanguage(text, languageCode)}
       className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted/50 hover:text-foreground ${className}`}
       title="Nghe câu NPC"
     >

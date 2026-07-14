@@ -3,27 +3,29 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   Post,
   Query,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SpeakingSelfLevel } from '@prisma/client';
+import type { Response } from 'express';
 import { memoryStorage } from 'multer';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SPEAKING_MAX_AUDIO_BYTES } from './speaking-audio';
 import { CreateSpeakingSessionDto } from './dto/create-speaking-session.dto';
 import { SpeakingService } from './speaking.service';
+import { SpeakingTtsService } from './speaking-tts.service';
 
 function parseTopicIds(raw?: string | string[]): string[] | undefined {
   if (!raw) return undefined;
-  const parts = Array.isArray(raw)
-    ? raw
-    : raw.split(',').map((s) => s.trim());
+  const parts = Array.isArray(raw) ? raw : raw.split(',').map((s) => s.trim());
   const ids = parts.filter(Boolean);
   return ids.length > 0 ? ids : undefined;
 }
@@ -31,7 +33,10 @@ function parseTopicIds(raw?: string | string[]): string[] | undefined {
 @Controller('speaking')
 @UseGuards(JwtAuthGuard)
 export class SpeakingController {
-  constructor(private readonly speakingService: SpeakingService) {}
+  constructor(
+    private readonly speakingService: SpeakingService,
+    private readonly ttsService: SpeakingTtsService,
+  ) {}
 
   @Get('topics')
   listTopics(@Query('languageCode') languageCode?: string) {
@@ -110,5 +115,30 @@ export class SpeakingController {
     @Param('id') sessionId: string,
   ) {
     return this.speakingService.completeSession(userId, sessionId);
+  }
+
+  /**
+   * POST /speaking/tts
+   * Body: { text: string, languageCode?: string }
+   * Trả về file MP3 binary (audio/mpeg).
+   * Kết quả được cache in-memory phía server.
+   */
+  @Post('tts')
+  @HttpCode(200)
+  async synthesizeSpeech(
+    @Body('text') text: string,
+    @Body('languageCode') languageCode: string | undefined,
+    @Res() res: Response,
+  ) {
+    if (!text?.trim()) {
+      throw new BadRequestException('Thiếu nội dung văn bản cần đọc.');
+    }
+    const mp3 = await this.ttsService.synthesize(text.trim(), languageCode);
+    res.set({
+      'Content-Type': 'audio/mpeg',
+      'Content-Length': mp3.length,
+      'Cache-Control': 'public, max-age=86400',
+    });
+    res.end(mp3);
   }
 }

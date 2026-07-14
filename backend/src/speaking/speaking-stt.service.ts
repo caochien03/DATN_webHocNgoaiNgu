@@ -1,12 +1,5 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
-import {
-  cleanTranscript,
-  validateSpeakingAudio,
-} from './speaking-audio';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { cleanTranscript, validateSpeakingAudio } from './speaking-audio';
 import { SpeakingGeminiService } from './speaking-gemini.service';
 
 const TRANSCRIBE_PROMPT = [

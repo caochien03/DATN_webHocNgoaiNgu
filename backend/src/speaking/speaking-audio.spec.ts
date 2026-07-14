@@ -18,9 +18,9 @@ describe('speaking-audio', () => {
   });
 
   it('rejects empty or too large audio', () => {
-    expect(() =>
-      validateSpeakingAudio(Buffer.alloc(10), 'audio/webm'),
-    ).toThrow(/quá ngắn/);
+    expect(() => validateSpeakingAudio(Buffer.alloc(10), 'audio/webm')).toThrow(
+      /quá ngắn/,
+    );
     expect(() =>
       validateSpeakingAudio(
         Buffer.alloc(SPEAKING_MAX_AUDIO_BYTES + 1),

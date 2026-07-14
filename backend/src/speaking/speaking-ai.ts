@@ -184,12 +184,64 @@ function formatGoalsForPrompt(
 
 function formatHistory(history: SpeakingTurnHistoryItem[]): string {
   if (history.length === 0) return '(chưa có)';
-  return history
-    .map((h) => `[${h.speaker}] ${h.text}`)
-    .join('\n');
+  return history.map((h) => `[${h.speaker}] ${h.text}`).join('\n');
 }
 
-/** Prompt xử lý audio một lượt: STT + mục tiêu + NPC (không chấm điểm). */
+/**
+ * Prompt xử lý text một lượt (transcript đã có từ Whisper).
+ * Gemini chỉ cần: trích xuất goalUpdates + sinh câu NPC.
+ */
+export function buildSpeakingTextTurnPrompt(
+  ctx: SpeakingTurnContext,
+  transcript: string,
+): string {
+  const goalStatus = formatGoalsForPrompt(ctx.goals, ctx.filledGoals);
+  const historyText = formatHistory(ctx.history);
+  const lang = targetLanguageMeta(ctx.targetLanguage);
+
+  return [
+    `Bạn là engine xử lý luyện nói ${lang.label} theo tình huống giao tiếp.`,
+    `Người học vừa nói: "${transcript}"`,
+    'Nhiệm vụ:',
+    '(1) Trích xuất thông tin mới vào goalUpdates.',
+    '(2) Sinh câu NPC tiếp theo.',
+    'KHÔNG chấm điểm hay nhận xét — chỉ xử lý hội thoại.',
+    '',
+    '=== Tình huống ===',
+    `Tiêu đề: ${ctx.situationTitle}`,
+    `Bối cảnh: ${ctx.contextVi}`,
+    `Vai user: ${ctx.userRoleVi}`,
+    `Vai NPC: ${ctx.npcRoleVi}`,
+    '',
+    '=== Hướng dẫn vai NPC ===',
+    ctx.systemPrompt,
+    '',
+    '=== Mục tiêu giao tiếp ===',
+    goalStatus,
+    '',
+    '=== Lịch sử hội thoại ===',
+    historyText,
+    '',
+    `Lượt user: ${ctx.userTurnCount}/${ctx.maxUserTurns}`,
+    '',
+    'Quy tắc:',
+    `- goalUpdates chỉ gồm key hợp lệ; giá trị ${lang.label} hoặc mô tả ngắn.`,
+    '- Không hỏi lại thông tin đã có trong mục tiêu.',
+    `- npcReply: 1–2 câu ${lang.label}, đúng vai NPC.`,
+    '- allRequiredGoalsMet: true khi mọi mục tiêu bắt buộc đã đủ.',
+    '- shouldEnd: true khi đủ mục tiêu bắt buộc và đã xác nhận, hoặc không còn gì cần hỏi.',
+    '',
+    'Chỉ trả về JSON:',
+    '{',
+    '  "goalUpdates": { "<goal_key>": "<giá trị>" },',
+    `  "npcReply": "<câu NPC ${lang.label}>",`,
+    '  "allRequiredGoalsMet": <boolean>,',
+    '  "shouldEnd": <boolean>',
+    '}',
+  ].join('\n');
+}
+
+/** Prompt xử lý audio một lượt: STT + mục tiêu + NPC (không chấm điểm). Dùng khi không có Whisper. */
 export function buildSpeakingAudioTurnPrompt(ctx: SpeakingTurnContext): string {
   const goalStatus = formatGoalsForPrompt(ctx.goals, ctx.filledGoals);
   const historyText = formatHistory(ctx.history);
@@ -324,6 +376,44 @@ export function parseSpeakingAudioTurnResponse(
   };
 }
 
+/**
+ * Parse phản hồi Gemini cho một lượt text (transcript từ Whisper đã có sẵn).
+ * JSON response không có trường "transcript".
+ */
+export function parseSpeakingTextTurnResponse(
+  text: string,
+  ctx: SpeakingTurnContext,
+  transcript: string,
+): SpeakingAudioTurnResult {
+  const data = extractJson(text) as Record<string, unknown>;
+  const allowedKeys = new Set([
+    ...ctx.goals.map((g) => g.key),
+    ...Object.keys(ctx.filledGoals),
+  ]);
+
+  const goalUpdates = parseGoalUpdates(data.goalUpdates, allowedKeys);
+  const filledGoals = mergeGoalUpdates(ctx.filledGoals, goalUpdates);
+  const { allRequiredMet } = countRequiredGoals(ctx.goals, filledGoals);
+
+  const npcReply =
+    typeof data.npcReply === 'string' ? data.npcReply.trim() : '';
+  if (!npcReply) {
+    throw new Error('AI response thiếu npcReply');
+  }
+
+  const atMaxTurns = ctx.userTurnCount >= ctx.maxUserTurns;
+  const shouldEndFromAi = data.shouldEnd === true;
+
+  return {
+    transcript,
+    goalUpdates,
+    filledGoals,
+    npcReply,
+    allRequiredGoalsMet: allRequiredMet,
+    shouldEnd: shouldEndFromAi || allRequiredMet || atMaxTurns,
+  };
+}
+
 /** Prompt tổng kết cuối phiên luyện nói. */
 export function buildSpeakingSessionSummaryPrompt(
   input: SpeakingSessionSummaryInput,
@@ -337,8 +427,7 @@ export function buildSpeakingSessionSummaryPrompt(
 
   const turnLines = input.turns
     .map(
-      (t) =>
-        `Lượt orderIndex ${t.orderIndex}:\n  Transcript: ${t.transcript}`,
+      (t) => `Lượt orderIndex ${t.orderIndex}:\n  Transcript: ${t.transcript}`,
     )
     .join('\n\n');
 
@@ -410,7 +499,9 @@ export function parseSpeakingSessionSummaryResponse(
     if (typeof item !== 'object' || item === null) continue;
     const row = item as Record<string, unknown>;
     const orderIndex =
-      typeof row.orderIndex === 'number' ? row.orderIndex : Number(row.orderIndex);
+      typeof row.orderIndex === 'number'
+        ? row.orderIndex
+        : Number(row.orderIndex);
     if (!Number.isFinite(orderIndex) || !expectedOrders.has(orderIndex)) {
       continue;
     }
@@ -448,7 +539,11 @@ export function parseSpeakingSessionSummaryResponse(
       0,
       counts.total,
     ),
-    goalsTotal: clampInt(data.goalsTotal ?? counts.total, 0, counts.total || 99),
+    goalsTotal: clampInt(
+      data.goalsTotal ?? counts.total,
+      0,
+      counts.total || 99,
+    ),
     turnGradings,
   };
 }
