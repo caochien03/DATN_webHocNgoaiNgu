@@ -2,20 +2,31 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getStoredAuth } from "@/lib/auth-storage";
+import { getStoredAuth, isAdminUser } from "@/lib/auth-storage";
 
-export function AuthGate({ children }: { children: React.ReactNode }) {
+export function AuthGate({
+  children,
+  adminOnly = false,
+}: {
+  children: React.ReactNode;
+  adminOnly?: boolean;
+}) {
   const router = useRouter();
-  const [state, setState] = useState<"loading" | "in" | "out">("loading");
+  const [state, setState] = useState<"loading" | "in" | "out" | "forbidden">("loading");
 
   useEffect(() => {
-    if (getStoredAuth()) {
-      setState("in");
-    } else {
+    const auth = getStoredAuth();
+    if (!auth) {
       setState("out");
       router.replace("/login");
+      return;
     }
-  }, [router]);
+    if (adminOnly && !isAdminUser(auth.user)) {
+      setState("forbidden");
+      return;
+    }
+    setState("in");
+  }, [router, adminOnly]);
 
   if (state === "loading") {
     return (
@@ -24,8 +35,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       </p>
     );
   }
-  if (state === "out") {
-    return null;
+  if (state === "out") return null;
+  if (state === "forbidden") {
+    return (
+      <p className="px-4 py-10 text-center text-sm text-red-400">
+        Bạn không có quyền truy cập trang này.
+      </p>
+    );
   }
   return <>{children}</>;
 }

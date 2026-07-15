@@ -81,6 +81,7 @@ const NAV: NavGroup[] = [
       { href: "/admin/paths", icon: Map, label: "Lộ trình", admin: true },
       { href: "/admin/topik/exams", icon: Brain, label: "Đề TOPIK", admin: true },
       { href: "/admin/toeic/exams", icon: Brain, label: "Đề TOEIC", admin: true },
+      { href: "/admin/speaking/topics", icon: Mic, label: "Luyện nói", admin: true },
     ],
   },
 ];

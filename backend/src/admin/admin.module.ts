@@ -6,6 +6,8 @@ import { AdminLessonsController } from './lessons/admin-lessons.controller';
 import { AdminLessonsService } from './lessons/admin-lessons.service';
 import { AdminPathsController } from './paths/admin-paths.controller';
 import { AdminPathsService } from './paths/admin-paths.service';
+import { AdminSpeakingController } from './speaking/admin-speaking.controller';
+import { AdminSpeakingService } from './speaking/admin-speaking.service';
 import { AdminTopikExamsController } from './topik/admin-topik-exams.controller';
 import { AdminTopikExamsService } from './topik/admin-topik-exams.service';
 import { AdminTopikQuestionsController } from './topik/admin-topik-questions.controller';
@@ -24,6 +26,7 @@ import { AdminTopicsService } from './topics/admin-topics.service';
     AdminTopikQuestionsController,
     AdminTopikExamsController,
     AdminToeicExamsController,
+    AdminSpeakingController,
   ],
   providers: [
     AdminLessonsService,
@@ -32,6 +35,7 @@ import { AdminTopicsService } from './topics/admin-topics.service';
     AdminTopikQuestionsService,
     AdminTopikExamsService,
     AdminToeicExamsService,
+    AdminSpeakingService,
   ],
 })
 export class AdminModule {}
