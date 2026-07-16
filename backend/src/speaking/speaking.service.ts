@@ -220,7 +220,8 @@ export class SpeakingService {
     });
 
     if (turnResult.shouldEnd) {
-      return this.completeSession(userId, sessionId);
+      // Không auto-complete ở đây — trả shouldEnd=true về Frontend.
+      // Frontend sẽ phát audio NPC cuối TRƯỚC, sau đó mới gọi completeSession.
     }
 
     const updated = await this.getSession(userId, sessionId);
@@ -230,7 +231,7 @@ export class SpeakingService {
         transcript,
         npcReply: turnResult.npcReply,
         allRequiredGoalsMet: turnResult.allRequiredGoalsMet,
-        shouldEnd: false,
+        shouldEnd: turnResult.shouldEnd,
       },
     };
   }

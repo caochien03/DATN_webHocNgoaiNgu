@@ -27,6 +27,7 @@ function stopCurrentAudio() {
 async function speakFromServer(
   text: string,
   languageCode: string,
+  onEnd?: () => void,
 ): Promise<boolean> {
   try {
     const res = await fetchWithAuth('/speaking/tts', {
@@ -36,7 +37,6 @@ async function speakFromServer(
     });
 
     if (!res.ok) {
-      // 503 = TTS chưa cấu hình → tắt hẳn, không retry
       if (res.status === 503) serverTtsAvailable = false;
       return false;
     }
@@ -50,10 +50,12 @@ async function speakFromServer(
     audio.onended = () => {
       URL.revokeObjectURL(url);
       if (currentAudio === audio) currentAudio = null;
+      onEnd?.();
     };
     audio.onerror = () => {
       URL.revokeObjectURL(url);
       if (currentAudio === audio) currentAudio = null;
+      onEnd?.();
     };
     void audio.play();
     return true;
@@ -82,7 +84,7 @@ export function isWebSpeechSupported(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
-function speakFromWebSpeech(text: string, languageCode = 'ko'): boolean {
+function speakFromWebSpeech(text: string, languageCode = 'ko', onEnd?: () => void): boolean {
   const trimmed = text.trim();
   if (!trimmed || !isWebSpeechSupported()) return false;
 
@@ -100,6 +102,8 @@ function speakFromWebSpeech(text: string, languageCode = 'ko'): boolean {
     voices.find((v) => v.lang.startsWith(prefix)) ??
     null;
   if (voice) utter.voice = voice;
+
+  if (onEnd) utter.onend = () => onEnd();
 
   window.speechSynthesis.speak(utter);
   return true;
@@ -121,22 +125,24 @@ export function stopSpeech(): void {
 export async function speakLearningLanguage(
   text: string,
   languageCode = 'ko',
+  onEnd?: () => void,
 ): Promise<void> {
   const trimmed = text.trim();
-  if (!trimmed) return;
-
-  stopSpeech();
-
-  // Nếu đã biết Server TTS không hoạt động → dùng Web Speech luôn
-  if (serverTtsAvailable === false) {
-    speakFromWebSpeech(trimmed, languageCode);
+  if (!trimmed) {
+    onEnd?.();
     return;
   }
 
-  // Thử Server TTS trước
-  const ok = await speakFromServer(trimmed, languageCode);
+  stopSpeech();
+
+  if (serverTtsAvailable === false) {
+    speakFromWebSpeech(trimmed, languageCode, onEnd);
+    return;
+  }
+
+  const ok = await speakFromServer(trimmed, languageCode, onEnd);
   if (!ok) {
-    speakFromWebSpeech(trimmed, languageCode);
+    speakFromWebSpeech(trimmed, languageCode, onEnd);
   }
 }
 

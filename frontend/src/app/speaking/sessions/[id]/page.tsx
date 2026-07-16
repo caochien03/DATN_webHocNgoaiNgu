@@ -36,6 +36,8 @@ function SpeakingSessionContent() {
   const [phase, setPhase] = useState<ProcessingPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
+  // Khi backend trả shouldEnd=true, đợi NPC nói xong rồi mới auto-complete
+  const [pendingComplete, setPendingComplete] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
@@ -55,19 +57,19 @@ function SpeakingSessionContent() {
   async function handleSubmit(blob: Blob, durationSecs: number) {
     if (!session || session.status !== "IN_PROGRESS") return;
     setError(null);
-
-    // Phán đoán xem lượt này có phải lượt cuối không
-    const isLastTurn =
-      session.userTurnCount + 1 >= session.situation.maxUserTurns ||
-      session.goalsCompleted === session.goalsTotal;
-
     setPhase("recognizing");
     try {
-      // Sau ~1.2s nhận diện → chuyển sang phase phản hồi
-      const timer = setTimeout(() => setPhase(isLastTurn ? "grading" : "responding"), 1200);
+      // Sau ~1.2s nhận diện → chuyển sang phase NPC đang phản hồi
+      // Luôn dùng "responding" kể cả lượt cuối để NPC vẫn nói câu cuối
+      const timer = setTimeout(() => setPhase("responding"), 1200);
       const result = await submitSpeakingTurn(sessionId, blob, durationSecs);
       clearTimeout(timer);
       setSession(result);
+      // Nếu backend báo nên kết thúc, đánh dấu pendingComplete
+      // (sẽ auto-complete sau khi NPC phát audio xong qua onNpcSpeakEnd)
+      if (result.lastTurn?.shouldEnd) {
+        setPendingComplete(true);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không gửi được câu trả lời");
     } finally {
@@ -177,6 +179,12 @@ function SpeakingSessionContent() {
                 turns={session.turns}
                 languageCode={session.languageCode}
                 autoSpeakLatestNpc
+                onNpcSpeakEnd={() => {
+                  if (pendingComplete) {
+                    setPendingComplete(false);
+                    void handleComplete();
+                  }
+                }}
               />
             </div>
 

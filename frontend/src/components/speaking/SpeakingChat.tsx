@@ -11,11 +11,13 @@ export function SpeakingChat({
   languageCode = "ko",
   autoSpeakLatestNpc = false,
   showGrading = false,
+  onNpcSpeakEnd,
 }: {
   turns: SpeakingTurnRow[];
   languageCode?: string;
   autoSpeakLatestNpc?: boolean;
   showGrading?: boolean;
+  onNpcSpeakEnd?: () => void;
 }) {
   const lastSpokenId = useRef<string | null>(null);
 
@@ -28,8 +30,8 @@ export function SpeakingChat({
     const last = turns[turns.length - 1];
     if (last.speaker !== "NPC" || last.id === lastSpokenId.current) return;
     lastSpokenId.current = last.id;
-    speakLearningLanguage(last.text, languageCode);
-  }, [turns, autoSpeakLatestNpc, languageCode]);
+    void speakLearningLanguage(last.text, languageCode, onNpcSpeakEnd);
+  }, [turns, autoSpeakLatestNpc, languageCode, onNpcSpeakEnd]);
 
   if (turns.length === 0) {
     return (

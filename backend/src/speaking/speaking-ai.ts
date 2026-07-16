@@ -207,6 +207,11 @@ export function buildSpeakingTextTurnPrompt(
     '(2) Sinh câu NPC tiếp theo.',
     'KHÔNG chấm điểm hay nhận xét — chỉ xử lý hội thoại.',
     '',
+    'LƯU Ý VỀ TỰ SỬA LỖI (SELF-REPAIR):',
+    '- Người nói rất thường tự sửa giữa chừng (ví dụ: "사과 주세요... 아, 컴퓨터 주세요").',
+    '- Khi gặp tự sửa, hãy lấy ý định cuối cùng của học viên (phần sau khi sửa) để trích xuất goalUpdates.',
+    '- NPC nên phản hồi dựa trên ý định đã được sửa, không nên nhắc lại lỗi cũ.',
+    '',
     '=== Tình huống ===',
     `Tiêu đề: ${ctx.situationTitle}`,
     `Bối cảnh: ${ctx.contextVi}`,
@@ -438,6 +443,15 @@ export function buildSpeakingSessionSummaryPrompt(
     `Tình huống: ${input.situationTitle}`,
     `Trình độ tự đánh giá của học viên: ${SELF_LEVEL_LABEL[input.selfLevel]}`,
     '',
+    '=== QUY TẮC ĐẶC BIỆT: TỰ SỬA LỖI TRONG KHI NÓI (SELF-REPAIR) ===',
+    'Whisper ghi lại toàn bộ âm thanh kể cả vấp váp và tự sửa. Khi chấm điểm:',
+    '- NẾU transcript chứa dấu hiệu tự sửa (ví dụ: "tôi... ý tôi muốn", "à không, là...", nói lại câu, ngập ngừng rồi sửa),',
+    '  hãy chấm DỰA TRÊN Ý ĐỊNH CUỐI CÙNG — tức là phần sau khi học viên đã tự sửa.',
+    '- KHÔNG phạt điểm grammar/vocabulary vì những lỗi đã được tự sửa.',
+    '- Nếu học viên nhận ra và tự sửa lỗi ngữ pháp/từ vựng một cách chủ động, hãy GHI NHẬN TÍCH CỰC trong phần feedback.',
+    '- CHỈ phạt điểm khi lỗi được lặp lại NHIỀU LẦN mà KHÔNG được tự sửa.',
+    '- Phần "coherence" chỉ đánh giá mạch ý tổng thể; vấp váp ngắn không ảnh hưởng coherence.',
+    '',
     '=== Mục tiêu ===',
     goalStatus,
     `Hoàn thành mục tiêu bắt buộc: ${completed}/${total}`,
@@ -453,7 +467,7 @@ export function buildSpeakingSessionSummaryPrompt(
     'Quy tắc tổng kết:',
     '- overallScore: 0–100 (trung bình có trọng số hoặc tổng hợp toàn phiên).',
     '- estimatedLevel: "Sơ cấp" | "Trung bình" | "Khá".',
-    '- summaryFeedback: tiếng Việt, 3–5 câu.',
+    '- summaryFeedback: tiếng Việt, 3–5 câu. Nếu học viên có thói quen tự sửa lỗi tốt, hãy đề cập điều này.',
     '',
     'Chỉ trả về JSON:',
     '{',
@@ -474,6 +488,7 @@ export function buildSpeakingSessionSummaryPrompt(
     '}',
   ].join('\n');
 }
+
 
 const VALID_ESTIMATED_LEVELS = new Set(['Sơ cấp', 'Trung bình', 'Khá']);
 
