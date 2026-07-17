@@ -3,15 +3,11 @@ import { APP, GRADIENT_DIAGONAL } from "./brand";
 
 export function AppMark({ className }: { className?: string }) {
   return (
-    <span
-      className={cn(
-        "flex items-center justify-center font-bold text-white",
-        className,
-      )}
-      style={{ background: GRADIENT_DIAGONAL }}
-    >
-      {APP.logoChar}
-    </span>
+    <img
+      src={APP.logo}
+      alt={APP.name}
+      className={cn("object-contain", className)}
+    />
   );
 }
 

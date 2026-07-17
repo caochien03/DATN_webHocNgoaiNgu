@@ -3,16 +3,16 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { motion } from "motion/react";
-import { BookOpen, Brain, Sparkles, Trophy } from "lucide-react";
+import { BookOpen, Brain, MessageCircle, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppMark } from "@/components/ui-kit/AppMark";
 import { APP, BRAND } from "@/components/ui-kit/brand";
 
 const FEATURES = [
   { icon: BookOpen, text: "Từ vựng theo chủ đề & bộ thẻ SRS" },
-  { icon: Brain, text: "Ngữ pháp, lộ trình học có hệ thống" },
-  { icon: Trophy, text: "Luyện thi TOPIK — nghe, đọc, viết" },
-  { icon: Sparkles, text: "Chấm bài viết bằng AI" },
+  { icon: Brain, text: "Lộ trình học cá nhân hóa theo trình độ" },
+  { icon: MessageCircle, text: "Luyện nói với NPC bằng AI" },
+  { icon: Sparkles, text: "Luyện thi & Chấm bài viết bằng AI" },
 ] as const;
 
 type AuthShellProps = {
@@ -30,7 +30,7 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
           className="pointer-events-none absolute inset-0"
           style={{
             background: `radial-gradient(ellipse 80% 60% at 20% 20%, ${BRAND.blue}22, transparent),
-              radial-gradient(ellipse 60% 50% at 80% 80%, ${BRAND.cyan}14, transparent)`,
+              radial-gradient(ellipse 60% 50% at 80% 80%, ${BRAND.cyan}18, transparent)`,
           }}
         />
         <div className="relative flex flex-1 flex-col px-10 py-12">
@@ -45,17 +45,17 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
             <ThemeToggle />
           </div>
 
-          <div className="my-auto py-10">
+          <div className="my-auto py-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
             >
               <p className="text-sm font-semibold uppercase tracking-widest text-primary/80">
-                Bắt đầu từ số 0
+                Bắt đầu từ hôm nay
               </p>
               <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight">
-                Học tiếng Hàn
+                Học đa ngôn ngữ
                 <br />
                 <span
                   style={{
@@ -68,23 +68,23 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
                 </span>
               </h1>
               <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                {APP.description} — ôn tập thông minh, luyện đề TOPIK và theo dõi
+                {APP.description} — ôn tập thông minh, luyện nói AI và theo dõi
                 tiến độ mỗi ngày.
               </p>
             </motion.div>
 
-            <ul className="mt-10 space-y-3">
+            <ul className="mt-8 space-y-3">
               {FEATURES.map(({ icon: Icon, text }, i) => (
                 <motion.li
                   key={text}
                   className="flex items-center gap-3 text-sm text-muted-foreground"
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + i * 0.08, duration: 0.35 }}
+                  transition={{ delay: 0.3 + i * 0.08, duration: 0.35 }}
                 >
                   <span
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: `${BRAND.blue}18`, color: BRAND.cyan }}
+                    style={{ backgroundColor: `${BRAND.blue}18`, color: BRAND.blue }}
                   >
                     <Icon size={15} />
                   </span>

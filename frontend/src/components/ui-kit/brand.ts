@@ -1,19 +1,19 @@
 export const BRAND = {
-  blue: "#3B6EFF",
-  cyan: "#00C2FF",
-  green: "#34D399",
-  yellow: "#FFD93D",
-  purple: "#A78BFA",
-  red: "#F87171",
-  muted: "#7480A0",
+  blue: "#F97316",    // Warm orange (primary action)
+  cyan: "#FBBF24",    // Warm amber (secondary / gradient end)
+  green: "#34D399",   // Mint green (success)
+  yellow: "#FCD34D",  // Sunny yellow (highlight)
+  purple: "#C084FC",  // Soft purple (exam/topik)
+  red: "#FB7185",     // Soft coral red (error)
+  muted: "#92867A",   // Warm grey-brown (muted text)
 } as const;
 
 /** Tên và metadata ứng dụng — sửa tại đây để đổi toàn app */
 export const APP = {
-  name: "Cao Chiến",
-  tagline: "Học tiếng Hàn",
-  description: "Nền tảng học ngoại ngữ theo lộ trình",
-  logoChar: "한",
+  name: "LinguaPal",
+  tagline: "Học ngoại ngữ thông minh",
+  description: "Nền tảng học đa ngôn ngữ theo lộ trình cá nhân hóa",
+  logo: "/logo.png",
 } as const;
 
 export const GRADIENT = `linear-gradient(90deg, ${BRAND.blue}, ${BRAND.cyan})`;

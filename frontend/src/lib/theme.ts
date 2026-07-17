@@ -2,11 +2,13 @@ export const THEME_STORAGE_KEY = "datn-theme";
 export type Theme = "light" | "dark";
 
 export function getStoredTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   try {
-    return localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+    return "light"; // default to light (cheerful & warm)
   } catch {
-    return "dark";
+    return "light";
   }
 }
 
@@ -24,4 +26,4 @@ export function storeTheme(theme: Theme) {
   }
 }
 
-export const themeInitScript = `(function(){try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");var dark=t!=="light";var r=document.documentElement;r.classList.toggle("dark",dark);r.style.colorScheme=dark?"dark":"light";}catch(e){document.documentElement.classList.add("dark");document.documentElement.style.colorScheme="dark";}})();`;
+export const themeInitScript = `(function(){try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");var dark=t==="dark";var r=document.documentElement;r.classList.toggle("dark",dark);r.style.colorScheme=dark?"dark":"light";}catch(e){document.documentElement.style.colorScheme="light";}})();`;
