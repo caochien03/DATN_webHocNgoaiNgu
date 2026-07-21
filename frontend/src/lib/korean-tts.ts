@@ -68,7 +68,6 @@ async function speakFromServer(
 // Web Speech API fallback
 // ────────────────────────────────────────────────────
 
-let preferredVoice: SpeechSynthesisVoice | null | undefined;
 
 const SPEECH_LANG: Record<string, string> = {
   ko: 'ko-KR',
@@ -155,7 +154,5 @@ export async function speakKorean(text: string): Promise<void> {
 export function warmUpKoreanTts(): void {
   if (!isWebSpeechSupported()) return;
   void getVoices();
-  window.speechSynthesis.onvoiceschanged = () => {
-    preferredVoice = undefined;
-  };
+  window.speechSynthesis.onvoiceschanged = () => undefined;
 }

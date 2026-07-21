@@ -8,8 +8,6 @@ import {
   backLinkClass,
   dangerButtonClass,
   dashedCardClass,
-  errorClass,
-  formCardClass,
   inputClass,
   listItemClass,
 } from "@/components/ui-kit/form-styles";
@@ -204,7 +202,7 @@ function EditLessonContent() {
               {lesson.vocabulary.map((w) => (
                 <li
                   key={w.id}
-                  className="flex items-center justify-between gap-2 listItemClass"
+                  className={`flex items-center justify-between gap-2 ${listItemClass}`}
                 >
                   <span>
                     {w.frontText} — {w.backText}
@@ -222,7 +220,7 @@ function EditLessonContent() {
               ))}
             </ul>
             <form
-              className="mt-3 flex flex-col gap-2 dashedCardClass"
+              className={`mt-3 flex flex-col gap-2 ${dashedCardClass}`}
               onSubmit={(e) => {
                 e.preventDefault();
                 void apiPost(`/admin/lessons/${id}/vocabulary`, {
@@ -266,7 +264,7 @@ function EditLessonContent() {
               {lesson.points.map((p) => (
                 <li
                   key={p.id}
-                  className="flex items-center justify-between gap-2 listItemClass"
+                  className={`flex items-center justify-between gap-2 ${listItemClass}`}
                 >
                   <span>{p.title}</span>
                   <button
@@ -282,7 +280,7 @@ function EditLessonContent() {
               ))}
             </ul>
             <form
-              className="mt-3 flex flex-col gap-2 dashedCardClass"
+              className={`mt-3 flex flex-col gap-2 ${dashedCardClass}`}
               onSubmit={(e) => {
                 e.preventDefault();
                 void apiPost(`/admin/lessons/${id}/points`, {
@@ -344,7 +342,7 @@ function EditLessonContent() {
               ))}
             </ul>
             <form
-              className="mt-3 flex flex-col gap-2 dashedCardClass"
+              className={`mt-3 flex flex-col gap-2 ${dashedCardClass}`}
               onSubmit={(e) => {
                 e.preventDefault();
                 const options = exOptions

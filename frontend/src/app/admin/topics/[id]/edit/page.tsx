@@ -8,8 +8,6 @@ import {
   backLinkClass,
   dangerButtonClass,
   dashedCardClass,
-  errorClass,
-  formCardClass,
   inputClass,
   listItemClass,
 } from "@/components/ui-kit/form-styles";
@@ -231,7 +229,7 @@ function EditTopicContent() {
               {topic.words.map((w) => (
                 <li
                   key={w.id}
-                  className="flex items-center justify-between gap-2 listItemClass"
+                  className={`flex items-center justify-between gap-2 ${listItemClass}`}
                 >
                   <span>
                     {w.frontText} — {w.backText}
@@ -248,7 +246,7 @@ function EditTopicContent() {
             </ul>
             <form
               onSubmit={addWord}
-              className="mt-3 flex flex-col gap-2 dashedCardClass"
+              className={`mt-3 flex flex-col gap-2 ${dashedCardClass}`}
             >
               <input
                 required

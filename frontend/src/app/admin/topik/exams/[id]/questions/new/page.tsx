@@ -9,7 +9,7 @@ import {
   ExamQuestionInputFields,
   normalizeExamQuestions,
 } from "@/components/admin/ExamQuestionInputFields";
-import { backLinkClass, errorClass } from "@/components/ui-kit/form-styles";
+import { backLinkClass } from "@/components/ui-kit/form-styles";
 import { GradientButton } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { AdminTopikExamDetail, ExamQuestionInput } from "@/lib/types";

@@ -146,7 +146,7 @@ function PathsDetailContent() {
           </div>
 
           <ol className="mt-6 flex flex-col gap-3">
-            {path.steps.map((step, i) => {
+            {path.steps.map((step) => {
               const isTopic = step.type === "TOPIC";
               const c = isTopic ? BRAND.blue : BRAND.cyan;
               return (

@@ -9,7 +9,6 @@ import { BRAND, levelColor } from "@/components/ui-kit/brand";
 import { LevelBadge, PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { appendLanguageQuery } from "@/lib/learning-language-api";
-import { learningLanguageLabel } from "@/lib/learning-language";
 import type { TopicRow } from "@/lib/types";
 
 function TopicsContent() {

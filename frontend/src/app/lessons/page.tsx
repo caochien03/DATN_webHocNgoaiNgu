@@ -10,7 +10,6 @@ import { BRAND } from "@/components/ui-kit/brand";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { appendLanguageQuery } from "@/lib/learning-language-api";
-import { learningLanguageLabel } from "@/lib/learning-language";
 import type { GrammarLevel, LessonRow } from "@/lib/types";
 
 const LEVELS: { code: GrammarLevel; label: string }[] = [

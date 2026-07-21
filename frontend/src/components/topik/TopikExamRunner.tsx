@@ -30,7 +30,6 @@ import type {
   ExamMcqQuestion,
   ExamMcqSubmitResult,
   GradedTopikAnswer,
-  TopikQuestion,
   TopikSection,
 } from "@/lib/types";
 

@@ -8,8 +8,6 @@ import {
   backLinkClass,
   dangerButtonClass,
   dashedCardClass,
-  errorClass,
-  formCardClass,
   inputClass,
   listItemClass,
 } from "@/components/ui-kit/form-styles";
@@ -326,7 +324,7 @@ function EditPathContent() {
 
             <form
               onSubmit={addStep}
-              className="mt-4 flex flex-col gap-3 dashedCardClass"
+              className={`mt-4 flex flex-col gap-3 ${dashedCardClass}`}
             >
               <p className="text-sm font-medium text-foreground">
                 Thêm bước

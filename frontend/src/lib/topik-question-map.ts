@@ -4,7 +4,6 @@ import {
   type WritingAnswerState,
 } from "@/lib/topik-answers";
 import type { TopikExamStep } from "@/lib/topik-exam-steps";
-import { groupTopikQuestionsIntoPages } from "@/lib/group-topik-pages";
 import type { ExamMcqQuestion, ToeicSection, TopikSection } from "@/lib/types";
 
 export type TopikQuestionMapItem = {

@@ -24,9 +24,10 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() =>
-    typeof window === "undefined" ? "dark" : getStoredTheme(),
-  );
+  // The initial client render must match the HTML rendered on the server.
+  // `localStorage` is only available in the browser, so read it after
+  // hydration instead of using it to choose the initial state.
+  const [theme, setThemeState] = useState<Theme>("light");
 
   useLayoutEffect(() => {
     const stored = getStoredTheme();

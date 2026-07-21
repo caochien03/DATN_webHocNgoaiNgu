@@ -5,7 +5,8 @@ export function toeicSectionLabel(section: ToeicSection): string {
   return "Đọc";
 }
 
-export function toeicTierLabel(_tier: "TOEIC_LR"): string {
+export function toeicTierLabel(tier: "TOEIC_LR"): string {
+  void tier;
   return "TOEIC Listening & Reading";
 }
 

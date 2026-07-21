@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Globe2, PencilLine, Plus, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
@@ -19,7 +18,6 @@ type Topic = {
 };
 
 function TopicsContent() {
-  const router = useRouter();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

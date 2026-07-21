@@ -8,7 +8,7 @@ import {
   TopikQuestionForm,
   type TopikQuestionFormValues,
 } from "@/components/admin/TopikQuestionForm";
-import { backLinkClass, dangerButtonClass, errorClass } from "@/components/ui-kit/form-styles";
+import { backLinkClass, dangerButtonClass } from "@/components/ui-kit/form-styles";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { topikSectionLabel, topikTierLabel } from "@/lib/topik-labels";
 import type { TopikQuestionAdminRow } from "@/lib/types";

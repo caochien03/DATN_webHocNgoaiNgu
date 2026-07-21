@@ -11,8 +11,6 @@ import {
 import {
   backLinkClass,
   dangerButtonClass,
-  dashedCardClass,
-  errorClass,
   listItemClass,
   sectionTitleClass,
 } from "@/components/ui-kit/form-styles";
@@ -227,7 +225,7 @@ function EditTopikExamContent() {
                 {slots.map((slot) => (
                   <li
                     key={slot.id}
-                    className="flex flex-wrap items-center justify-between gap-2 listItemClass"
+                    className={`flex flex-wrap items-center justify-between gap-2 ${listItemClass}`}
                   >
                     <div className="min-w-0">
                       <p className="font-medium text-foreground">

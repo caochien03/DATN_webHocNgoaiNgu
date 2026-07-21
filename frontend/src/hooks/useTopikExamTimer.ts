@@ -25,7 +25,10 @@ export function useTopikExamTimer(
   const [remainingMs, setRemainingMs] = useState(totalMs);
   const expiredRef = useRef(false);
   const onExpireRef = useRef(onExpire);
-  onExpireRef.current = onExpire;
+
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
 
   const markExpired = useCallback(() => {
     if (expiredRef.current) return;
