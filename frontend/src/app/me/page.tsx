@@ -172,7 +172,7 @@ function ProfileContent() {
           <p className="mt-1 break-all text-sm text-muted-foreground">{user.email}</p>
           <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
             <Shield size={12} />
-            <span>{isAdmin ? "ADMIN" : "USER"}</span>
+            <span>{isAdmin ? "Quản trị viên" : "Học viên"}</span>
           </div>
         </div>
 

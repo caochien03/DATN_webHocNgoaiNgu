@@ -1,0 +1,39 @@
+{
+  "title": "TOPIK II — Mẫu viết (import)",
+  "description": "Mẫu câu hỏi viết TOPIK II",
+  "tier": "TOPIK_II",
+  "durationMinutes": 180,
+  "isPublished": false,
+  "sortOrder": 0,
+  "questions": [
+    {
+      "sortOrder": 0,
+      "section": "WRITING",
+      "questionNo": 51,
+      "questionType": "SHORT_ANSWER",
+      "prompt": "㉠, ㉡에 들어갈 말로 가장 알맞은 것을 각각 쓰십시오.",
+      "passage": "가: 오늘 날씨가 정말 좋네요.\n나: 맞아요. 그래서 (㉠)",
+      "options": [],
+      "correctIndex": 0,
+      "maxScore": 10,
+      "writingParts": [
+        { "label": "㉠", "modelAnswer": "공원에 갔어요.", "maxScore": 5 },
+        { "label": "㉡", "modelAnswer": "기분이 좋아요.", "maxScore": 5 }
+      ]
+    },
+    {
+      "sortOrder": 1,
+      "section": "WRITING",
+      "questionNo": 54,
+      "questionType": "ESSAY",
+      "prompt": "다음 주제에 대해 600~700자로 쓰십시오.",
+      "passage": "주제: 환경 보호를 위해 개인이 할 수 있는 일",
+      "options": [],
+      "correctIndex": 0,
+      "minChars": 600,
+      "maxChars": 700,
+      "maxScore": 50,
+      "modelAnswer": "환경 보호는 모두의 책임입니다..."
+    }
+  ]
+}

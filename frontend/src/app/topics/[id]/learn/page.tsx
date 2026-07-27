@@ -64,8 +64,8 @@ function LearnMenu() {
             Học chủ đề “{topic.title}”
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {topic.words.length} từ · nội dung hệ thống, tiến độ chơi không được
-            lưu lại.
+            {topic.words.length} từ · Đây là chế độ luyện nhanh; kết quả trò chơi
+            không được lưu vào tiến độ học tập.
           </p>
 
           <ul className="mt-6 flex flex-col gap-3">

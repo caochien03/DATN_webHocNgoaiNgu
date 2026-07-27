@@ -24,7 +24,7 @@ const DEFAULT_COUNT = 10;
 function formatLoadError(e: unknown): string {
   if (e instanceof Error) {
     if (e.message === "Failed to fetch") {
-      return "Không kết nối được API. Kiểm tra backend (port 4000) và Postgres đã chạy, rồi chạy prisma migrate deploy.";
+      return "Không thể kết nối đến hệ thống. Vui lòng kiểm tra kết nối và thử lại.";
     }
     return e.message;
   }
@@ -89,7 +89,9 @@ function PracticeContent() {
 
   const startPractice = useCallback(async () => {
     if (!section || !fromNo || !toNo) {
-      setError("Thiếu tham số dạng bài.");
+      setError(
+        "Không xác định được dạng bài. Vui lòng quay lại trang TOPIK và chọn một dạng luyện tập.",
+      );
       return;
     }
     const count = Math.min(50, Math.max(1, selectedCount));

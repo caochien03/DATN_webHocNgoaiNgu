@@ -89,6 +89,13 @@ function AdminToeicExamsContent() {
           <Plus size={14} />
           {importing ? "Đang import…" : "Import JSON"}
         </button>
+        <a
+          href="/templates/toeic-exam-TOEIC_LR.template.json"
+          download
+          className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+        >
+          Tải mẫu JSON
+        </a>
       </div>
 
       {error ? (
@@ -119,13 +126,6 @@ function AdminToeicExamsContent() {
           ))}
         </ul>
       )}
-
-      <p className="mt-6 text-xs text-muted-foreground">
-        Mẫu JSON: xem{" "}
-        <code className="rounded bg-secondary px-1">
-          backend/prisma/templates/toeic-exam-TOEIC_LR.template.json
-        </code>
-      </p>
     </div>
   );
 }

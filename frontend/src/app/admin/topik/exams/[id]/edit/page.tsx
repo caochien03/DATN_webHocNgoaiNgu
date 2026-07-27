@@ -106,7 +106,7 @@ function EditTopikExamContent() {
         sortOrder?: number;
       };
       if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
-        setError("JSON phải có mảng questions không rỗng");
+        setError("Tệp JSON cần có ít nhất một câu hỏi.");
         return;
       }
       const res = await fetchWithAuth(`/admin/topik/exams/${id}`, {
@@ -234,7 +234,7 @@ function EditTopikExamContent() {
                         {slot.question.questionNo}
                         {slot.question.bundleId ? (
                           <span className="ml-2 text-xs font-normal text-sky-700 dark:text-sky-400">
-                            bundle: {slot.question.bundleId}
+                            Nhóm câu: {slot.question.bundleId}
                           </span>
                         ) : null}
                       </p>
@@ -256,15 +256,11 @@ function EditTopikExamContent() {
 
           <section className="mt-8 rounded-lg border border-dashed border-amber-300 bg-amber-50/50 p-4 dark:border-amber-900 dark:bg-amber-950/20">
             <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-              Thay toàn bộ câu từ JSON
+              Thay câu hỏi bằng tệp JSON
             </h2>
             <p className="mt-1 text-xs text-amber-800 dark:text-amber-300/90">
-              PATCH kèm{" "}
-              <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">
-                questions
-              </code>{" "}
-              — xóa câu cũ của đề và tạo lại từ file. Metadata trong file (nếu
-              có) cũng được cập nhật.
+              Thao tác này sẽ thay thế toàn bộ câu hỏi hiện có của đề. Thông tin
+              đề trong tệp sẽ được cập nhật nếu được cung cấp.
             </p>
             <div className="mt-3">
               <input

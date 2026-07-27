@@ -16,8 +16,8 @@ export function ThemeToggle({ className }: { className?: string }) {
         "rounded-xl p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
         className,
       )}
-      aria-label={isDark ? "Chuyển sang theme sáng" : "Chuyển sang theme tối"}
-      title={isDark ? "Theme sáng" : "Theme tối"}
+      aria-label={isDark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+      title={isDark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
     >
       {isDark ? <Sun size={16} /> : <Moon size={16} />}
     </button>

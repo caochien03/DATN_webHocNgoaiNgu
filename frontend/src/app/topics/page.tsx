@@ -59,7 +59,7 @@ function TopicsContent() {
         sub={
           topics
             ? `${topics.length} chủ đề · ${totalWords} từ`
-            : "Chọn chủ đề để học và sao chép vào bộ cá nhân"
+            : "Chọn một chủ đề để khám phá từ vựng và bắt đầu học"
         }
       />
 
@@ -105,7 +105,7 @@ function TopicsContent() {
         <p className="text-sm text-muted-foreground">Đang tải…</p>
       ) : filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Chưa có chủ đề nào. Hãy chạy seed lại ở backend.
+          Chưa có chủ đề phù hợp với ngôn ngữ hoặc cấp độ đang chọn.
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

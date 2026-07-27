@@ -45,14 +45,14 @@ export default function RegisterPage() {
         return;
       }
       if (!data.accessToken || !data.user) {
-        setError("Phản hồi không hợp lệ từ server.");
+        setError("Hệ thống nhận được phản hồi không hợp lệ. Vui lòng thử lại.");
         return;
       }
       setStoredAuth({ accessToken: data.accessToken, user: data.user });
       router.push("/");
       router.refresh();
     } catch {
-      setError("Không kết nối được API. Kiểm tra backend đã chạy chưa.");
+      setError("Không thể kết nối đến hệ thống. Vui lòng kiểm tra kết nối và thử lại.");
     } finally {
       setLoading(false);
     }

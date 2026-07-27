@@ -107,13 +107,9 @@ function AdminTopikExamsContent() {
       <div className="mb-6 rounded-2xl border border-dashed border-border p-4">
         <h2 className="text-sm font-semibold text-foreground">Import đề từ JSON</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          File gồm metadata đề và mảng{" "}
-          <code className="rounded bg-secondary px-1">questions</code>. Xem mẫu
-          trong{" "}
-          <code className="rounded bg-secondary px-1">
-            backend/prisma/templates/topik-exam-TOPIK_I.template.json
-          </code>
-          .
+          Tệp JSON gồm thông tin đề và mảng{" "}
+          <code className="rounded bg-secondary px-1">questions</code>. Tải tệp
+          mẫu phù hợp, điền nội dung rồi tải lên.
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <input
@@ -130,6 +126,20 @@ function AdminTopikExamsContent() {
           {importing ? (
             <span className="text-sm text-muted-foreground">Đang import…</span>
           ) : null}
+          <a
+            href="/templates/topik-exam-TOPIK_I.template.json"
+            download
+            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+          >
+            Tải mẫu TOPIK I
+          </a>
+          <a
+            href="/templates/topik-exam-TOPIK_II-writing.template.json"
+            download
+            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+          >
+            Tải mẫu TOPIK II - Viết
+          </a>
         </div>
       </div>
 

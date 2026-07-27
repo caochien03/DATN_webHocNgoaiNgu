@@ -41,6 +41,7 @@ type NavItem = {
   href: string;
   icon: LucideIcon;
   label: string;
+  activePrefixes?: string[];
   admin?: boolean;
   examPrep?: "ko" | "en";
 };
@@ -67,8 +68,20 @@ const NAV: NavGroup[] = [
   {
     group: "LUYỆN TẬP",
     items: [
-      { href: "/topik/TOPIK_I", icon: Trophy, label: "TOPIK I & II", examPrep: "ko" as const },
-      { href: "/toeic/TOEIC_LR", icon: Trophy, label: "TOEIC LR", examPrep: "en" as const },
+      {
+        href: "/topik/TOPIK_I",
+        icon: Trophy,
+        label: "TOPIK I & II",
+        activePrefixes: ["/topik"],
+        examPrep: "ko" as const,
+      },
+      {
+        href: "/toeic/TOEIC_LR",
+        icon: Trophy,
+        label: "TOEIC LR",
+        activePrefixes: ["/toeic"],
+        examPrep: "en" as const,
+      },
       { href: "/speaking", icon: Mic, label: "Luyện nói" },
       { href: "/tests", icon: Brain, label: "Kiểm tra" },
     ],
@@ -79,16 +92,38 @@ const NAV: NavGroup[] = [
       { href: "/admin/lessons", icon: FileText, label: "Bài ngữ pháp", admin: true },
       { href: "/admin/topics", icon: Layers, label: "Chủ đề từ vựng", admin: true },
       { href: "/admin/paths", icon: Map, label: "Lộ trình", admin: true },
-      { href: "/admin/topik/exams", icon: Brain, label: "Đề TOPIK", admin: true },
-      { href: "/admin/toeic/exams", icon: Brain, label: "Đề TOEIC", admin: true },
-      { href: "/admin/speaking/topics", icon: Mic, label: "Luyện nói", admin: true },
+      {
+        href: "/admin/topik/exams",
+        icon: Brain,
+        label: "Đề TOPIK",
+        activePrefixes: ["/admin/topik"],
+        admin: true,
+      },
+      {
+        href: "/admin/toeic/exams",
+        icon: Brain,
+        label: "Đề TOEIC",
+        activePrefixes: ["/admin/toeic"],
+        admin: true,
+      },
+      {
+        href: "/admin/speaking/topics",
+        icon: Mic,
+        label: "Luyện nói",
+        activePrefixes: ["/admin/speaking"],
+        admin: true,
+      },
     ],
   },
 ];
 
-function isActive(pathname: string, href: string) {
+function matchesPath(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function isActive(pathname: string, href: string, activePrefixes: string[] = []) {
+  return [href, ...activePrefixes].some((path) => matchesPath(pathname, path));
 }
 
 function Sidebar({
@@ -148,8 +183,9 @@ function Sidebar({
         {NAV.map((grp) => {
           const items = grp.items.filter((it) => {
             if (it.admin && !admin) return false;
-            if (it.examPrep === "ko" && !showTopik) return false;
-            if (it.examPrep === "en" && !showToeic) return false;
+            const active = isActive(pathname, it.href, it.activePrefixes);
+            if (it.examPrep === "ko" && !showTopik && !active) return false;
+            if (it.examPrep === "en" && !showToeic && !active) return false;
             return true;
           });
           if (items.length === 0) return null;
@@ -160,7 +196,7 @@ function Sidebar({
               </p>
               <div className="space-y-0.5">
                 {items.map((item) => {
-                  const active = isActive(pathname, item.href);
+                  const active = isActive(pathname, item.href, item.activePrefixes);
                   const Icon = item.icon;
                   return (
                     <Link

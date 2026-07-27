@@ -77,7 +77,9 @@ function PracticeContent() {
 
   const startPractice = useCallback(async () => {
     if (!section || !fromNo || !toNo) {
-      setError("Thiếu tham số Part.");
+      setError(
+        "Không xác định được Part cần luyện. Vui lòng quay lại trang TOEIC và chọn một Part.",
+      );
       return;
     }
     const count = Math.min(50, Math.max(1, selectedCount));
