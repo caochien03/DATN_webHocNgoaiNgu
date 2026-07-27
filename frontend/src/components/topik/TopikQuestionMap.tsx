@@ -20,18 +20,20 @@ export function TopikQuestionMap({ items, onSelect }: TopikQuestionMapProps) {
   const multiSection = groups.length > 1;
 
   return (
-    <div className="mt-4 rounded-2xl border border-border bg-secondary/40 p-3">
+    <div className="mt-5 rounded-3xl border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-medium text-foreground">Bản đồ câu</p>
-        <p className="text-xs text-muted-foreground">
+        <div>
+          <p className="text-sm font-bold text-foreground">Bản đồ câu hỏi</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Chọn một số để chuyển nhanh đến câu tương ứng.
+          </p>
+        </div>
+        <p className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
           {answeredCount}/{items.length} đã làm
         </p>
       </div>
-      <p className="mt-1 text-[11px] text-muted-foreground">
-        Bấm số câu để nhảy · viền xanh = đang xem
-      </p>
 
-      <div className="mt-3 flex flex-col gap-3">
+      <div className="mt-4 flex flex-col gap-3">
         {groups.map((group) => (
           <div key={group.section}>
             {multiSection ? (
@@ -74,12 +76,12 @@ function MapCell({
           ? `Câu ${item.questionNo} — đã làm`
           : `Câu ${item.questionNo} — chưa làm`
       }
-      className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-xs font-medium tabular-nums transition ${
-        item.isCurrent ? "ring-2 ring-primary ring-offset-1 ring-offset-secondary" : ""
+      className={`inline-flex h-9 min-w-9 items-center justify-center rounded-xl px-1.5 text-xs font-bold tabular-nums transition hover:-translate-y-0.5 ${
+        item.isCurrent ? "ring-2 ring-primary ring-offset-2 ring-offset-card" : ""
       } ${
         item.answered
-          ? "text-white"
-          : "border border-border bg-card text-muted-foreground hover:text-foreground"
+          ? "text-white shadow-sm"
+          : "border border-border bg-secondary/45 text-muted-foreground hover:bg-secondary hover:text-foreground"
       }`}
       style={item.answered ? { background: GRADIENT } : undefined}
     >

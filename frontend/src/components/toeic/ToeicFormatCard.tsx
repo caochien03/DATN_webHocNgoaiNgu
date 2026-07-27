@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Play } from "lucide-react";
+import { ArrowRight, BarChart3, CirclePlay } from "lucide-react";
 import { BRAND, scoreColor } from "@/components/ui-kit/brand";
 import type { FormatStats } from "@/lib/toeic-format-stats";
 import { toeicPartLabel } from "@/lib/toeic-labels";
@@ -25,21 +25,29 @@ export function ToeicFormatCard({
   return (
     <Link
       href={practiceHref}
-      className="group block rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
+      className="group relative block overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <span
+        aria-hidden
+        className="absolute -right-9 -top-9 h-28 w-28 rounded-full opacity-70 blur-2xl"
+        style={{ backgroundColor: `${BRAND.blue}22` }}
+      />
+      <div className="relative mb-5 flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-foreground">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Dạng luyện
+          </p>
+          <p className="mt-1 text-base font-bold text-foreground">
             {toeicPartLabel(format.part)} · {format.title}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             Câu {rangeLabel}
             {format.titleEn ? ` · ${format.titleEn}` : ""}
           </p>
         </div>
         {stats.correctAnswers > 0 ? (
           <span
-            className="rounded px-2 py-0.5 font-mono text-xs font-semibold"
+            className="rounded-full px-2.5 py-1 font-mono text-xs font-bold"
             style={{ color: accColor, backgroundColor: `${accColor}18` }}
           >
             {stats.percent}%
@@ -48,29 +56,33 @@ export function ToeicFormatCard({
       </div>
 
       {format.description ? (
-        <p className="mb-3 text-xs text-muted-foreground">{format.description}</p>
+        <p className="relative mb-4 text-xs leading-relaxed text-muted-foreground">
+          {format.description}
+        </p>
       ) : null}
 
-      <p className="mb-3 text-xs text-muted-foreground">
-        Trả lời đúng:{" "}
-        <span className="font-medium text-foreground">{stats.correctAnswers}</span>
-      </p>
-
-      <div
-        className="h-1.5 overflow-hidden rounded-full"
-        style={{ backgroundColor: "rgba(255,255,255,0.07)" }}
-      >
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${stats.percent}%`, backgroundColor: accColor }}
-        />
+      <div className="relative rounded-2xl bg-secondary/70 px-3.5 py-3">
+        <div className="flex items-center justify-between gap-3 text-xs">
+          <span className="inline-flex items-center gap-1.5 font-medium text-muted-foreground">
+            <BarChart3 size={14} /> Kết quả gần đây
+          </span>
+          <span className="font-semibold text-foreground">
+            {stats.correctAnswers} câu đúng
+          </span>
+        </div>
+        <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-background">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{ width: `${stats.percent}%`, backgroundColor: accColor }}
+          />
+        </div>
       </div>
 
       <span
-        className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-white"
+        className="relative mt-4 flex w-full items-center justify-center gap-2 rounded-2xl py-2.5 text-sm font-bold text-white transition-transform group-hover:scale-[1.01]"
         style={{ background: `linear-gradient(90deg,${BRAND.blue},${BRAND.cyan})` }}
       >
-        <Play size={12} /> Luyện Part này
+        <CirclePlay size={15} /> Luyện Part này <ArrowRight size={15} />
       </span>
     </Link>
   );

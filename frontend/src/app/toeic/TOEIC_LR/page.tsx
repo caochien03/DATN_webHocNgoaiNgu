@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { motion } from "motion/react";
-import { Clock, History, Trophy } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { BookOpenCheck, Clock, FileText, Headphones, History, Trophy } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { ToeicFormatCard } from "@/components/toeic/ToeicFormatCard";
-import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
-import { PageHeader } from "@/components/ui-kit/primitives";
+import { BRAND, GRADIENT, GRADIENT_DIAGONAL } from "@/components/ui-kit/brand";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { statsForToeicFormat } from "@/lib/toeic-format-stats";
 import { toeicSectionLabel, toeicTierLabel } from "@/lib/toeic-labels";
@@ -29,12 +28,15 @@ const TABS: { id: TabId; label: string; section?: ToeicSection }[] = [
 
 const TIER = "TOEIC_LR" as const;
 
+function tabFromSearchParam(value: string | null): TabId {
+  if (value === "reading" || value === "mock") return value;
+  return "listening";
+}
+
 function ToeicHubContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab");
-  const tab: TabId =
-    tabParam === "reading" || tabParam === "mock" ? tabParam : "listening";
+  const searchTab = tabFromSearchParam(searchParams.get("tab"));
+  const [tab, setTab] = useState<TabId>(searchTab);
 
   const [formats, setFormats] = useState<ToeicQuestionFormat[] | null>(null);
   const [exams, setExams] = useState<ToeicExamRow[] | null>(null);
@@ -71,6 +73,18 @@ function ToeicHubContent() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    setTab(searchTab);
+  }, [searchTab]);
+
+  useEffect(() => {
+    function syncTabFromBrowserHistory() {
+      setTab(tabFromSearchParam(new URLSearchParams(window.location.search).get("tab")));
+    }
+    window.addEventListener("popstate", syncTabFromBrowserHistory);
+    return () => window.removeEventListener("popstate", syncTabFromBrowserHistory);
+  }, []);
+
   const sectionFormats = useMemo(() => {
     if (!formats || tab === "mock") return [];
     const activeTab = TABS.find((t) => t.id === tab);
@@ -80,34 +94,88 @@ function ToeicHubContent() {
       .sort((a, b) => a.sortOrder - b.sortOrder);
   }, [formats, tab]);
 
-  function setTab(next: TabId) {
-    const q = next === "listening" ? "" : `?tab=${next}`;
-    router.push(`/toeic/${TIER}${q}`);
+  function selectTab(next: TabId) {
+    if (next === tab) return;
+    setTab(next);
+
+    const nextUrl = new URL(window.location.href);
+    if (next === "listening") {
+      nextUrl.searchParams.delete("tab");
+    } else {
+      nextUrl.searchParams.set("tab", next);
+    }
+    window.history.pushState(
+      window.history.state,
+      "",
+      `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`,
+    );
   }
 
+  const activeTabLabel = TABS.find((item) => item.id === tab)?.label ?? "Nghe";
+
   return (
-    <div>
-      <PageHeader
-        title="Luyện thi TOEIC"
-        sub={`${toeicTierLabel(TIER)} — Nghe, Đọc, Thi thử`}
-        action={
+    <div className="mx-auto max-w-6xl">
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-7 shadow-sm md:p-8">
+        <span
+          aria-hidden
+          className="absolute -right-20 -top-20 h-72 w-72 rounded-full blur-3xl"
+          style={{ backgroundColor: `${BRAND.blue}24` }}
+        />
+        <span
+          aria-hidden
+          className="absolute -bottom-28 right-1/3 h-56 w-56 rounded-full blur-3xl"
+          style={{ backgroundColor: `${BRAND.cyan}1c` }}
+        />
+        <div className="relative flex items-start justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <span
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg"
+              style={{ background: GRADIENT_DIAGONAL }}
+            >
+              <BookOpenCheck size={27} />
+            </span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                Kho luyện thi
+              </p>
+              <h1 className="mt-1.5 text-3xl font-bold tracking-tight text-foreground">
+                Luyện thi TOEIC
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Luyện theo từng Part, kiểm soát số câu mỗi lượt và theo dõi tiến bộ của bạn.
+              </p>
+            </div>
+          </div>
           <Link
             href="/toeic/attempts"
-            className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-border bg-background/80 px-4 py-2.5 text-sm font-semibold text-muted-foreground transition hover:border-primary/30 hover:text-foreground"
           >
-            <History size={14} /> Lịch sử
+            <History size={16} /> Lịch sử làm bài
           </Link>
-        }
-      />
+        </div>
+        <div className="relative mt-7 grid grid-cols-3 gap-3">
+          <HubHint icon={<Headphones size={17} />} label="Luyện theo Part" text="Nghe và đọc" />
+          <HubHint icon={<FileText size={17} />} label="Chọn số câu" text="Tự điều chỉnh lượt luyện" />
+          <HubHint icon={<Trophy size={17} />} label="Theo dõi tiến bộ" text="Xem lại từng kết quả" />
+        </div>
+      </section>
 
-      <div className="mb-6 flex w-fit gap-1 rounded-xl border border-border bg-secondary/40 p-1">
+      <div className="mt-7 rounded-3xl border border-border bg-card p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Chọn hình thức luyện</p>
+            <h2 className="mt-1 text-lg font-bold text-foreground">{toeicTierLabel(TIER)}</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">{activeTabLabel}</p>
+        </div>
+      <div className="mt-4 flex w-fit gap-1 rounded-2xl border border-border bg-secondary/40 p-1">
         {TABS.map((t) => {
           const active = tab === t.id;
           return (
             <button
               key={t.id}
               type="button"
-              onClick={() => setTab(t.id)}
+              onClick={() => selectTab(t.id)}
               className="relative rounded-lg px-5 py-2 text-sm font-medium"
               style={{ color: active ? "#fff" : BRAND.muted }}
             >
@@ -125,81 +193,112 @@ function ToeicHubContent() {
         })}
       </div>
 
-      {error ? (
-        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
-          {error}
-        </p>
-      ) : null}
-
-      {tab !== "mock" ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {formats === null ? (
-            <p className="text-sm text-muted-foreground sm:col-span-2">Đang tải…</p>
-          ) : sectionFormats.length === 0 ? (
-            <p className="text-sm text-muted-foreground sm:col-span-2">
-              Chưa có Part cho phần {toeicSectionLabel(tab === "reading" ? "READING" : "LISTENING")}.
+      <AnimatePresence initial={false} mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          {error ? (
+            <p className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              {error}
             </p>
+          ) : null}
+
+          {tab !== "mock" ? (
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              {formats === null ? (
+                <p className="text-sm text-muted-foreground sm:col-span-2">Đang tải…</p>
+              ) : sectionFormats.length === 0 ? (
+                <p className="text-sm text-muted-foreground sm:col-span-2">
+                  Chưa có Part cho phần {toeicSectionLabel(tab === "reading" ? "READING" : "LISTENING")}.
+                </p>
+              ) : (
+                sectionFormats.map((f) => (
+                  <ToeicFormatCard
+                    key={f.id}
+                    format={f}
+                    stats={statsForToeicFormat(attempts, f)}
+                    practiceHref={`/toeic/practice?tier=${TIER}&section=${f.section}&fromNo=${f.fromNo}&toNo=${f.toNo}`}
+                  />
+                ))
+              )}
+            </div>
           ) : (
-            sectionFormats.map((f) => (
-              <ToeicFormatCard
-                key={f.id}
-                format={f}
-                stats={statsForToeicFormat(attempts, f)}
-                practiceHref={`/toeic/practice?tier=${TIER}&section=${f.section}&fromNo=${f.fromNo}&toNo=${f.toNo}`}
-              />
-            ))
-          )}
-        </div>
-      ) : (
-        <div>
-          {exams === null ? (
-            <p className="text-sm text-muted-foreground">Đang tải…</p>
-          ) : exams.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Chưa có đề thi thử.</p>
-          ) : (
-            <div className="space-y-4">
-              {exams.map((exam, i) => (
-                <motion.div
-                  key={exam.id}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.08 }}
-                >
-                  <Link
-                    href={`/toeic/exams/${exam.id}`}
-                    className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
-                  >
-                    <span
-                      className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
-                      style={{
-                        background: `linear-gradient(135deg,${BRAND.purple}20,${BRAND.blue}20)`,
-                        color: BRAND.purple,
-                      }}
+            <div className="mt-5">
+              {exams === null ? (
+                <p className="text-sm text-muted-foreground">Đang tải…</p>
+              ) : exams.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Chưa có đề thi thử.</p>
+              ) : (
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {exams.map((exam, i) => (
+                    <motion.div
+                      key={exam.id}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.08 }}
                     >
-                      <Trophy size={20} />
-                    </span>
-                    <div className="flex-1">
-                      <p className="font-semibold text-foreground">{exam.title}</p>
-                      <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-1">
-                          <Clock size={11} /> {exam.durationMinutes} phút
+                      <Link
+                        href={`/toeic/exams/${exam.id}`}
+                        className="group flex h-full items-center gap-4 rounded-3xl border border-border bg-secondary/30 p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card hover:shadow-lg"
+                      >
+                        <span
+                          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
+                          style={{
+                            background: `linear-gradient(135deg,${BRAND.purple}20,${BRAND.blue}20)`,
+                            color: BRAND.purple,
+                          }}
+                        >
+                          <Trophy size={20} />
                         </span>
-                        <span>{exam.questionCount} câu</span>
-                      </div>
-                    </div>
-                    <span
-                      className="rounded-xl px-5 py-2 text-sm font-semibold text-white"
-                      style={{ background: GRADIENT }}
-                    >
-                      Vào thi
-                    </span>
-                  </Link>
-                </motion.div>
-              ))}
+                        <div className="flex-1">
+                          <p className="font-semibold text-foreground">{exam.title}</p>
+                          <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="inline-flex items-center gap-1">
+                              <Clock size={11} /> {exam.durationMinutes} phút
+                            </span>
+                            <span>{exam.questionCount} câu</span>
+                          </div>
+                        </div>
+                        <span
+                          className="rounded-2xl px-4 py-2.5 text-sm font-bold text-white transition-transform group-hover:scale-[1.02]"
+                          style={{ background: GRADIENT }}
+                        >
+                          Vào thi
+                        </span>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
+        </motion.div>
+      </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+function HubHint({
+  icon,
+  label,
+  text,
+}: {
+  icon: ReactNode;
+  label: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-border/70 bg-background/65 p-3.5">
+      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        {icon}
+      </span>
+      <p className="mt-3 text-sm font-semibold text-foreground">{label}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{text}</p>
     </div>
   );
 }

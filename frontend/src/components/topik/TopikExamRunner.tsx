@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, ClipboardList, Send, Trophy } from "lucide-react";
 import { hasSessionProgress, useTopikLeaveGuard } from "@/components/topik/TopikRunGuards";
 import { QuestionBlock } from "@/components/topik/TopikQuizRunner";
 import { WritingQuestionFields } from "@/components/topik/TopikWritingRunner";
@@ -24,7 +25,7 @@ import {
 import { buildTopikExamSteps } from "@/lib/topik-exam-steps";
 import { pageLabel, sharedAudioUrl } from "@/lib/group-topik-pages";
 import { buildExamQuestionMapItems } from "@/lib/topik-question-map";
-import { BRAND, GRADIENT, scoreColor } from "@/components/ui-kit/brand";
+import { BRAND, GRADIENT, GRADIENT_DIAGONAL, scoreColor } from "@/components/ui-kit/brand";
 import { topikSectionLabel } from "@/lib/topik-labels";
 import type {
   ExamMcqQuestion,
@@ -227,33 +228,43 @@ export function TopikExamRunner({
         hasWriting={hasWriting}
         writingCount={writingQuestionCount}
       />
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <Link
-          href={backHref}
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          onClick={(e) => {
-            if (!confirmLeave()) e.preventDefault();
-          }}
-        >
-          ← Quay lại
-        </Link>
-        {timer.hasTimer && timer.label ? (
-          <p
-            className="rounded-full px-3 py-1 text-sm font-medium tabular-nums"
-            style={
-              timer.isLow || timeExpired
-                ? { backgroundColor: `${BRAND.red}1f`, color: BRAND.red }
-                : { backgroundColor: "rgba(255,255,255,0.07)", color: "var(--foreground)" }
-            }
+      <header className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href={backHref}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            onClick={(e) => {
+              if (!confirmLeave()) e.preventDefault();
+            }}
           >
-            {timeExpired ? "Hết giờ" : timer.label}
-          </p>
-        ) : null}
-      </div>
-      <h1 className="mt-4 text-2xl font-bold text-foreground">{title}</h1>
-      {subtitle ? (
-        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-      ) : null}
+            <ArrowLeft size={16} /> Quay lại
+          </Link>
+          {timer.hasTimer && timer.label ? (
+            <p
+              className="rounded-full px-3 py-1.5 text-sm font-bold tabular-nums"
+              style={
+                timer.isLow || timeExpired
+                  ? { backgroundColor: `${BRAND.red}1f`, color: BRAND.red }
+                  : { backgroundColor: "rgba(255,255,255,0.07)", color: "var(--foreground)" }
+              }
+            >
+              {timeExpired ? "Hết giờ" : timer.label}
+            </p>
+          ) : null}
+        </div>
+        <div className="mt-5 flex items-start gap-3.5">
+          <span
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white"
+            style={{ background: GRADIENT_DIAGONAL }}
+          >
+            <ClipboardList size={20} />
+          </span>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
+            {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
+          </div>
+        </div>
+      </header>
 
       {timeExpired && !allAnswered ? (
         <p className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
@@ -273,7 +284,7 @@ export function TopikExamRunner({
       />
 
       {currentStep ? (
-        <section className="mt-6 rounded-2xl border border-border bg-card p-5">
+        <section className="mt-5 rounded-3xl border border-border bg-card p-6 shadow-sm">
           {currentStep.kind === "section-intro" ? (
             <SectionIntro
               section={currentStep.section}
@@ -281,7 +292,7 @@ export function TopikExamRunner({
             />
           ) : (
             <>
-              <p className="text-xs text-muted-foreground">
+              <p className="inline-flex rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
                 {topikSectionLabel(currentStep.section)} · Bước {stepIndex + 1}/
                 {steps.length}
                 {currentStep.kind === "mcq" ? (
@@ -321,33 +332,34 @@ export function TopikExamRunner({
             </>
           )}
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap justify-between gap-3 border-t border-border pt-5">
             <button
               type="button"
               disabled={stepIndex === 0}
               onClick={() => setStepIndex((x) => x - 1)}
-              className="rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
             >
-              Trước
+              <ArrowLeft size={16} /> Trước
             </button>
             {stepIndex + 1 < steps.length ? (
               <button
                 type="button"
                 disabled={!stepComplete}
                 onClick={() => setStepIndex((x) => x + 1)}
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
                 style={{ background: GRADIENT }}
               >
-                {currentStep.kind === "section-intro" ? "Bắt đầu" : "Tiếp"}
+                {currentStep.kind === "section-intro" ? "Bắt đầu" : "Tiếp"} <ArrowRight size={16} />
               </button>
             ) : (
               <button
                 type="button"
                 disabled={!allAnswered || submitting}
                 onClick={() => void finish()}
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
                 style={{ background: GRADIENT }}
               >
+                <Send size={16} />
                 {submitting
                   ? hasWriting
                     ? "Đang chấm…"
@@ -370,11 +382,11 @@ function SectionIntro({
   questionCount: number;
 }) {
   return (
-    <div className="py-4 text-center">
-      <p className="text-xs font-medium uppercase tracking-wide" style={{ color: BRAND.cyan }}>
+    <div className="rounded-2xl bg-secondary/55 px-5 py-7 text-center">
+      <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.cyan }}>
         Phần tiếp theo
       </p>
-      <h2 className="mt-2 text-lg font-semibold text-foreground">
+      <h2 className="mt-2 text-xl font-bold text-foreground">
         {topikSectionLabel(section)}
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
@@ -401,14 +413,20 @@ function ExamResultView({
 
   return (
     <div>
-      <div className="rounded-2xl border border-border bg-card p-6 text-center">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-7 text-center shadow-sm">
+        <span
+          aria-hidden
+          className="absolute left-1/2 top-0 h-24 w-56 -translate-x-1/2 rounded-full blur-3xl"
+          style={{ backgroundColor: `${scoreColor(result.scorePercent)}26` }}
+        />
+        <Trophy className="relative mx-auto" size={24} style={{ color: scoreColor(result.scorePercent) }} />
         <p
-          className="text-4xl font-bold"
+          className="relative mt-3 text-5xl font-bold tracking-tight"
           style={{ color: scoreColor(result.scorePercent) }}
         >
           {result.scorePercent}%
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="relative mt-2 text-sm text-muted-foreground">
           Trắc nghiệm đúng {result.correctCount}/{result.totalQuestions} câu
         </p>
         <div className="mt-2">
@@ -422,7 +440,7 @@ function ExamResultView({
           />
         </div>
       </div>
-      <ul className="mt-4 flex flex-col gap-3">
+      <ul className="mt-5 flex flex-col gap-3">
         {graded.map((raw) => {
           const a = raw as GradedTopikAnswer;
           const q = byId.get(a.questionId);
@@ -433,7 +451,7 @@ function ExamResultView({
           return (
             <li
               key={a.questionId}
-              className={`rounded-xl border p-4 text-sm ${
+              className={`rounded-2xl border p-4 text-sm shadow-sm ${
                 uiStatus !== "mcq" ? writingGradeCardClass(uiStatus) : ""
               }`}
               style={
@@ -483,13 +501,13 @@ function ExamResultView({
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
           href={backHref}
-          className="rounded-xl border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="rounded-2xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
           Quay lại
         </Link>
         <Link
           href={attemptHref}
-          className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
+          className="rounded-2xl px-4 py-2.5 text-sm font-bold text-white"
           style={{ background: GRADIENT }}
         >
           Xem chi tiết

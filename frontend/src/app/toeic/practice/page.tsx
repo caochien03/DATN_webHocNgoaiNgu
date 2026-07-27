@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, CirclePlay, Hash, Sparkles } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { TopikQuizRunner } from "@/components/topik/TopikQuizRunner";
 import { GRADIENT } from "@/components/ui-kit/brand";
@@ -159,9 +161,9 @@ function PracticeContent() {
 
   if (questions && activeCount !== null) {
     return (
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-3xl">
         {requestedCount !== null && activeCount < requestedCount ? (
-          <p className="mb-4 text-sm text-amber-300">
+          <p className="mb-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
             Pool đề đã công bố chỉ có {activeCount} câu cho Part này (bạn chọn{" "}
             {requestedCount}).
           </p>
@@ -177,28 +179,52 @@ function PracticeContent() {
         <button
           type="button"
           onClick={backToSetup}
-          className="mt-4 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
-          ← Chọn lại số câu
+          <ArrowLeft size={16} /> Chọn lại số câu
         </button>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-md">
-      <h1 className="text-xl font-bold text-foreground">Luyện Part TOEIC</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+    <div className="mx-auto max-w-2xl">
+      <Link
+        href={`/toeic/${tier}`}
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeft size={16} /> Quay lại kho luyện TOEIC
+      </Link>
+      <section className="relative mt-5 overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <span aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
+        <div className="relative flex items-start gap-3.5">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white" style={{ background: GRADIENT }}>
+            <Sparkles size={20} />
+          </span>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Thiết lập lượt luyện</p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground">Luyện Part TOEIC</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">{subtitle}</p>
+          </div>
+        </div>
+      </section>
 
       {error ? (
-        <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+        <p className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {error}
         </p>
       ) : null}
 
-      <div className="mt-6 rounded-2xl border border-border bg-card p-6">
-        <label className="mb-2 block text-sm font-medium text-muted-foreground">
-          Số câu mỗi lượt
+      <div className="mt-5 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <div className="mb-4 flex items-start gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Hash size={17} /></span>
+          <div>
+            <p className="text-base font-bold text-foreground">Số câu mỗi lượt</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Chọn số câu phù hợp với thời gian học hiện có của bạn.</p>
+          </div>
+        </div>
+        <label className="block text-sm font-medium text-muted-foreground">
+          Số lượng câu hỏi
         </label>
         <select
           value={selectedCount}
@@ -215,10 +241,10 @@ function PracticeContent() {
           type="button"
           disabled={loading}
           onClick={() => void startPractice()}
-          className="mt-4 w-full rounded-xl py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold text-white disabled:opacity-60"
           style={{ background: GRADIENT }}
         >
-          {loading ? "Đang tải câu…" : "Bắt đầu luyện"}
+          <CirclePlay size={17} /> {loading ? "Đang tải câu…" : "Bắt đầu luyện"}
         </button>
       </div>
     </div>
