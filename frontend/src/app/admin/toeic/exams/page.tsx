@@ -1,25 +1,22 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AdminGate } from "@/components/AdminGate";
 import { fetchWithAuth, parseApiError, uploadWithAuth } from "@/lib/api-fetch";
 import { Plus } from "lucide-react";
 import { GRADIENT } from "@/components/ui-kit/brand";
 import { PageHeader } from "@/components/ui-kit/primitives";
-
-type AdminToeicExamRow = {
-  id: string;
-  title: string;
-  tier: string;
-  durationMinutes: number;
-  isPublished: boolean;
-  sortOrder: number;
-  _count: { questions: number };
-};
+import type {
+  AdminToeicExamDetail,
+  AdminToeicExamListRow,
+} from "@/lib/types";
 
 function AdminToeicExamsContent() {
+  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [exams, setExams] = useState<AdminToeicExamRow[] | null>(null);
+  const [exams, setExams] = useState<AdminToeicExamListRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
 
@@ -31,7 +28,7 @@ function AdminToeicExamsContent() {
         setError(await parseApiError(res));
         return;
       }
-      setExams((await res.json()) as AdminToeicExamRow[]);
+      setExams((await res.json()) as AdminToeicExamListRow[]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không tải được danh sách");
     }
@@ -52,7 +49,9 @@ function AdminToeicExamsContent() {
         setError(await parseApiError(res));
         return;
       }
-      await load();
+      const created = (await res.json()) as AdminToeicExamDetail;
+      router.push(`/admin/toeic/exams/${created.id}/edit`);
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Import thất bại");
     } finally {
@@ -65,37 +64,57 @@ function AdminToeicExamsContent() {
     <div className="mx-auto max-w-3xl">
       <PageHeader
         title="Quản trị đề TOEIC"
-        sub="Import JSON đề thi LR — công bố để luyện Part và thi thử"
+        sub="Tạo đề thi thử cố định, import JSON, công bố để luyện Part"
+        action={
+          <Link
+            href="/admin/toeic/exams/new"
+            className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
+            style={{ background: GRADIENT }}
+          >
+            <Plus size={14} /> Tạo đề mới
+          </Link>
+        }
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void importJson(f);
-          }}
-        />
-        <button
-          type="button"
-          disabled={importing}
-          onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-          style={{ background: GRADIENT }}
+      <div className="mb-4">
+        <Link
+          href="/admin/toeic/questions"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          <Plus size={14} />
-          {importing ? "Đang import…" : "Import JSON"}
-        </button>
-        <a
-          href="/templates/toeic-exam-TOEIC_LR.template.json"
-          download
-          className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-        >
-          Tải mẫu JSON
-        </a>
+          Sửa từng câu hỏi →
+        </Link>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-dashed border-border p-4">
+        <h2 className="text-sm font-semibold text-foreground">Import đề từ JSON</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Tệp JSON gồm thông tin đề và mảng{" "}
+          <code className="rounded bg-secondary px-1">questions</code>. Tải tệp
+          mẫu, điền nội dung rồi tải lên.
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            disabled={importing}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void importJson(file);
+            }}
+            className="text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:text-foreground"
+          />
+          {importing ? (
+            <span className="text-sm text-muted-foreground">Đang import…</span>
+          ) : null}
+          <a
+            href="/templates/toeic-exam-TOEIC_LR.template.json"
+            download
+            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+          >
+            Tải mẫu TOEIC LR
+          </a>
+        </div>
       </div>
 
       {error ? (
@@ -109,19 +128,31 @@ function AdminToeicExamsContent() {
       ) : exams.length === 0 ? (
         <p className="text-sm text-muted-foreground">Chưa có đề TOEIC.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="flex flex-col gap-2">
           {exams.map((exam) => (
             <li
               key={exam.id}
-              className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-4 py-3"
             >
-              <div>
-                <p className="font-medium text-foreground">{exam.title}</p>
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground">
+                  {exam.title}
+                  {!exam.isPublished ? (
+                    <span className="ml-2 text-xs font-normal text-amber-300">
+                      Nháp
+                    </span>
+                  ) : null}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {exam._count.questions} câu · {exam.durationMinutes} phút
-                  {exam.isPublished ? " · Đã công bố" : " · Nháp"}
                 </p>
               </div>
+              <Link
+                href={`/admin/toeic/exams/${exam.id}/edit`}
+                className="shrink-0 text-sm font-medium text-primary hover:underline"
+              >
+                Sửa
+              </Link>
             </li>
           ))}
         </ul>

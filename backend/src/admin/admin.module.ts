@@ -14,6 +14,8 @@ import { AdminTopikQuestionsController } from './topik/admin-topik-questions.con
 import { AdminTopikQuestionsService } from './topik/admin-topik-questions.service';
 import { AdminToeicExamsController } from './toeic/admin-toeic-exams.controller';
 import { AdminToeicExamsService } from './toeic/admin-toeic-exams.service';
+import { AdminToeicQuestionsController } from './toeic/admin-toeic-questions.controller';
+import { AdminToeicQuestionsService } from './toeic/admin-toeic-questions.service';
 import { AdminTopicsController } from './topics/admin-topics.controller';
 import { AdminTopicsService } from './topics/admin-topics.service';
 
@@ -26,6 +28,7 @@ import { AdminTopicsService } from './topics/admin-topics.service';
     AdminTopikQuestionsController,
     AdminTopikExamsController,
     AdminToeicExamsController,
+    AdminToeicQuestionsController,
     AdminSpeakingController,
   ],
   providers: [
@@ -35,6 +38,7 @@ import { AdminTopicsService } from './topics/admin-topics.service';
     AdminTopikQuestionsService,
     AdminTopikExamsService,
     AdminToeicExamsService,
+    AdminToeicQuestionsService,
     AdminSpeakingService,
   ],
 })

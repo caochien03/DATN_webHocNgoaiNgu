@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AdminGate } from "@/components/AdminGate";
+import { AdminLanguageSelect } from "@/components/admin/AdminLanguageControls";
 import {
   backLinkClass,
   dangerButtonClass,
@@ -68,7 +69,7 @@ function EditTopicContent() {
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim() || null,
-          languageCode: languageCode.trim() || "ko",
+          languageCode,
           level: level.trim() || null,
           sortOrder: parseInt(sortOrder, 10) || 0,
         }),
@@ -180,14 +181,7 @@ function EditTopicContent() {
                 className={inputClass}
               />
             </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span>Mã ngôn ngữ</span>
-              <input
-                value={languageCode}
-                onChange={(e) => setLanguageCode(e.target.value)}
-                className={inputClass}
-              />
-            </label>
+            <AdminLanguageSelect value={languageCode} onChange={setLanguageCode} />
             <label className="flex flex-col gap-1 text-sm">
               <span>Cấp độ</span>
               <input

@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
-  Bell,
   BookOpen,
   Brain,
   FileText,
@@ -17,7 +16,6 @@ import {
   Mic,
   RefreshCw,
   Route,
-  Search,
   Settings,
   Target,
   Trophy,
@@ -299,7 +297,13 @@ function pageTitle(pathname: string) {
   return TITLES.find((t) => t.match(pathname))?.title ?? APP.name;
 }
 
-function TopBar({ title }: { title: string }) {
+function TopBar({
+  title,
+  showLearningLanguage,
+}: {
+  title: string;
+  showLearningLanguage: boolean;
+}) {
   return (
     <div className="flex flex-shrink-0 items-center justify-between border-b border-border bg-background px-8 py-4">
       <AnimatePresence mode="wait">
@@ -315,24 +319,10 @@ function TopBar({ title }: { title: string }) {
         </motion.h2>
       </AnimatePresence>
       <div className="flex items-center gap-3">
-        <LearningLanguageSelector className="hidden sm:block" />
-        <div className="relative hidden sm:block">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <input
-            className="w-48 rounded-xl border border-border bg-secondary py-1.5 pl-8 pr-4 text-sm text-foreground placeholder-muted-foreground transition-all focus:border-primary/50 focus:outline-none"
-            placeholder="Tìm kiếm..."
-          />
-        </div>
+        {showLearningLanguage ? (
+          <LearningLanguageSelector className="hidden sm:block" />
+        ) : null}
         <ThemeToggle />
-        <button
-          type="button"
-          className="relative rounded-xl p-2 text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Bell size={16} />
-        </button>
       </div>
     </div>
   );
@@ -366,7 +356,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex h-dvh overflow-hidden bg-background text-foreground">
       <Sidebar user={user} showTopik={showTopik} showToeic={showToeic} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <TopBar title={pageTitle(pathname)} />
+        <TopBar
+          title={pageTitle(pathname)}
+          showLearningLanguage={!pathname.startsWith("/admin")}
+        />
         <main className="flex-1 overflow-y-auto p-6 md:p-8">
           <AnimatePresence mode="wait">
             <motion.div

@@ -4,10 +4,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { AdminGate } from "@/components/AdminGate";
+import {
+  AdminLanguageBadge,
+  AdminLanguageFilter,
+  type AdminLanguageFilterValue,
+} from "@/components/admin/AdminLanguageControls";
 import { GRADIENT } from "@/components/ui-kit/brand";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
-import { languageLabel } from "@/lib/topic-labels";
 import type { TopicRow } from "@/lib/types";
 
 function groupByLevel(topics: TopicRow[]) {
@@ -25,6 +29,7 @@ function groupByLevel(topics: TopicRow[]) {
 
 function AdminTopicsContent() {
   const [topics, setTopics] = useState<TopicRow[] | null>(null);
+  const [language, setLanguage] = useState<AdminLanguageFilterValue>("");
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -45,9 +50,13 @@ function AdminTopicsContent() {
     void load();
   }, [load]);
 
+  const filteredTopics = useMemo(
+    () => topics?.filter((topic) => !language || topic.languageCode === language) ?? null,
+    [language, topics],
+  );
   const groups = useMemo(
-    () => (topics ? groupByLevel(topics) : []),
-    [topics],
+    () => (filteredTopics ? groupByLevel(filteredTopics) : []),
+    [filteredTopics],
   );
 
   return (
@@ -66,6 +75,10 @@ function AdminTopicsContent() {
         }
       />
 
+      <div className="mb-5">
+        <AdminLanguageFilter value={language} onChange={setLanguage} />
+      </div>
+
       {error ? (
         <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
@@ -74,8 +87,10 @@ function AdminTopicsContent() {
 
       {topics === null ? (
         <p className="text-sm text-muted-foreground">Đang tải…</p>
-      ) : topics.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Chưa có chủ đề.</p>
+      ) : filteredTopics?.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Chưa có chủ đề cho ngôn ngữ đã chọn.
+        </p>
       ) : (
         <div className="flex flex-col gap-8">
           {groups.map((group) => (
@@ -94,9 +109,12 @@ function AdminTopicsContent() {
                   >
                     <div className="min-w-0">
                       <p className="font-semibold text-foreground">{t.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {languageLabel(t.languageCode)} · {t._count.words} từ
-                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <AdminLanguageBadge code={t.languageCode} />
+                        <span className="text-xs text-muted-foreground">
+                          {t._count.words} từ
+                        </span>
+                      </div>
                     </div>
                     <Link
                       href={`/admin/topics/${t.id}/edit`}

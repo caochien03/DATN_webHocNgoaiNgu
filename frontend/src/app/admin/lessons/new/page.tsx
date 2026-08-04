@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AdminGate } from "@/components/AdminGate";
+import { AdminLanguageSelect } from "@/components/admin/AdminLanguageControls";
 import {
   backLinkClass,
   errorClass,
@@ -19,6 +20,7 @@ import type { GrammarLevel } from "@/lib/types";
 function NewLessonForm() {
   const router = useRouter();
   const [level, setLevel] = useState<GrammarLevel>("BEGINNER_1");
+  const [languageCode, setLanguageCode] = useState("ko");
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
@@ -34,6 +36,7 @@ function NewLessonForm() {
         method: "POST",
         body: JSON.stringify({
           level,
+          languageCode,
           title: title.trim(),
           ...(summary.trim() && { summary: summary.trim() }),
           sortOrder: parseInt(sortOrder, 10) || 0,
@@ -62,6 +65,7 @@ function NewLessonForm() {
         Tạo bài học mới
       </h1>
       <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
+        <AdminLanguageSelect value={languageCode} onChange={setLanguageCode} />
         <label className={labelClass}>
           <span className={labelTextClass}>Cấp độ *</span>
           <select

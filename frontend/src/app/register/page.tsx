@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { AuthShell } from "@/components/auth/AuthShell";
 import {
   errorBannerClass,
@@ -20,6 +21,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,7 +36,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const body: { email: string; password: string; name?: string } = {
-        email,
+        email: email.trim().toLowerCase(),
         password,
       };
       if (name.trim()) body.name = name.trim();
@@ -94,31 +96,51 @@ export default function RegisterPage() {
         </label>
         <label className={labelClass}>
           <span className={labelTextClass}>Mật khẩu</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
-            placeholder="Ít nhất 8 ký tự"
-          />
+          <span className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={`${inputClass} w-full pr-11`}
+              placeholder="Ít nhất 8 ký tự"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((value) => !value)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+            >
+              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </span>
         </label>
         <label className={labelClass}>
           <span className={labelTextClass}>Nhập lại mật khẩu</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className={inputClass}
-            placeholder="Nhập lại mật khẩu"
-            aria-invalid={passwordsMismatch}
-            aria-describedby={passwordsMismatch ? "confirm-password-error" : undefined}
-          />
+          <span className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              minLength={8}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={`${inputClass} w-full pr-11`}
+              placeholder="Nhập lại mật khẩu"
+              aria-invalid={passwordsMismatch}
+              aria-describedby={passwordsMismatch ? "confirm-password-error" : undefined}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((value) => !value)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+            >
+              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </span>
           {passwordsMismatch ? (
             <span id="confirm-password-error" className="text-xs text-destructive">
               Mật khẩu nhập lại không khớp.

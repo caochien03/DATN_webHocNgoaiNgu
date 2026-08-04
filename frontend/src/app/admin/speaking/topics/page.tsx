@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Globe2, PencilLine, Plus, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import {
+  AdminLanguageBadge,
+  AdminLanguageFilter,
+  type AdminLanguageFilterValue,
+} from "@/components/admin/AdminLanguageControls";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 
@@ -19,6 +24,7 @@ type Topic = {
 
 function TopicsContent() {
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [language, setLanguage] = useState<AdminLanguageFilterValue>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -54,11 +60,15 @@ function TopicsContent() {
     setDeleting(null);
   }
 
+  const filteredTopics = topics.filter(
+    (topic) => !language || topic.languageCode === language,
+  );
+
   return (
     <div>
       <PageHeader
         title="Quản lý Chủ đề Luyện nói"
-        sub={`${topics.length} chủ đề`}
+        sub={`${filteredTopics.length} chủ đề`}
         action={
           <Link
             href="/admin/speaking/topics/new"
@@ -69,11 +79,15 @@ function TopicsContent() {
         }
       />
 
+      <div className="mb-5">
+        <AdminLanguageFilter value={language} onChange={setLanguage} />
+      </div>
+
       {error && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>}
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Đang tải...</p>
-      ) : topics.length === 0 ? (
+      ) : filteredTopics.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center">
           <Globe2 size={32} className="mx-auto mb-3 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">Chưa có chủ đề nào.</p>
@@ -94,16 +108,14 @@ function TopicsContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {topics.map((topic) => (
+              {filteredTopics.map((topic) => (
                 <tr key={topic.id} className="transition hover:bg-secondary/20">
                   <td className="px-4 py-3">
                     <p className="font-medium text-foreground">{topic.title}</p>
                     {topic.titleNative && <p className="text-xs text-muted-foreground">{topic.titleNative}</p>}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                      {topic.languageCode.toUpperCase()}
-                    </span>
+                    <AdminLanguageBadge code={topic.languageCode} />
                   </td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{topic._count.situations}</td>
                   <td className="px-4 py-3 text-center">

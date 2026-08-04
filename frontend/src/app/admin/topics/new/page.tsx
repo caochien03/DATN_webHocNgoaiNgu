@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AdminGate } from "@/components/AdminGate";
+import { AdminLanguageSelect } from "@/components/admin/AdminLanguageControls";
 import {
   backLinkClass,
   errorClass,
@@ -34,7 +35,7 @@ function NewTopicForm() {
         body: JSON.stringify({
           title: title.trim(),
           ...(description.trim() && { description: description.trim() }),
-          languageCode: languageCode.trim() || "ko",
+          languageCode,
           ...(level.trim() && { level: level.trim() }),
           sortOrder: parseInt(sortOrder, 10) || 0,
         }),
@@ -80,15 +81,7 @@ function NewTopicForm() {
             className={inputClass}
           />
         </label>
-        <label className={labelClass}>
-          <span className={labelTextClass}>Mã ngôn ngữ</span>
-          <input
-            value={languageCode}
-            onChange={(e) => setLanguageCode(e.target.value)}
-            placeholder="ko"
-            className={inputClass}
-          />
-        </label>
+        <AdminLanguageSelect value={languageCode} onChange={setLanguageCode} />
         <label className={labelClass}>
           <span className={labelTextClass}>Cấp độ</span>
           <input

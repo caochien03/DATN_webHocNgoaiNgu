@@ -38,7 +38,20 @@ export class AdminPathsService {
   }
 
   async update(id: string, dto: UpdatePathDto) {
-    await this.ensurePath(id);
+    const existing = await this.ensurePath(id);
+    if (
+      dto.languageCode !== undefined &&
+      dto.languageCode !== existing.languageCode
+    ) {
+      const stepCount = await this.prisma.learningPathStep.count({
+        where: { pathId: id },
+      });
+      if (stepCount > 0) {
+        throw new BadRequestException(
+          'Không thể đổi ngôn ngữ của lộ trình đã có bước học',
+        );
+      }
+    }
     return this.prisma.learningPath.update({
       where: { id },
       data: {
@@ -58,9 +71,14 @@ export class AdminPathsService {
   }
 
   async createStep(pathId: string, dto: CreatePathStepDto) {
-    await this.ensurePath(pathId);
+    const path = await this.ensurePath(pathId);
     this.validateStepLinks(dto.type, dto.topicId, dto.lessonId);
-    await this.ensureLinkedResources(dto.type, dto.topicId, dto.lessonId);
+    await this.ensureLinkedResources(
+      path.languageCode,
+      dto.type,
+      dto.topicId,
+      dto.lessonId,
+    );
     return this.prisma.learningPathStep.create({
       data: {
         pathId,
@@ -75,6 +93,7 @@ export class AdminPathsService {
   }
 
   async updateStep(pathId: string, stepId: string, dto: UpdatePathStepDto) {
+    const path = await this.ensurePath(pathId);
     const existing = await this.ensureStep(pathId, stepId);
     const type = dto.type ?? existing.type;
     const topicId =
@@ -82,7 +101,12 @@ export class AdminPathsService {
     const lessonId =
       dto.lessonId !== undefined ? dto.lessonId : existing.lessonId;
     this.validateStepLinks(type, topicId, lessonId);
-    await this.ensureLinkedResources(type, topicId, lessonId);
+    await this.ensureLinkedResources(
+      path.languageCode,
+      type,
+      topicId,
+      lessonId,
+    );
 
     return this.prisma.learningPathStep.update({
       where: { id: stepId },
@@ -126,6 +150,7 @@ export class AdminPathsService {
   }
 
   private async ensureLinkedResources(
+    pathLanguageCode: string,
     type: LearningPathStepType,
     topicId?: string | null,
     lessonId?: string | null,
@@ -133,27 +158,38 @@ export class AdminPathsService {
     if (type === LearningPathStepType.TOPIC && topicId) {
       const topic = await this.prisma.vocabularyTopic.findUnique({
         where: { id: topicId },
-        select: { id: true },
+        select: { id: true, languageCode: true },
       });
       if (!topic) throw new NotFoundException('Topic not found');
+      if (topic.languageCode !== pathLanguageCode) {
+        throw new BadRequestException(
+          'Ngôn ngữ của chủ đề phải trùng với ngôn ngữ lộ trình',
+        );
+      }
     }
     if (type === LearningPathStepType.LESSON && lessonId) {
       const lesson = await this.prisma.grammarLesson.findUnique({
         where: { id: lessonId },
-        select: { id: true },
+        select: { id: true, languageCode: true },
       });
       if (!lesson) throw new NotFoundException('Lesson not found');
+      if (lesson.languageCode !== pathLanguageCode) {
+        throw new BadRequestException(
+          'Ngôn ngữ của bài học phải trùng với ngôn ngữ lộ trình',
+        );
+      }
     }
   }
 
   private async ensurePath(id: string) {
     const path = await this.prisma.learningPath.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, languageCode: true },
     });
     if (!path) {
       throw new NotFoundException('Learning path not found');
     }
+    return path;
   }
 
   private async ensureStep(pathId: string, stepId: string) {

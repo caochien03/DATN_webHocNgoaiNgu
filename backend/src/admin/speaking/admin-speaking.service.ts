@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   CreateSpeakingTopicDto,
@@ -40,7 +44,23 @@ export class AdminSpeakingService {
     });
   }
 
-  updateTopic(id: string, dto: UpdateSpeakingTopicDto) {
+  async updateTopic(id: string, dto: UpdateSpeakingTopicDto) {
+    if (dto.languageCode !== undefined) {
+      const existing = await this.prisma.speakingTopic.findUniqueOrThrow({
+        where: { id },
+        select: { languageCode: true },
+      });
+      if (dto.languageCode !== existing.languageCode) {
+        const situationCount = await this.prisma.speakingSituation.count({
+          where: { topicId: id },
+        });
+        if (situationCount > 0) {
+          throw new BadRequestException(
+            'Không thể đổi ngôn ngữ của chủ đề đã có tình huống luyện nói',
+          );
+        }
+      }
+    }
     return this.prisma.speakingTopic.update({
       where: { id },
       data: {
@@ -82,7 +102,8 @@ export class AdminSpeakingService {
     });
   }
 
-  createSituation(dto: CreateSpeakingSituationDto) {
+  async createSituation(dto: CreateSpeakingSituationDto) {
+    await this.ensureTopicLanguage(dto.topicId, dto.languageCode);
     return this.prisma.speakingSituation.create({
       data: {
         title: dto.title,
@@ -102,7 +123,15 @@ export class AdminSpeakingService {
     });
   }
 
-  updateSituation(id: string, dto: UpdateSpeakingSituationDto) {
+  async updateSituation(id: string, dto: UpdateSpeakingSituationDto) {
+    const existing = await this.prisma.speakingSituation.findUniqueOrThrow({
+      where: { id },
+      select: { topicId: true, languageCode: true },
+    });
+    await this.ensureTopicLanguage(
+      dto.topicId ?? existing.topicId ?? undefined,
+      dto.languageCode ?? existing.languageCode,
+    );
     return this.prisma.speakingSituation.update({
       where: { id },
       data: {
@@ -126,5 +155,22 @@ export class AdminSpeakingService {
   async removeSituation(id: string) {
     await this.prisma.speakingSituation.delete({ where: { id } });
     return { success: true };
+  }
+
+  private async ensureTopicLanguage(
+    topicId: string | undefined,
+    languageCode: string,
+  ) {
+    if (!topicId) return;
+    const topic = await this.prisma.speakingTopic.findUnique({
+      where: { id: topicId },
+      select: { languageCode: true },
+    });
+    if (!topic) throw new NotFoundException('Speaking topic not found');
+    if (topic.languageCode !== languageCode) {
+      throw new BadRequestException(
+        'Ngôn ngữ của chủ đề phải trùng với ngôn ngữ tình huống',
+      );
+    }
   }
 }

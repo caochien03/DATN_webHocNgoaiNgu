@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { TopicsService } from '../../topics/topics.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTopicDto } from './dto/create-topic.dto';
@@ -33,7 +37,20 @@ export class AdminTopicsService {
   }
 
   async update(id: string, dto: UpdateTopicDto) {
-    await this.ensureTopic(id);
+    const existing = await this.ensureTopic(id);
+    if (
+      dto.languageCode !== undefined &&
+      dto.languageCode !== existing.languageCode
+    ) {
+      const linkedStepCount = await this.prisma.learningPathStep.count({
+        where: { topicId: id },
+      });
+      if (linkedStepCount > 0) {
+        throw new BadRequestException(
+          'Không thể đổi ngôn ngữ của chủ đề đang thuộc lộ trình',
+        );
+      }
+    }
     return this.prisma.vocabularyTopic.update({
       where: { id },
       data: {
@@ -87,11 +104,12 @@ export class AdminTopicsService {
   private async ensureTopic(id: string) {
     const topic = await this.prisma.vocabularyTopic.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, languageCode: true },
     });
     if (!topic) {
       throw new NotFoundException('Topic not found');
     }
+    return topic;
   }
 
   private async ensureWord(topicId: string, wordId: string) {

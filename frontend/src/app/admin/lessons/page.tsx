@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { AdminGate } from "@/components/AdminGate";
+import {
+  AdminLanguageBadge,
+  AdminLanguageFilter,
+  type AdminLanguageFilterValue,
+} from "@/components/admin/AdminLanguageControls";
 import { GRADIENT } from "@/components/ui-kit/brand";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
@@ -12,6 +17,7 @@ import type { LessonRow } from "@/lib/types";
 
 function AdminLessonsContent() {
   const [lessons, setLessons] = useState<LessonRow[] | null>(null);
+  const [language, setLanguage] = useState<AdminLanguageFilterValue>("");
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -35,7 +41,9 @@ function AdminLessonsContent() {
   const groups = useMemo(() => {
     const map = new Map<string, LessonRow[]>();
     for (const { code } of GRAMMAR_LEVELS) map.set(code, []);
-    for (const lesson of lessons ?? []) {
+    for (const lesson of lessons?.filter(
+      (row) => !language || row.languageCode === language,
+    ) ?? []) {
       const list = map.get(lesson.level) ?? [];
       list.push(lesson);
       map.set(lesson.level, list);
@@ -45,7 +53,11 @@ function AdminLessonsContent() {
       label,
       items: map.get(code) ?? [],
     })).filter((g) => g.items.length > 0);
-  }, [lessons]);
+  }, [language, lessons]);
+
+  const filteredLessons = lessons?.filter(
+    (lesson) => !language || lesson.languageCode === language,
+  );
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -63,6 +75,10 @@ function AdminLessonsContent() {
         }
       />
 
+      <div className="mb-5">
+        <AdminLanguageFilter value={language} onChange={setLanguage} />
+      </div>
+
       {error ? (
         <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
@@ -71,8 +87,10 @@ function AdminLessonsContent() {
 
       {lessons === null ? (
         <p className="text-sm text-muted-foreground">Đang tải…</p>
-      ) : lessons.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Chưa có bài học.</p>
+      ) : filteredLessons?.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Chưa có bài học cho ngôn ngữ đã chọn.
+        </p>
       ) : (
         <div className="flex flex-col gap-8">
           {groups.map((group) => (
@@ -91,10 +109,13 @@ function AdminLessonsContent() {
                   >
                     <div className="min-w-0">
                       <p className="font-semibold text-foreground">{l.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {l._count.vocabulary} từ · {l._count.points} mục ngữ
-                        pháp · {l._count.exercises} bài tập
-                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <AdminLanguageBadge code={l.languageCode} />
+                        <span className="text-xs text-muted-foreground">
+                          {l._count.vocabulary} từ · {l._count.points} mục ngữ
+                          pháp · {l._count.exercises} bài tập
+                        </span>
+                      </div>
                     </div>
                     <Link
                       href={`/admin/lessons/${l.id}/edit`}

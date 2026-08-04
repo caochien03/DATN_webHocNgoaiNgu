@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AdminGate } from "@/components/AdminGate";
+import { AdminLanguageSelect } from "@/components/admin/AdminLanguageControls";
 import {
   backLinkClass,
   dangerButtonClass,
@@ -99,7 +100,7 @@ function EditPathContent() {
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim() || null,
-          languageCode: languageCode.trim() || "ko",
+          languageCode,
           level: level.trim() || null,
           sortOrder: parseInt(sortOrder, 10) || 0,
         }),
@@ -244,14 +245,11 @@ function EditPathContent() {
                 className={inputClass}
               />
             </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span>Mã ngôn ngữ</span>
-              <input
-                value={languageCode}
-                onChange={(e) => setLanguageCode(e.target.value)}
-                className={inputClass}
-              />
-            </label>
+            <AdminLanguageSelect
+              value={languageCode}
+              onChange={setLanguageCode}
+              disabled={path.steps.length > 0}
+            />
             <label className="flex flex-col gap-1 text-sm">
               <span>Cấp độ</span>
               <input
@@ -352,7 +350,9 @@ function EditPathContent() {
                     className={inputClass}
                   >
                     <option value="">— Chọn chủ đề —</option>
-                    {topics.map((t) => (
+                    {topics
+                      .filter((topic) => topic.languageCode === languageCode)
+                      .map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.title}
                         {t.level ? ` (${t.level})` : ""}
@@ -370,7 +370,9 @@ function EditPathContent() {
                     className={inputClass}
                   >
                     <option value="">— Chọn bài học —</option>
-                    {lessons.map((l) => (
+                    {lessons
+                      .filter((lesson) => lesson.languageCode === languageCode)
+                      .map((l) => (
                       <option key={l.id} value={l.id}>
                         {l.title} ({l.level})
                       </option>
@@ -378,6 +380,9 @@ function EditPathContent() {
                   </select>
                 </label>
               )}
+              <p className="text-xs text-muted-foreground">
+                Chỉ hiển thị nội dung thuộc {languageLabel(languageCode)}.
+              </p>
               <label className="flex flex-col gap-1 text-sm">
                 <span>Tiêu đề hiển thị *</span>
                 <input

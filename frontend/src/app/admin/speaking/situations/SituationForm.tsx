@@ -10,7 +10,7 @@ import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 
 type Mode = "new" | "edit";
 
-type Topic = { id: string; title: string };
+type Topic = { id: string; title: string; languageCode: string };
 
 type GoalItem = { key: string; labelVi: string; required: boolean };
 
@@ -131,12 +131,24 @@ function SituationFormContent({ mode }: { mode: Mode }) {
                 <label className="mb-1 block text-sm font-medium text-foreground">Chủ đề</label>
                 <select value={form.topicId} onChange={(e) => setForm((p) => ({ ...p, topicId: e.target.value }))} className={inputCls}>
                   <option value="">— Không có —</option>
-                  {topics.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
+                  {topics
+                    .filter((topic) => topic.languageCode === form.languageCode)
+                    .map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
                 </select>
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-foreground">Ngôn ngữ *</label>
-                <select value={form.languageCode} onChange={(e) => setForm((p) => ({ ...p, languageCode: e.target.value }))} className={inputCls}>
+                <select
+                  value={form.languageCode}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      languageCode: e.target.value,
+                      topicId: "",
+                    }))
+                  }
+                  className={inputCls}
+                >
                   <option value="ko">Tiếng Hàn</option>
                   <option value="en">Tiếng Anh</option>
                 </select>

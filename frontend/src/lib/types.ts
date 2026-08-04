@@ -474,6 +474,65 @@ export type ToeicQuestion = {
   points: number;
 };
 
+/** Full TOEIC question row returned by the admin API. */
+export type ToeicQuestionAdminRow = ToeicQuestion & {
+  correctIndex: number;
+  explanation: string | null;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ToeicExamQuestionInput = {
+  sortOrder: number;
+  section: ToeicSection;
+  questionNo: number;
+  prompt: string;
+  passage?: string;
+  options: string[];
+  correctIndex: number;
+  explanation?: string;
+  audioUrl?: string;
+  imageUrl?: string;
+  optionImageUrls?: string[];
+  bundleId?: string;
+  points?: number;
+};
+
+export type AdminToeicExamListRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  tier: ToeicTier;
+  durationMinutes: number;
+  isPublished: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  _count: { questions: number };
+};
+
+export type AdminToeicExamSlot = {
+  id: string;
+  examId: string;
+  questionId: string;
+  sortOrder: number;
+  question: ToeicQuestionAdminRow;
+};
+
+export type AdminToeicExamDetail = {
+  id: string;
+  title: string;
+  description: string | null;
+  tier: ToeicTier;
+  durationMinutes: number;
+  isPublished: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  questions: AdminToeicExamSlot[];
+};
+
 export type ToeicExamRow = {
   id: string;
   title: string;

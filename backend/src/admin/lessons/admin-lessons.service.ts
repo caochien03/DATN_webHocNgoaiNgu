@@ -48,7 +48,20 @@ export class AdminLessonsService {
   }
 
   async update(id: string, dto: UpdateLessonDto) {
-    await this.ensureLesson(id);
+    const existing = await this.ensureLesson(id);
+    if (
+      dto.languageCode !== undefined &&
+      dto.languageCode !== existing.languageCode
+    ) {
+      const linkedStepCount = await this.prisma.learningPathStep.count({
+        where: { lessonId: id },
+      });
+      if (linkedStepCount > 0) {
+        throw new BadRequestException(
+          'Không thể đổi ngôn ngữ của bài học đang thuộc lộ trình',
+        );
+      }
+    }
     return this.prisma.grammarLesson.update({
       where: { id },
       data: {
@@ -198,11 +211,12 @@ export class AdminLessonsService {
   private async ensureLesson(id: string) {
     const lesson = await this.prisma.grammarLesson.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, languageCode: true },
     });
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
     }
+    return lesson;
   }
 
   private async ensureVocabulary(lessonId: string, vocabId: string) {

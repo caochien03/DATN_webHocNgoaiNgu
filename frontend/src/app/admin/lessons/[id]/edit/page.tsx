@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AdminGate } from "@/components/AdminGate";
+import { AdminLanguageSelect } from "@/components/admin/AdminLanguageControls";
 import {
   backLinkClass,
   dangerButtonClass,
@@ -26,6 +27,7 @@ function EditLessonContent() {
   const [saving, setSaving] = useState(false);
 
   const [level, setLevel] = useState<GrammarLevel>("BEGINNER_1");
+  const [languageCode, setLanguageCode] = useState("ko");
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
@@ -49,6 +51,7 @@ function EditLessonContent() {
       const data = (await res.json()) as AdminLessonDetail;
       setLesson(data);
       setLevel(data.level);
+      setLanguageCode(data.languageCode);
       setTitle(data.title);
       setSummary(data.summary ?? "");
       setSortOrder(String(data.sortOrder));
@@ -70,6 +73,7 @@ function EditLessonContent() {
         method: "PATCH",
         body: JSON.stringify({
           level,
+          languageCode,
           title: title.trim(),
           summary: summary.trim() || null,
           sortOrder: parseInt(sortOrder, 10) || 0,
@@ -140,6 +144,10 @@ function EditLessonContent() {
             Sửa bài học
           </h1>
           <form onSubmit={saveMeta} className={`mt-4 flex flex-col gap-3 `}>
+            <AdminLanguageSelect
+              value={languageCode}
+              onChange={setLanguageCode}
+            />
             <label className="flex flex-col gap-1 text-sm">
               <span>Cấp độ</span>
               <select

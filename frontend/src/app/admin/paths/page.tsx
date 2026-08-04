@@ -4,10 +4,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { AdminGate } from "@/components/AdminGate";
+import {
+  AdminLanguageBadge,
+  AdminLanguageFilter,
+  type AdminLanguageFilterValue,
+} from "@/components/admin/AdminLanguageControls";
 import { GRADIENT } from "@/components/ui-kit/brand";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
-import { languageLabel } from "@/lib/topic-labels";
 import type { AdminPathCatalogRow } from "@/lib/types";
 
 function groupByLevel(paths: AdminPathCatalogRow[]) {
@@ -25,6 +29,7 @@ function groupByLevel(paths: AdminPathCatalogRow[]) {
 
 function AdminPathsContent() {
   const [paths, setPaths] = useState<AdminPathCatalogRow[] | null>(null);
+  const [language, setLanguage] = useState<AdminLanguageFilterValue>("");
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -45,9 +50,13 @@ function AdminPathsContent() {
     void load();
   }, [load]);
 
+  const filteredPaths = useMemo(
+    () => paths?.filter((path) => !language || path.languageCode === language) ?? null,
+    [language, paths],
+  );
   const groups = useMemo(
-    () => (paths ? groupByLevel(paths) : []),
-    [paths],
+    () => (filteredPaths ? groupByLevel(filteredPaths) : []),
+    [filteredPaths],
   );
 
   return (
@@ -66,6 +75,10 @@ function AdminPathsContent() {
         }
       />
 
+      <div className="mb-5">
+        <AdminLanguageFilter value={language} onChange={setLanguage} />
+      </div>
+
       {error ? (
         <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
           {error}
@@ -74,8 +87,10 @@ function AdminPathsContent() {
 
       {paths === null ? (
         <p className="text-sm text-muted-foreground">Đang tải…</p>
-      ) : paths.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Chưa có lộ trình.</p>
+      ) : filteredPaths?.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Chưa có lộ trình cho ngôn ngữ đã chọn.
+        </p>
       ) : (
         <div className="flex flex-col gap-8">
           {groups.map((group) => (
@@ -94,9 +109,12 @@ function AdminPathsContent() {
                   >
                     <div className="min-w-0">
                       <p className="font-semibold text-foreground">{p.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {languageLabel(p.languageCode)} · {p._count.steps} bước
-                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <AdminLanguageBadge code={p.languageCode} />
+                        <span className="text-xs text-muted-foreground">
+                          {p._count.steps} bước
+                        </span>
+                      </div>
                     </div>
                     <Link
                       href={`/admin/paths/${p.id}/edit`}

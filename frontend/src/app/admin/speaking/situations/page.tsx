@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MessageSquare, PencilLine, Plus, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import {
+  AdminLanguageBadge,
+  AdminLanguageFilter,
+  type AdminLanguageFilterValue,
+} from "@/components/admin/AdminLanguageControls";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 
@@ -28,6 +33,7 @@ const LEVEL_LABEL: Record<string, string> = {
 
 function SituationsContent() {
   const [situations, setSituations] = useState<Situation[]>([]);
+  const [language, setLanguage] = useState<AdminLanguageFilterValue>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -63,11 +69,15 @@ function SituationsContent() {
     setDeleting(null);
   }
 
+  const filteredSituations = situations.filter(
+    (situation) => !language || situation.languageCode === language,
+  );
+
   return (
     <div>
       <PageHeader
         title="Quản lý Tình huống Luyện nói"
-        sub={`${situations.length} tình huống`}
+        sub={`${filteredSituations.length} tình huống`}
         action={
           <Link
             href="/admin/speaking/situations/new"
@@ -84,11 +94,15 @@ function SituationsContent() {
         </Link>
       </div>
 
+      <div className="mb-5">
+        <AdminLanguageFilter value={language} onChange={setLanguage} />
+      </div>
+
       {error && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>}
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Đang tải...</p>
-      ) : situations.length === 0 ? (
+      ) : filteredSituations.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center">
           <MessageSquare size={32} className="mx-auto mb-3 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">Chưa có tình huống nào.</p>
@@ -111,11 +125,14 @@ function SituationsContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {situations.map((s) => (
+              {filteredSituations.map((s) => (
                 <tr key={s.id} className="transition hover:bg-secondary/20">
                   <td className="px-4 py-3">
                     <p className="font-medium text-foreground">{s.title}</p>
-                    <p className="text-xs text-muted-foreground">{s.npcRoleVi} · {s.languageCode.toUpperCase()}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <AdminLanguageBadge code={s.languageCode} />
+                      <span className="text-xs text-muted-foreground">{s.npcRoleVi}</span>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {s.topic?.title ?? <span className="italic text-muted-foreground/50">Không có</span>}
