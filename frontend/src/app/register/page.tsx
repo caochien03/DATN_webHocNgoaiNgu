@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,10 @@ export default function RegisterPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (password !== confirmPassword) {
+      setError("Mật khẩu nhập lại không khớp.");
+      return;
+    }
     setLoading(true);
     try {
       const body: { email: string; password: string; name?: string } = {
@@ -57,6 +62,9 @@ export default function RegisterPage() {
       setLoading(false);
     }
   }
+
+  const passwordsMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
 
   return (
     <AuthShell
@@ -98,6 +106,26 @@ export default function RegisterPage() {
           />
         </label>
         <label className={labelClass}>
+          <span className={labelTextClass}>Nhập lại mật khẩu</span>
+          <input
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className={inputClass}
+            placeholder="Nhập lại mật khẩu"
+            aria-invalid={passwordsMismatch}
+            aria-describedby={passwordsMismatch ? "confirm-password-error" : undefined}
+          />
+          {passwordsMismatch ? (
+            <span id="confirm-password-error" className="text-xs text-destructive">
+              Mật khẩu nhập lại không khớp.
+            </span>
+          ) : null}
+        </label>
+        <label className={labelClass}>
           <span className={labelTextClass}>
             Tên hiển thị{" "}
             <span className="font-normal text-muted-foreground/70">(tuỳ chọn)</span>
@@ -112,7 +140,11 @@ export default function RegisterPage() {
           />
         </label>
         {error ? <p className={errorBannerClass}>{error}</p> : null}
-        <GradientButton type="submit" disabled={loading} className="w-full py-2.5">
+        <GradientButton
+          type="submit"
+          disabled={loading || passwordsMismatch}
+          className="w-full py-2.5"
+        >
           {loading ? "Đang xử lý…" : "Tạo tài khoản"}
         </GradientButton>
       </form>

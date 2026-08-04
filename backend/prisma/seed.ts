@@ -5,6 +5,7 @@ import { seedEnglishSpeaking } from './seed-english-speaking';
 import { seedToeic } from './seed-toeic';
 import { seedTopik } from './seed-topik';
 import { seedSpeaking } from './seed-speaking';
+import { seedRealContent } from './seed-real-content';
 
 const prisma = new PrismaClient();
 
@@ -1007,6 +1008,7 @@ async function main() {
   await seedToeic(prisma);
   await seedSpeaking(prisma);
   await seedEnglishSpeaking(prisma);
+  await seedRealContent(prisma);
 }
 
 main()
