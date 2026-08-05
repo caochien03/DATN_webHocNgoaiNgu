@@ -161,7 +161,7 @@ function ReviewTodayContent() {
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               disabled={result !== null}
-              placeholder="Nhập đáp án..."
+              placeholder="Nhập đáp án…"
               className="w-full rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20 disabled:opacity-70"
             />
           </div>

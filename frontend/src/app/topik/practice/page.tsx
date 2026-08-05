@@ -190,6 +190,7 @@ function PracticeContent() {
           subtitle={`${subtitle} · ${activeCount} câu`}
           questions={questions}
           backHref={`/topik/${tier}`}
+          sequentialQuestionNumbers
           onSubmit={submit}
         />
         <button

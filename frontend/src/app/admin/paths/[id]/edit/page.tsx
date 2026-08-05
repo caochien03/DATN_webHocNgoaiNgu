@@ -9,6 +9,7 @@ import {
   backLinkClass,
   dangerButtonClass,
   dashedCardClass,
+  errorBannerClass,
   inputClass,
   listItemClass,
 } from "@/components/ui-kit/form-styles";
@@ -209,9 +210,7 @@ function EditPathContent() {
         ← Danh sách lộ trình
       </Link>
 
-      {error ? (
-        <p className={`mt-4 `}>{error}</p>
-      ) : null}
+      {error ? <p className={errorBannerClass}>{error}</p> : null}
 
       {path ? (
         <>
@@ -225,7 +224,7 @@ function EditPathContent() {
 
           <form
             onSubmit={saveMeta}
-            className={`mt-4 flex flex-col gap-3 `}
+            className="mt-4 flex flex-col gap-3"
           >
             <label className="flex flex-col gap-1 text-sm">
               <span>Tiêu đề</span>
@@ -255,7 +254,11 @@ function EditPathContent() {
               <input
                 value={level}
                 onChange={(e) => setLevel(e.target.value)}
-                placeholder="VD: TOPIK 1"
+                placeholder={
+                  languageCode === "ko"
+                    ? "VD: TOPIK 1"
+                    : "VD: A1 hoặc TOEIC cơ bản"
+                }
                 className={inputClass}
               />
             </label>

@@ -174,6 +174,7 @@ function PracticeContent() {
           questions={questions}
           backHref={`/toeic/${tier}`}
           attemptsBasePath="/toeic/attempts"
+          sequentialQuestionNumbers
           onSubmit={submit}
         />
         <button

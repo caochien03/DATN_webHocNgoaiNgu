@@ -36,6 +36,8 @@ type TopikWritingRunnerProps = {
   subtitle?: string;
   questions: TopikQuestion[];
   backHref: string;
+  /** Hiển thị số câu theo thứ tự của lượt luyện thay vì số gốc trong đề. */
+  sequentialQuestionNumbers?: boolean;
   onSubmit: (answers: TopikAnswerPayload[]) => Promise<TopikSubmitResult>;
 };
 
@@ -44,6 +46,7 @@ export function TopikWritingRunner({
   subtitle,
   questions,
   backHref,
+  sequentialQuestionNumbers = false,
   onSubmit,
 }: TopikWritingRunnerProps) {
   const sorted = useMemo(
@@ -57,6 +60,16 @@ export function TopikWritingRunner({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TopikSubmitResult | null>(null);
+  const displayNumberById = useMemo(
+    () =>
+      new Map(
+        sorted.map((question, index) => [
+          question.id,
+          sequentialQuestionNumbers ? index + 1 : question.questionNo,
+        ]),
+      ),
+    [sorted, sequentialQuestionNumbers],
+  );
 
   const current = sorted[pageIndex];
   const allAnswered = sorted.every((q) => isWritingAnswerComplete(q, answers));
@@ -64,8 +77,14 @@ export function TopikWritingRunner({
     current != null && isWritingAnswerComplete(current, answers);
 
   const mapItems = useMemo(
-    () => buildWritingQuestionMapItems(sorted, pageIndex, answers),
-    [sorted, pageIndex, answers],
+    () =>
+      buildWritingQuestionMapItems(
+        sorted,
+        pageIndex,
+        answers,
+        displayNumberById,
+      ),
+    [sorted, pageIndex, answers, displayNumberById],
   );
 
   const hasProgress = hasWritingDraft(answers);
@@ -127,6 +146,7 @@ export function TopikWritingRunner({
         questions={sorted}
         backHref={backHref}
         attemptHref={`/topik/attempts/${result.attemptId}`}
+        displayNumberById={displayNumberById}
       />
     );
   }
@@ -183,7 +203,8 @@ export function TopikWritingRunner({
       {current ? (
         <section className="mt-5 rounded-3xl border border-border bg-card p-6 shadow-sm">
           <p className="inline-flex rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
-            Câu {current.questionNo} · {topikSectionLabel(current.section)} ·{" "}
+            Câu {displayNumberById.get(current.id) ?? current.questionNo} ·{" "}
+            {topikSectionLabel(current.section)} ·{" "}
             {topikQuestionTypeLabel(current.questionType)} · {pageIndex + 1}/
             {sorted.length}
           </p>
@@ -348,11 +369,13 @@ function WritingResultView({
   questions,
   backHref,
   attemptHref,
+  displayNumberById,
 }: {
   result: TopikSubmitResult;
   questions: TopikQuestion[];
   backHref: string;
   attemptHref: string;
+  displayNumberById: ReadonlyMap<string, number>;
 }) {
   const byId = new Map(questions.map((q) => [q.id, q]));
   const graded = result.answers as GradedTopikAnswer[];
@@ -382,7 +405,8 @@ function WritingResultView({
               className={`rounded-2xl border p-4 text-sm shadow-sm ${writingGradeCardClass(uiStatus)}`}
             >
               <p className="font-medium text-foreground">
-                Câu {a.questionNo} · {topikSectionLabel(a.section)}{" "}
+                Câu {displayNumberById.get(a.questionId) ?? a.questionNo} ·{" "}
+                {topikSectionLabel(a.section)}{" "}
                 {writingGradeTitleSuffix(a)}
               </p>
               {q ? (

@@ -314,7 +314,7 @@ function TestsContent() {
             </Link>
           </div>
           {submitting ? (
-            <p className="mt-2 text-xs text-muted-foreground">Đang lưu kết quả...</p>
+            <p className="mt-2 text-xs text-muted-foreground">Đang lưu kết quả…</p>
           ) : null}
         </section>
       ) : null}

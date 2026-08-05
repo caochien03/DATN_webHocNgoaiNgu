@@ -6,6 +6,7 @@ import { Mic, Plus } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { scoreColor } from "@/components/ui-kit/brand";
+import { errorBannerClass } from "@/components/ui-kit/form-styles";
 import { Card, GradientButton, PageHeader } from "@/components/ui-kit/primitives";
 import {
   fetchSpeakingSessions,
@@ -69,17 +70,16 @@ function SpeakingHubContent() {
           <div>
             <p className="text-sm leading-relaxed text-muted-foreground">
               Chọn chủ đề quen thuộc, vào một tình huống (đặt bàn, hỏi đường…),
-              nói bằng tiếng Hàn qua micro. Hệ thống nhận diện giọng nói, đóng
-              vai NPC và chấm theo mục tiêu giao tiếp.
+              nói bằng {learningLanguageLabel(languageCode).toLowerCase()} qua
+              micro. Hệ thống nhận diện giọng nói, đóng vai nhân vật hội thoại
+              và đánh giá theo mục tiêu giao tiếp.
             </p>
           </div>
         </div>
       </Card>
 
       {error ? (
-        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
-          {error}
-        </p>
+        <p className={`${errorBannerClass} mb-4`}>{error}</p>
       ) : null}
 
       <h2 className="mb-3 text-sm font-semibold text-foreground">Phiên gần đây</h2>
@@ -97,14 +97,10 @@ function SpeakingHubContent() {
         <ul className="space-y-3">
           {sessions.map((s) => {
             const score = s.overallScore;
-            const href =
-              s.status === "COMPLETED"
-                ? `/speaking/sessions/${s.id}`
-                : `/speaking/sessions/${s.id}`;
             return (
               <li key={s.id}>
                 <Link
-                  href={href}
+                  href={`/speaking/sessions/${s.id}`}
                   className="block rounded-2xl border border-border bg-card p-4 transition hover:border-primary/30 hover:bg-muted/20"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">

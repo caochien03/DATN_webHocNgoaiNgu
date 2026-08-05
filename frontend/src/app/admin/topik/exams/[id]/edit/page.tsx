@@ -11,6 +11,7 @@ import {
 import {
   backLinkClass,
   dangerButtonClass,
+  errorBannerClass,
   listItemClass,
   sectionTitleClass,
 } from "@/components/ui-kit/form-styles";
@@ -171,7 +172,7 @@ function EditTopikExamContent() {
       </Link>
 
       {error ? (
-        <p className={`mt-4 `}>{error}</p>
+        <p className={errorBannerClass}>{error}</p>
       ) : null}
 
       {exam && metaInitial ? (

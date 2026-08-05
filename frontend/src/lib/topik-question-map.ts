@@ -70,6 +70,7 @@ export function buildQuizQuestionMapItems(
   pages: ExamMcqQuestion[][],
   pageIndex: number,
   selections: Record<string, number>,
+  displayNumberById?: ReadonlyMap<string, number>,
 ): TopikQuestionMapItem[] {
   const pageByQuestionId = new Map<string, number>();
   pages.forEach((page, i) => {
@@ -83,7 +84,7 @@ export function buildQuizQuestionMapItems(
 
   return questions.map((q) => ({
     questionId: q.id,
-    questionNo: q.questionNo,
+    questionNo: displayNumberById?.get(q.id) ?? q.questionNo,
     section: q.section,
     answered: selections[q.id] !== undefined,
     navigateTo: pageByQuestionId.get(q.id) ?? 0,
@@ -95,12 +96,13 @@ export function buildWritingQuestionMapItems(
   questions: ExamMcqQuestion[],
   pageIndex: number,
   answers: WritingAnswerState,
+  displayNumberById?: ReadonlyMap<string, number>,
 ): TopikQuestionMapItem[] {
   const current = questions[pageIndex];
 
   return questions.map((q, i) => ({
     questionId: q.id,
-    questionNo: q.questionNo,
+    questionNo: displayNumberById?.get(q.id) ?? q.questionNo,
     section: q.section,
     answered: isWritingAnswerComplete(q, answers),
     navigateTo: i,

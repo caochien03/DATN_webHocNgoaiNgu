@@ -29,9 +29,14 @@ function TopicFormContent({ mode }: { mode: Mode }) {
 
   useEffect(() => {
     if (mode !== "edit" || !id) return;
-    void fetchWithAuth(`/admin/speaking/topics/${id}`)
-      .then((r) => r.json())
-      .then((data: typeof form & { id: string }) => {
+    let cancelled = false;
+    async function loadTopic() {
+      setError(null);
+      try {
+        const response = await fetchWithAuth(`/admin/speaking/topics/${id}`);
+        if (!response.ok) throw new Error(await parseApiError(response));
+        const data = (await response.json()) as typeof form & { id: string };
+        if (cancelled) return;
         setForm({
           title: data.title,
           titleNative: data.titleNative ?? "",
@@ -40,8 +45,20 @@ function TopicFormContent({ mode }: { mode: Mode }) {
           sortOrder: data.sortOrder,
           isPublished: data.isPublished,
         });
-      })
-      .finally(() => setLoading(false));
+      } catch (caught) {
+        if (!cancelled) {
+          setError(
+            caught instanceof Error ? caught.message : "Không tải được chủ đề",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    void loadTopic();
+    return () => {
+      cancelled = true;
+    };
   }, [id, mode]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -65,7 +82,7 @@ function TopicFormContent({ mode }: { mode: Mode }) {
     }
   }
 
-  if (loading) return <p className="text-sm text-muted-foreground">Đang tải...</p>;
+  if (loading) return <p className="text-sm text-muted-foreground">Đang tải…</p>;
 
   return (
     <div>
@@ -74,7 +91,11 @@ function TopicFormContent({ mode }: { mode: Mode }) {
       </Link>
       <PageHeader title={mode === "new" ? "Thêm chủ đề luyện nói" : "Chỉnh sửa chủ đề"} />
 
-      {error && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>}
+      {error && (
+        <p className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
+        </p>
+      )}
 
       <form onSubmit={(e) => void handleSubmit(e)} className="max-w-xl space-y-4">
         <div>
@@ -89,12 +110,14 @@ function TopicFormContent({ mode }: { mode: Mode }) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-foreground">Tên tiếng học (ngôn ngữ đích)</label>
+          <label className="mb-1 block text-sm font-medium text-foreground">Tên bằng ngôn ngữ đang học</label>
           <input
             value={form.titleNative}
             onChange={(e) => setForm((p) => ({ ...p, titleNative: e.target.value }))}
             className="w-full rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground focus:border-primary/60 focus:outline-none"
-            placeholder="VD: 공항에서"
+            placeholder={
+              form.languageCode === "ko" ? "VD: 공항에서" : "VD: At the airport"
+            }
           />
         </div>
 
@@ -148,7 +171,7 @@ function TopicFormContent({ mode }: { mode: Mode }) {
             disabled={saving}
             className="rounded-xl bg-primary px-5 py-2 text-sm font-medium text-white transition hover:bg-primary/80 disabled:opacity-50"
           >
-            {saving ? "Đang lưu..." : mode === "new" ? "Tạo chủ đề" : "Lưu thay đổi"}
+            {saving ? "Đang lưu…" : mode === "new" ? "Tạo chủ đề" : "Lưu thay đổi"}
           </button>
           <Link href="/admin/speaking/topics" className="rounded-xl border border-border px-5 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground">
             Hủy

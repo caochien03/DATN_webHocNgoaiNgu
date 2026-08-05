@@ -16,6 +16,7 @@ export type DeckDetail = {
   id: string;
   title: string;
   description: string | null;
+  languageCode: string;
   cards: CardRow[];
 };
 

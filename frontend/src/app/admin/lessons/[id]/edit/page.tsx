@@ -9,6 +9,7 @@ import {
   backLinkClass,
   dangerButtonClass,
   dashedCardClass,
+  errorBannerClass,
   inputClass,
   listItemClass,
 } from "@/components/ui-kit/form-styles";
@@ -131,19 +132,17 @@ function EditLessonContent() {
         href="/admin/lessons"
         className={backLinkClass}
       >
-        ← Danh sách admin
+        ← Danh sách bài học
       </Link>
 
-      {error ? (
-        <p className={`mt-4 `}>{error}</p>
-      ) : null}
+      {error ? <p className={errorBannerClass}>{error}</p> : null}
 
       {lesson ? (
         <>
           <h1 className="mt-4 text-xl font-semibold text-foreground">
             Sửa bài học
           </h1>
-          <form onSubmit={saveMeta} className={`mt-4 flex flex-col gap-3 `}>
+          <form onSubmit={saveMeta} className="mt-4 flex flex-col gap-3">
             <AdminLanguageSelect
               value={languageCode}
               onChange={setLanguageCode}
@@ -246,7 +245,11 @@ function EditLessonContent() {
             >
               <input
                 required
-                placeholder="Mặt trước (tiếng Hàn)"
+                placeholder={
+                  languageCode === "ko"
+                    ? "Mặt trước (ví dụ: 안녕하세요)"
+                    : "Mặt trước (ví dụ: airport)"
+                }
                 value={vocabFront}
                 onChange={(e) => setVocabFront(e.target.value)}
                 className={inputClass}
@@ -306,7 +309,11 @@ function EditLessonContent() {
             >
               <input
                 required
-                placeholder="Tiêu đề (vd: 은/는)"
+                placeholder={
+                  languageCode === "ko"
+                    ? "Tiêu đề (ví dụ: 은/는)"
+                    : "Tiêu đề (ví dụ: Present simple)"
+                }
                 value={pointTitle}
                 onChange={(e) => setPointTitle(e.target.value)}
                 className={inputClass}

@@ -72,7 +72,7 @@ function TestsHistoryContent() {
       ) : null}
 
       {attempts === null ? (
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Đang tải…</p>
       ) : (
         <>
           <div className="mb-6 grid grid-cols-2 gap-4">

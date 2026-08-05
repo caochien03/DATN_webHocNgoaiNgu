@@ -45,19 +45,40 @@ function TopicsContent() {
   useEffect(() => { void load(); }, []);
 
   async function handleToggle(topic: Topic) {
-    const res = await fetchWithAuth(`/admin/speaking/topics/${topic.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ isPublished: !topic.isPublished }),
-    });
-    if (res.ok) setTopics((prev) => prev.map((t) => t.id === topic.id ? { ...t, isPublished: !t.isPublished } : t));
+    setError(null);
+    try {
+      const res = await fetchWithAuth(`/admin/speaking/topics/${topic.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ isPublished: !topic.isPublished }),
+      });
+      if (!res.ok) throw new Error(await parseApiError(res));
+      setTopics((prev) =>
+        prev.map((item) =>
+          item.id === topic.id
+            ? { ...item, isPublished: !item.isPublished }
+            : item,
+        ),
+      );
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Không cập nhật được trạng thái");
+    }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Xóa chủ đề này? Toàn bộ tình huống liên quan cũng sẽ bị xóa.")) return;
+    if (!confirm("Xóa chủ đề này? Các tình huống liên quan sẽ được giữ lại nhưng không còn thuộc chủ đề này.")) return;
     setDeleting(id);
-    const res = await fetchWithAuth(`/admin/speaking/topics/${id}`, { method: "DELETE" });
-    if (res.ok) setTopics((prev) => prev.filter((t) => t.id !== id));
-    setDeleting(null);
+    setError(null);
+    try {
+      const res = await fetchWithAuth(`/admin/speaking/topics/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error(await parseApiError(res));
+      setTopics((prev) => prev.filter((topic) => topic.id !== id));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Không xóa được chủ đề");
+    } finally {
+      setDeleting(null);
+    }
   }
 
   const filteredTopics = topics.filter(
@@ -86,7 +107,7 @@ function TopicsContent() {
       {error && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>}
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Đang tải…</p>
       ) : filteredTopics.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center">
           <Globe2 size={32} className="mx-auto mb-3 text-muted-foreground/40" />

@@ -8,7 +8,11 @@ import {
   TopikQuestionForm,
   type TopikQuestionFormValues,
 } from "@/components/admin/TopikQuestionForm";
-import { backLinkClass, dangerButtonClass } from "@/components/ui-kit/form-styles";
+import {
+  backLinkClass,
+  dangerButtonClass,
+  errorBannerClass,
+} from "@/components/ui-kit/form-styles";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { topikSectionLabel, topikTierLabel } from "@/lib/topik-labels";
 import type { TopikQuestionAdminRow } from "@/lib/types";
@@ -113,7 +117,7 @@ function EditTopikQuestionContent() {
       </Link>
 
       {error ? (
-        <p className={`mt-4 `}>{error}</p>
+        <p className={errorBannerClass}>{error}</p>
       ) : null}
 
       {question && formInitial ? (

@@ -54,19 +54,40 @@ function SituationsContent() {
   useEffect(() => { void load(); }, []);
 
   async function handleToggle(s: Situation) {
-    const res = await fetchWithAuth(`/admin/speaking/situations/${s.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ isPublished: !s.isPublished }),
-    });
-    if (res.ok) setSituations((prev) => prev.map((x) => x.id === s.id ? { ...x, isPublished: !x.isPublished } : x));
+    setError(null);
+    try {
+      const res = await fetchWithAuth(`/admin/speaking/situations/${s.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ isPublished: !s.isPublished }),
+      });
+      if (!res.ok) throw new Error(await parseApiError(res));
+      setSituations((prev) =>
+        prev.map((item) =>
+          item.id === s.id
+            ? { ...item, isPublished: !item.isPublished }
+            : item,
+        ),
+      );
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Không cập nhật được trạng thái");
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Xóa tình huống này? Toàn bộ phiên luyện tập liên quan cũng sẽ bị xóa.")) return;
     setDeleting(id);
-    const res = await fetchWithAuth(`/admin/speaking/situations/${id}`, { method: "DELETE" });
-    if (res.ok) setSituations((prev) => prev.filter((s) => s.id !== id));
-    setDeleting(null);
+    setError(null);
+    try {
+      const res = await fetchWithAuth(`/admin/speaking/situations/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error(await parseApiError(res));
+      setSituations((prev) => prev.filter((situation) => situation.id !== id));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Không xóa được tình huống");
+    } finally {
+      setDeleting(null);
+    }
   }
 
   const filteredSituations = situations.filter(
@@ -101,7 +122,7 @@ function SituationsContent() {
       {error && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>}
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Đang tải…</p>
       ) : filteredSituations.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center">
           <MessageSquare size={32} className="mx-auto mb-3 text-muted-foreground/40" />

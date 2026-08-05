@@ -15,6 +15,7 @@ import {
 } from "@/components/admin/TopikExamMetaForm";
 import {
   backLinkClass,
+  errorBannerClass,
   sectionTitleClass,
 } from "@/components/ui-kit/form-styles";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
@@ -109,7 +110,7 @@ function NewTopikExamContent() {
       </h1>
 
       {error ? (
-        <p className={`mt-4 `}>{error}</p>
+        <p className={errorBannerClass}>{error}</p>
       ) : null}
 
       <div className="mt-4">

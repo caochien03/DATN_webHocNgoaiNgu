@@ -6,7 +6,6 @@ import { ArrowLeft, ArrowRight, CircleCheck, ClipboardList, Send, Trophy } from 
 import { hasMcqSelections, useTopikLeaveGuard } from "@/components/topik/TopikRunGuards";
 import {
   groupTopikQuestionsIntoPages,
-  pageLabel,
   sharedAudioUrl,
 } from "@/lib/group-topik-pages";
 import { TopikQuestionMap } from "@/components/topik/TopikQuestionMap";
@@ -22,6 +21,8 @@ type TopikQuizRunnerProps = {
   backHref: string;
   /** Đường dẫn gốc tới trang chi tiết bài làm (mặc định TOPIK). */
   attemptsBasePath?: string;
+  /** Hiển thị số câu theo thứ tự của lượt luyện thay vì số gốc trong đề. */
+  sequentialQuestionNumbers?: boolean;
   onSubmit: (
     answers: { questionId: string; selectedIndex: number }[],
   ) => Promise<ExamMcqSubmitResult>;
@@ -33,6 +34,7 @@ export function TopikQuizRunner({
   questions,
   backHref,
   attemptsBasePath = "/topik/attempts",
+  sequentialQuestionNumbers = false,
   onSubmit,
 }: TopikQuizRunnerProps) {
   const pages = useMemo(
@@ -49,10 +51,27 @@ export function TopikQuizRunner({
   const allAnswered = questions.every((q) => selections[q.id] !== undefined);
   const pageAnswered = currentPage.every((q) => selections[q.id] !== undefined);
   const audio = sharedAudioUrl(currentPage);
+  const displayNumberById = useMemo(
+    () =>
+      new Map(
+        questions.map((question, index) => [
+          question.id,
+          sequentialQuestionNumbers ? index + 1 : question.questionNo,
+        ]),
+      ),
+    [questions, sequentialQuestionNumbers],
+  );
 
   const mapItems = useMemo(
-    () => buildQuizQuestionMapItems(questions, pages, pageIndex, selections),
-    [questions, pages, pageIndex, selections],
+    () =>
+      buildQuizQuestionMapItems(
+        questions,
+        pages,
+        pageIndex,
+        selections,
+        displayNumberById,
+      ),
+    [questions, pages, pageIndex, selections, displayNumberById],
   );
 
   const hasProgress = hasMcqSelections(selections);
@@ -97,6 +116,7 @@ export function TopikQuizRunner({
         questions={questions}
         backHref={backHref}
         attemptHref={`${attemptsBasePath}/${result.attemptId}`}
+        displayNumberById={displayNumberById}
       />
     );
   }
@@ -146,13 +166,15 @@ export function TopikQuizRunner({
       {currentPage.length > 0 ? (
         <section className="mt-5 rounded-3xl border border-border bg-card p-6 shadow-sm">
           <p className="inline-flex rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
-            {pageLabel(currentPage, pageIndex)} · Trang {pageIndex + 1}/
-            {pages.length}
+            {questionPageLabel(currentPage, pageIndex, displayNumberById)} ·
+            Trang {pageIndex + 1}/{pages.length}
             {currentPage.length === 1 ? (
               <>
                 {" "}
-                · {topikSectionLabel(currentPage[0].section)} #
-                {currentPage[0].questionNo}
+                · {topikSectionLabel(currentPage[0].section)}
+                {!sequentialQuestionNumbers
+                  ? ` #${currentPage[0].questionNo}`
+                  : null}
               </>
             ) : null}
           </p>
@@ -168,6 +190,7 @@ export function TopikQuizRunner({
               <QuestionBlock
                 key={q.id}
                 question={q}
+                displayQuestionNo={displayNumberById.get(q.id)}
                 showAudio={!audio}
                 selectedIndex={selections[q.id]}
                 onPick={(i) => pick(q.id, i)}
@@ -214,11 +237,13 @@ export function TopikQuizRunner({
 
 export function QuestionBlock({
   question,
+  displayQuestionNo,
   showAudio,
   selectedIndex,
   onPick,
 }: {
   question: ExamMcqQuestion;
+  displayQuestionNo?: number;
   showAudio: boolean;
   selectedIndex: number | undefined;
   onPick: (index: number) => void;
@@ -228,7 +253,8 @@ export function QuestionBlock({
   return (
     <div className="border-t border-border pt-5 first:border-t-0 first:pt-0">
       <p className="inline-flex rounded-full bg-secondary px-2.5 py-1 text-xs font-bold text-muted-foreground">
-        {topikSectionLabel(question.section)} · Câu {question.questionNo}
+        {topikSectionLabel(question.section)} · Câu{" "}
+        {displayQuestionNo ?? question.questionNo}
       </p>
       {question.passage ? (
         <p className="mt-3 whitespace-pre-wrap rounded-2xl border border-border/70 bg-secondary/65 p-4 text-sm leading-relaxed text-foreground/90">
@@ -307,16 +333,32 @@ function usesImageOptions(question: ExamMcqQuestion): boolean {
   return question.options.some((_, i) => optionImageAt(question, i) != null);
 }
 
+function questionPageLabel(
+  page: ExamMcqQuestion[],
+  pageIndex: number,
+  displayNumberById: ReadonlyMap<string, number>,
+): string {
+  if (page.length === 0) return `Câu ${pageIndex + 1}`;
+  const numbers = page.map(
+    (question) => displayNumberById.get(question.id) ?? question.questionNo,
+  );
+  return numbers.length === 1
+    ? `Câu ${numbers[0]}`
+    : `Câu ${numbers[0]}–${numbers[numbers.length - 1]}`;
+}
+
 function ResultView({
   result,
   questions,
   backHref,
   attemptHref,
+  displayNumberById,
 }: {
   result: ExamMcqSubmitResult;
   questions: ExamMcqQuestion[];
   backHref: string;
   attemptHref: string;
+  displayNumberById: ReadonlyMap<string, number>;
 }) {
   const byId = new Map(questions.map((q) => [q.id, q]));
   const graded = result.answers;
@@ -356,7 +398,8 @@ function ResultView({
               style={{ borderColor: `${tint}40`, backgroundColor: `${tint}12` }}
             >
               <p className="font-medium text-foreground">
-                Câu {a.questionNo} · {topikSectionLabel(a.section)}{" "}
+                Câu {displayNumberById.get(a.questionId) ?? a.questionNo} ·{" "}
+                {topikSectionLabel(a.section)}{" "}
                 {a.gradeStatus === "pending"
                   ? "· chờ chấm"
                   : a.isCorrect

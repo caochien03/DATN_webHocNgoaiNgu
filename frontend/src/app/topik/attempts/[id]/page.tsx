@@ -168,9 +168,11 @@ function AttemptDetailContent() {
       ) : null}
 
       <ul className="mt-6 flex flex-col gap-3">
-        {answers.map((a) => {
+        {answers.map((a, index) => {
           const uiStatus = writingGradeUiStatus(a);
           const isMcq = uiStatus === "mcq";
+          const displayQuestionNo =
+            attempt.mode === "PRACTICE" ? index + 1 : a.questionNo;
           return (
           <li
             key={a.questionId}
@@ -187,7 +189,7 @@ function AttemptDetailContent() {
             }
           >
             <p className="font-medium text-foreground">
-              {topikSectionLabel(a.section)} câu {a.questionNo}{" "}
+              {topikSectionLabel(a.section)} câu {displayQuestionNo}{" "}
               {isMcq
                 ? a.isCorrect
                   ? "✓"

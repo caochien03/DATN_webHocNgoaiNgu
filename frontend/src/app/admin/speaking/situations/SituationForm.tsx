@@ -40,13 +40,22 @@ function SituationFormContent({ mode }: { mode: Mode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    void fetchWithAuth("/admin/speaking/topics")
-      .then((r) => r.json())
-      .then((data: Topic[]) => setTopics(data));
-    if (mode !== "edit" || !id) return;
-    void fetchWithAuth(`/admin/speaking/situations/${id}`)
-      .then((r) => r.json())
-      .then((data: typeof form & { id: string }) => {
+    let cancelled = false;
+    async function loadFormData() {
+      setError(null);
+      try {
+        const topicsResponse = await fetchWithAuth("/admin/speaking/topics");
+        if (!topicsResponse.ok) {
+          throw new Error(await parseApiError(topicsResponse));
+        }
+        const topicRows = (await topicsResponse.json()) as Topic[];
+        if (!cancelled) setTopics(topicRows);
+
+        if (mode !== "edit" || !id) return;
+        const response = await fetchWithAuth(`/admin/speaking/situations/${id}`);
+        if (!response.ok) throw new Error(await parseApiError(response));
+        const data = (await response.json()) as typeof form & { id: string };
+        if (cancelled) return;
         setForm({
           title: data.title,
           topicId: (data as unknown as { topicId?: string }).topicId ?? "",
@@ -62,8 +71,22 @@ function SituationFormContent({ mode }: { mode: Mode }) {
           isPublished: data.isPublished,
           goals: (data.goals as GoalItem[]) ?? [],
         });
-      })
-      .finally(() => setLoading(false));
+      } catch (caught) {
+        if (!cancelled) {
+          setError(
+            caught instanceof Error
+              ? caught.message
+              : "Không tải được dữ liệu biểu mẫu",
+          );
+        }
+      } finally {
+        if (!cancelled && mode === "edit") setLoading(false);
+      }
+    }
+    void loadFormData();
+    return () => {
+      cancelled = true;
+    };
   }, [id, mode]);
 
   function addGoal() {
@@ -105,7 +128,7 @@ function SituationFormContent({ mode }: { mode: Mode }) {
     }
   }
 
-  if (loading) return <p className="text-sm text-muted-foreground">Đang tải...</p>;
+  if (loading) return <p className="text-sm text-muted-foreground">Đang tải…</p>;
 
   const inputCls = "w-full rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground focus:border-primary/60 focus:outline-none";
 
@@ -115,7 +138,11 @@ function SituationFormContent({ mode }: { mode: Mode }) {
         <ArrowLeft size={14} /> Danh sách tình huống
       </Link>
       <PageHeader title={mode === "new" ? "Thêm tình huống luyện nói" : "Chỉnh sửa tình huống"} />
-      {error && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>}
+      {error && (
+        <p className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
+        </p>
+      )}
 
       <form onSubmit={(e) => void handleSubmit(e)} className="max-w-2xl space-y-5">
         {/* Thông tin cơ bản */}
@@ -169,7 +196,7 @@ function SituationFormContent({ mode }: { mode: Mode }) {
                 <input required value={form.userRoleVi} onChange={(e) => setForm((p) => ({ ...p, userRoleVi: e.target.value }))} className={inputCls} placeholder="VD: Khách du lịch" />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Vai NPC *</label>
+                <label className="mb-1 block text-sm font-medium text-foreground">Vai nhân vật hội thoại *</label>
                 <input required value={form.npcRoleVi} onChange={(e) => setForm((p) => ({ ...p, npcRoleVi: e.target.value }))} className={inputCls} placeholder="VD: Lễ tân khách sạn" />
               </div>
             </div>
@@ -180,17 +207,17 @@ function SituationFormContent({ mode }: { mode: Mode }) {
           </div>
         </div>
 
-        {/* NPC AI */}
+        {/* Nhân vật hội thoại AI */}
         <div className="rounded-2xl border border-border p-4">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Cấu hình NPC (AI)</h3>
+          <h3 className="mb-4 text-sm font-semibold text-foreground">Cấu hình nhân vật hội thoại (AI)</h3>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">Câu mở đầu của NPC *</label>
-              <textarea required rows={2} value={form.openingLine} onChange={(e) => setForm((p) => ({ ...p, openingLine: e.target.value }))} className={inputCls} placeholder="Câu NPC nói đầu tiên (ngôn ngữ đích)" />
+              <label className="mb-1 block text-sm font-medium text-foreground">Câu mở đầu của nhân vật *</label>
+              <textarea required rows={2} value={form.openingLine} onChange={(e) => setForm((p) => ({ ...p, openingLine: e.target.value }))} className={inputCls} placeholder="Câu nhân vật nói đầu tiên bằng ngôn ngữ đang học" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">System Prompt cho NPC *</label>
-              <textarea required rows={4} value={form.systemPrompt} onChange={(e) => setForm((p) => ({ ...p, systemPrompt: e.target.value }))} className={inputCls} placeholder="Hướng dẫn cách NPC phản hồi, phong cách, giới hạn..." />
+              <label className="mb-1 block text-sm font-medium text-foreground">Hướng dẫn phản hồi cho AI *</label>
+              <textarea required rows={4} value={form.systemPrompt} onChange={(e) => setForm((p) => ({ ...p, systemPrompt: e.target.value }))} className={inputCls} placeholder="Mô tả cách phản hồi, phong cách và giới hạn của nhân vật…" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -241,7 +268,7 @@ function SituationFormContent({ mode }: { mode: Mode }) {
 
         <div className="flex gap-3">
           <button type="submit" disabled={saving} className="rounded-xl bg-primary px-5 py-2 text-sm font-medium text-white transition hover:bg-primary/80 disabled:opacity-50">
-            {saving ? "Đang lưu..." : mode === "new" ? "Tạo tình huống" : "Lưu thay đổi"}
+            {saving ? "Đang lưu…" : mode === "new" ? "Tạo tình huống" : "Lưu thay đổi"}
           </button>
           <Link href="/admin/speaking/situations" className="rounded-xl border border-border px-5 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground">
             Hủy

@@ -164,7 +164,11 @@ function DeckDetailContent() {
                 required
                 value={front}
                 onChange={(e) => setFront(e.target.value)}
-                placeholder="Mặt trước (VD: từ tiếng Hàn)"
+                placeholder={
+                  deck.languageCode === "ko"
+                    ? "Mặt trước (ví dụ: 안녕하세요)"
+                    : "Mặt trước (ví dụ: airport)"
+                }
                 className={inputClass}
               />
               <input

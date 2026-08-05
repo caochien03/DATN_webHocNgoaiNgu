@@ -8,7 +8,7 @@ import {
   TopikQuestionForm,
   type TopikQuestionFormValues,
 } from "@/components/admin/TopikQuestionForm";
-import { backLinkClass } from "@/components/ui-kit/form-styles";
+import { backLinkClass, errorBannerClass } from "@/components/ui-kit/form-styles";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 
 const defaultValues: TopikQuestionFormValues = {
@@ -82,7 +82,7 @@ function NewTopikQuestionContent() {
       </p>
 
       {error ? (
-        <p className={`mt-4 `}>{error}</p>
+        <p className={errorBannerClass}>{error}</p>
       ) : null}
 
       <div className="mt-4">

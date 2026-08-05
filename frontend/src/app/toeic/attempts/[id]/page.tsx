@@ -89,9 +89,11 @@ function AttemptDetailContent() {
       </div>
 
       <div className="mt-8 space-y-4">
-        {answers.map((a) => {
+        {answers.map((a, index) => {
           const ok = a.isCorrect;
           const color = ok ? BRAND.green : BRAND.red;
+          const displayQuestionNo =
+            attempt.mode === "PRACTICE" ? index + 1 : a.questionNo;
           return (
             <div
               key={a.questionId}
@@ -99,7 +101,7 @@ function AttemptDetailContent() {
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="text-xs font-medium text-muted-foreground">
-                  {toeicSectionLabel(a.section)} · câu {a.questionNo}
+                  {toeicSectionLabel(a.section)} · câu {displayQuestionNo}
                 </span>
                 <span
                   className="rounded px-2 py-0.5 text-xs font-semibold"

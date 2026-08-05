@@ -87,7 +87,11 @@ function NewTopicForm() {
           <input
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            placeholder="VD: TOPIK 1"
+            placeholder={
+              languageCode === "ko"
+                ? "VD: TOPIK 1"
+                : "VD: A1 hoặc TOEIC cơ bản"
+            }
             className={inputClass}
           />
         </label>

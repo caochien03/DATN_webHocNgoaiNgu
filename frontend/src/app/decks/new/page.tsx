@@ -66,7 +66,11 @@ function NewDeckForm() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className={inputClass}
-            placeholder="VD: TOPIK I — từ vựng"
+            placeholder={
+              languageCode === "ko"
+                ? "VD: Từ vựng TOPIK I"
+                : "VD: Từ vựng TOEIC cơ bản"
+            }
           />
         </label>
         <label className={labelClass}>

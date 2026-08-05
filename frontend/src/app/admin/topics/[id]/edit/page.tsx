@@ -9,6 +9,7 @@ import {
   backLinkClass,
   dangerButtonClass,
   dashedCardClass,
+  errorBannerClass,
   inputClass,
   listItemClass,
 } from "@/components/ui-kit/form-styles";
@@ -145,9 +146,7 @@ function EditTopicContent() {
         ← Danh sách chủ đề
       </Link>
 
-      {error ? (
-        <p className={`mt-4 `}>{error}</p>
-      ) : null}
+      {error ? <p className={errorBannerClass}>{error}</p> : null}
 
       {topic ? (
         <>
@@ -161,7 +160,7 @@ function EditTopicContent() {
 
           <form
             onSubmit={saveMeta}
-            className={`mt-4 flex flex-col gap-3 `}
+            className="mt-4 flex flex-col gap-3"
           >
             <label className="flex flex-col gap-1 text-sm">
               <span>Tiêu đề</span>
@@ -187,7 +186,11 @@ function EditTopicContent() {
               <input
                 value={level}
                 onChange={(e) => setLevel(e.target.value)}
-                placeholder="VD: TOPIK 1"
+                placeholder={
+                  languageCode === "ko"
+                    ? "VD: TOPIK 1"
+                    : "VD: A1 hoặc TOEIC cơ bản"
+                }
                 className={inputClass}
               />
             </label>
@@ -244,7 +247,11 @@ function EditTopicContent() {
             >
               <input
                 required
-                placeholder="Mặt trước (tiếng Hàn)"
+                placeholder={
+                  languageCode === "ko"
+                    ? "Mặt trước (ví dụ: 안녕하세요)"
+                    : "Mặt trước (ví dụ: airport)"
+                }
                 value={wordFront}
                 onChange={(e) => setWordFront(e.target.value)}
                 className={inputClass}
