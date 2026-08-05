@@ -123,32 +123,36 @@ export default function Home() {
     <div>
       <motion.div
         className="relative mb-6 overflow-hidden rounded-2xl p-6"
-        style={{ background: "linear-gradient(135deg,#0a1230 0%,#0d1a3a 50%,#0a1528 100%)" }}
+        style={{ background: `linear-gradient(135deg, ${BRAND.blue} 0%, ${BRAND.cyan} 100%)` }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
       >
+        {/* Decorative blob */}
+        <div
+          className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-20 blur-2xl"
+          style={{ background: "#fff" }}
+        />
         <div className="relative">
           <div className="mb-1 flex items-center gap-2">
-            <Flame size={18} style={{ color: BRAND.yellow }} />
-            <span className="text-sm font-semibold" style={{ color: BRAND.yellow }}>
+            <Flame size={18} className="text-white" />
+            <span className="text-sm font-semibold text-white/90">
               {streak} ngày liên tiếp
             </span>
           </div>
-          <h1 className="mb-1 text-xl font-bold text-foreground">
+          <h1 className="mb-1 text-xl font-bold text-white">
             Xin chào, {name}!
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/75">
             Bạn có{" "}
-            <span className="font-semibold" style={{ color: BRAND.cyan }}>
+            <span className="font-bold text-white">
               {data.due ?? "—"} thẻ
             </span>{" "}
             cần ôn tập hôm nay.
           </p>
           <Link
             href="/review/today"
-            className="mt-4 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white"
-            style={{ background: GRADIENT }}
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white/20 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30"
           >
             <Play size={14} /> Ôn tập ngay
           </Link>
@@ -166,6 +170,7 @@ export default function Home() {
         <div className="space-y-5 lg:col-span-2">
           <motion.div
             className="rounded-2xl border border-border bg-card p-5"
+            style={{ boxShadow: "var(--shadow-card)" }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -201,7 +206,8 @@ export default function Home() {
                 >
                   <Link
                     href={a.href}
-                    className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+                    className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40"
+                    style={{ boxShadow: "var(--shadow-card)" }}
                   >
                     <span
                       className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
@@ -230,7 +236,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="rounded-2xl border border-border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
             <h3 className="mb-3 text-sm font-semibold text-foreground">Tiếp tục học</h3>
             <div className="space-y-2 text-sm">
               <Link

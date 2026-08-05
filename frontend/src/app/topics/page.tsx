@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
+import { BookOpen } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, levelColor } from "@/components/ui-kit/brand";
@@ -78,8 +79,13 @@ function TopicsContent() {
                 key={l}
                 type="button"
                 onClick={() => setLevel(l)}
-                className="relative rounded-xl px-4 py-1.5 text-sm font-medium"
-                style={{ color: active ? "#fff" : BRAND.muted }}
+                className="relative rounded-xl px-4 py-1.5 text-sm font-semibold transition-colors"
+                style={{
+                  color: active ? "#fff" : "var(--foreground)",
+                  border: active ? "none" : "1px solid var(--border)",
+                  background: active ? undefined : "var(--card)",
+                  boxShadow: active ? undefined : "var(--shadow-card)",
+                }}
               >
                 {active ? (
                   <motion.span
@@ -88,12 +94,7 @@ function TopicsContent() {
                     style={{ background: `linear-gradient(90deg,${BRAND.blue},${BRAND.cyan})` }}
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
-                ) : (
-                  <span
-                    className="absolute inset-0 rounded-xl"
-                    style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
-                  />
-                )}
+                ) : null}
                 <span className="relative">{l}</span>
               </button>
             );
@@ -120,31 +121,42 @@ function TopicsContent() {
               >
                 <Link
                   href={`/topics/${t.id}`}
-                  className="group block rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
+                  className="group block rounded-2xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40"
+                  style={{ boxShadow: "var(--shadow-card)" }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "var(--shadow-card-hover)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "var(--shadow-card)";
+                  }}
                 >
                   <div className="mb-4 flex items-start justify-between">
+                    {/* Icon thay thế chữ cái */}
                     <span
-                      className="flex h-12 w-12 items-center justify-center rounded-xl text-xl font-bold"
-                      style={{ backgroundColor: `${color}18`, color }}
+                      className="flex h-12 w-12 items-center justify-center rounded-xl"
+                      style={{ backgroundColor: `${color}22`, color }}
                     >
-                      {t.title.charAt(0)}
+                      <BookOpen size={22} strokeWidth={2} />
                     </span>
                     {t.level ? <LevelBadge level={t.level} /> : null}
                   </div>
+
                   <p className="truncate text-lg font-bold text-foreground">
                     {t.title}
                   </p>
                   {t.description ? (
-                    <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                       {t.description}
                     </p>
                   ) : (
-                    <p className="mt-0.5 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {t._count.words} từ vựng
                     </p>
                   )}
-                  <p className="mt-4 text-xs text-muted-foreground">
-                    {t._count.words} từ
+                  <p className="mt-4 text-xs font-semibold" style={{ color }}>
+                    {t._count.words} từ →
                   </p>
                 </Link>
               </motion.div>

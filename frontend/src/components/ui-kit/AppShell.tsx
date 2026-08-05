@@ -146,38 +146,48 @@ function Sidebar({
 
   return (
     <motion.aside
-      className="flex w-[232px] flex-shrink-0 flex-col overflow-y-auto border-r border-border"
-      style={{ backgroundColor: "var(--sidebar)" }}
-      initial={{ x: -232, opacity: 0 }}
+      className="flex w-[240px] flex-shrink-0 flex-col overflow-y-auto border-r border-border"
+      style={{ backgroundColor: "var(--sidebar)", boxShadow: "var(--shadow-sidebar)" }}
+      initial={{ x: -240, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
+      {/* Logo */}
       <Link
         href="/"
-        className="flex items-center gap-3 border-b border-border px-5 py-6"
+        className="flex items-center gap-3 px-5 py-5"
+        style={{ borderBottom: "1px solid var(--border)" }}
       >
-        <AppMark className="h-9 w-9 rounded-xl text-lg" />
+        <AppMark className="h-10 w-10" />
         <div>
-          <p className="text-sm font-bold leading-none text-foreground">{APP.name}</p>
-          <p className="mt-0.5 text-[10px] text-muted-foreground">{APP.tagline}</p>
+          <p className="text-sm font-extrabold leading-none tracking-tight text-foreground">{APP.name}</p>
+          <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">{APP.tagline}</p>
         </div>
       </Link>
 
+      {/* User section */}
       {user ? (
-        <div className="flex items-center gap-3 border-b border-border px-5 py-4">
-          <AvatarCircle label={initial} className="h-8 w-8 flex-shrink-0 text-sm" />
+        <div
+          className="mx-3 my-3 flex items-center gap-3 rounded-xl px-3 py-3"
+          style={{
+            background: `linear-gradient(135deg, ${BRAND.blue}12, ${BRAND.cyan}08)`,
+            border: `1px solid ${BRAND.blue}20`,
+          }}
+        >
+          <AvatarCircle label={initial} className="h-9 w-9 flex-shrink-0 text-sm" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">
+            <p className="truncate text-sm font-bold text-foreground">
               {user.name || user.email}
             </p>
-            <p className="text-[11px] text-muted-foreground">
-              {admin ? "Quản trị viên" : "Học viên"}
+            <p className="text-[11px] font-medium" style={{ color: BRAND.blue }}>
+              {admin ? "🛡️ Quản trị viên" : "🏃 Học viên"}
             </p>
           </div>
         </div>
       ) : null}
 
-      <nav className="flex-1 space-y-6 px-3 py-4">
+      {/* Nav */}
+      <nav className="flex-1 space-y-5 px-3 py-3">
         {NAV.map((grp) => {
           const items = grp.items.filter((it) => {
             if (it.admin && !admin) return false;
@@ -189,7 +199,7 @@ function Sidebar({
           if (items.length === 0) return null;
           return (
             <div key={grp.group}>
-              <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
+              <p className="mb-1.5 px-2 text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
                 {grp.group}
               </p>
               <div className="space-y-0.5">
@@ -201,10 +211,10 @@ function Sidebar({
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        "relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                        "relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150",
                         active
                           ? "text-white"
-                          : "text-muted-foreground hover:text-foreground",
+                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                       )}
                     >
                       {active ? (
@@ -212,7 +222,8 @@ function Sidebar({
                           layoutId="nav-active"
                           className="absolute inset-0 rounded-xl"
                           style={{
-                            background: `linear-gradient(90deg,${BRAND.blue},#2952d9)`,
+                            background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                            boxShadow: `0 4px 12px 0 ${BRAND.blue}40`,
                           }}
                           transition={{ type: "spring", stiffness: 380, damping: 30 }}
                         />
@@ -230,21 +241,25 @@ function Sidebar({
         })}
       </nav>
 
+      {/* Bottom actions */}
       <div className="space-y-0.5 border-t border-border px-3 pb-5 pt-3">
         <Link
           href="/me"
           className={cn(
-            "relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+            "relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150",
             isActive(pathname, "/me")
               ? "text-white"
-              : "text-muted-foreground hover:text-foreground",
+              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
           )}
         >
           {isActive(pathname, "/me") ? (
             <motion.span
               layoutId="nav-active"
               className="absolute inset-0 rounded-xl"
-              style={{ background: `linear-gradient(90deg,${BRAND.blue},#2952d9)` }}
+              style={{
+                background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                boxShadow: `0 4px 12px 0 ${BRAND.blue}40`,
+              }}
               transition={{ type: "spring", stiffness: 380, damping: 30 }}
             />
           ) : null}
@@ -257,7 +272,7 @@ function Sidebar({
           <button
             type="button"
             onClick={logout}
-            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted-foreground transition-all duration-150 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
           >
             <LogOut size={15} />
             Đăng xuất
@@ -265,7 +280,7 @@ function Sidebar({
         ) : (
           <Link
             href="/login"
-            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted-foreground transition-all duration-150 hover:bg-muted/60 hover:text-foreground"
           >
             <LogOut size={15} />
             Đăng nhập
@@ -297,6 +312,24 @@ function pageTitle(pathname: string) {
   return TITLES.find((t) => t.match(pathname))?.title ?? APP.name;
 }
 
+const PAGE_ICONS: Record<string, React.ReactNode> = {
+  "Trang chủ": <Home size={17} />,
+  "Mục tiêu ngày": <Target size={17} />,
+  "Từ vựng": <BookOpen size={17} />,
+  "Bộ thẻ": <Layers size={17} />,
+  "Ôn tập SRS": <RefreshCw size={17} />,
+  "Ngữ pháp": <FileText size={17} />,
+  "Lộ trình": <Route size={17} />,
+  "Luyện thi TOEIC": <Trophy size={17} />,
+  "Lịch sử TOEIC": <Trophy size={17} />,
+  "Luyện thi TOPIK": <Trophy size={17} />,
+  "Lịch sử TOPIK": <Trophy size={17} />,
+  "Luyện nói": <Mic size={17} />,
+  "Kiểm tra": <Brain size={17} />,
+  "Quản trị": <Settings size={17} />,
+  "Hồ sơ": <Settings size={17} />,
+};
+
 function TopBar({
   title,
   showLearningLanguage,
@@ -304,19 +337,40 @@ function TopBar({
   title: string;
   showLearningLanguage: boolean;
 }) {
+  const icon = PAGE_ICONS[title] ?? null;
   return (
-    <div className="flex flex-shrink-0 items-center justify-between border-b border-border bg-background px-8 py-4">
+    <div
+      className="relative flex flex-shrink-0 items-center justify-between bg-background px-8 py-4"
+      style={{ boxShadow: "var(--shadow-topbar)", borderBottom: "1px solid var(--border)" }}
+    >
+      {/* Bottom gradient accent */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-[2px]"
+        style={{ background: `linear-gradient(90deg, ${BRAND.blue}60, ${BRAND.cyan}40, transparent)` }}
+      />
       <AnimatePresence mode="wait">
-        <motion.h2
+        <motion.div
           key={title}
-          className="text-base font-semibold text-foreground"
-          initial={{ opacity: 0, x: -8 }}
+          className="flex items-center gap-3"
+          initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 8 }}
+          exit={{ opacity: 0, x: 10 }}
           transition={{ duration: 0.2 }}
         >
-          {title}
-        </motion.h2>
+          {icon ? (
+            <span
+              className="flex h-8 w-8 items-center justify-center rounded-xl"
+              style={{
+                background: `linear-gradient(135deg, ${BRAND.blue}20, ${BRAND.cyan}15)`,
+                color: BRAND.blue,
+                border: `1px solid ${BRAND.blue}25`,
+              }}
+            >
+              {icon}
+            </span>
+          ) : null}
+          <h2 className="text-base font-bold text-foreground">{title}</h2>
+        </motion.div>
       </AnimatePresence>
       <div className="flex items-center gap-3">
         {showLearningLanguage ? (

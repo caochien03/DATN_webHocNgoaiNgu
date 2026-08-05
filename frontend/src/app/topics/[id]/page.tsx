@@ -98,24 +98,51 @@ function TopicDetailContent() {
                 Chủ đề này chưa có từ vựng.
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {topic.words.map((w, index) => (
-                <div
-                  key={w.id}
-                  className="group flex gap-3 rounded-2xl border border-border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg hover:shadow-primary/5"
-                >
-                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-secondary text-xs font-bold text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-foreground">{w.frontText}</p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">{w.backText}</p>
-                    {w.note ? (
-                      <p className="mt-2 text-xs leading-5 text-muted-foreground/75">{w.note}</p>
-                    ) : null}
+            <div className="grid grid-cols-2 gap-3">
+                {topic.words.map((w, index) => {
+                  const hue = index % 5;
+                  const colors = [
+                    BRAND.blue, BRAND.cyan, BRAND.green, BRAND.purple, BRAND.red,
+                  ] as const;
+                  const c = colors[hue];
+                  return (
+                  <div
+                    key={w.id}
+                    className="group flex gap-3 rounded-2xl border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5"
+                    style={{
+                      borderColor: `${c}20`,
+                      boxShadow: "var(--shadow-card)",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = `${c}50`;
+                      (e.currentTarget as HTMLElement).style.boxShadow = `var(--shadow-card-hover)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = `${c}20`;
+                      (e.currentTarget as HTMLElement).style.boxShadow = `var(--shadow-card)`;
+                    }}
+                  >
+                    <span
+                      className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-extrabold text-white"
+                      style={{ background: `linear-gradient(135deg, ${c}, ${c}80)` }}
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-bold text-foreground">{w.frontText}</p>
+                      <p className="mt-0.5 text-sm" style={{ color: c }}>{w.backText}</p>
+                      {w.note ? (
+                        <p
+                          className="mt-1.5 rounded-lg px-2 py-1 text-xs leading-5 text-muted-foreground"
+                          style={{ background: `${c}10` }}
+                        >
+                          {w.note}
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

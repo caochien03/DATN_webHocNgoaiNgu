@@ -106,70 +106,105 @@ function PathsDetailContent() {
 
       {path ? (
         <>
-          <div className="mt-4 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                {path.level ?? path.languageCode.toUpperCase()}
-              </p>
-              <h1 className="mt-1 text-2xl font-bold text-foreground">
-                {path.title}
-              </h1>
-              {path.description ? (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {path.description}
-                </p>
+          {/* Header card với gradient */}
+          <div
+            className="relative mt-5 overflow-hidden rounded-2xl p-6"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}18 0%, ${BRAND.cyan}10 100%)`,
+              border: `1px solid ${BRAND.blue}25`,
+              boxShadow: `0 4px 24px 0 ${BRAND.blue}15`,
+            }}
+          >
+            <div
+              className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl"
+              style={{ background: `${BRAND.cyan}20` }}
+            />
+            <div className="relative flex items-start justify-between gap-4">
+              <div>
+                <span
+                  className="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-widest"
+                  style={{ background: `${BRAND.blue}20`, color: BRAND.blue }}
+                >
+                  {path.level ?? path.languageCode.toUpperCase()}
+                </span>
+                <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground">
+                  {path.title}
+                </h1>
+                {path.description ? (
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                    {path.description}
+                  </p>
+                ) : null}
+              </div>
+              {!path.progress ? (
+                <button
+                  type="button"
+                  onClick={() => void startPath()}
+                  disabled={busyStepId === "__start__"}
+                  className="shrink-0 rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                    boxShadow: `0 4px 14px 0 ${BRAND.blue}40`,
+                  }}
+                >
+                  Bắt đầu
+                </button>
               ) : null}
             </div>
-            {!path.progress ? (
-              <button
-                type="button"
-                onClick={() => void startPath()}
-                disabled={busyStepId === "__start__"}
-                className="shrink-0 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-                style={{ background: GRADIENT }}
-              >
-                Bắt đầu
-              </button>
-            ) : null}
-          </div>
 
-          <div className="mt-5">
-            <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Tiến độ</span>
-              <span className="font-mono">{percent}%</span>
+            {/* Progress bar */}
+            <div className="relative mt-5">
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground">Tiến độ</span>
+                <span
+                  className="rounded-full px-2 py-0.5 text-[11px] font-bold"
+                  style={{ background: `${BRAND.green}20`, color: BRAND.green }}
+                >
+                  {percent}%
+                </span>
+              </div>
+              <Bar
+                done={path.steps.filter((s) => s.completed).length}
+                total={path.steps.length || 1}
+                color={BRAND.blue}
+              />
             </div>
-            <Bar
-              done={path.steps.filter((s) => s.completed).length}
-              total={path.steps.length || 1}
-              color={BRAND.blue}
-            />
           </div>
 
-          <ol className="mt-6 flex flex-col gap-3">
+          {/* Step list */}
+          <ol className="mt-5 flex flex-col gap-3">
             {path.steps.map((step) => {
               const isTopic = step.type === "TOPIC";
               const c = isTopic ? BRAND.blue : BRAND.cyan;
               return (
                 <li
                   key={step.id}
-                  className="rounded-2xl border border-border bg-card p-4"
-                  style={
-                    step.completed
-                      ? { borderColor: `${BRAND.green}30`, backgroundColor: `${BRAND.green}08` }
-                      : undefined
-                  }
+                  className="relative overflow-hidden rounded-2xl border bg-card p-4 transition-all duration-200"
+                  style={{
+                    borderColor: step.completed ? `${BRAND.green}40` : `${c}25`,
+                    boxShadow: step.completed
+                      ? `0 2px 12px 0 ${BRAND.green}15`
+                      : `0 2px 8px 0 ${c}10`,
+                  }}
                 >
-                  <div className="flex gap-3">
+                  {/* Left color bar */}
+                  <div
+                    className="absolute inset-y-0 left-0 w-1 rounded-l-2xl"
+                    style={{ background: step.completed ? BRAND.green : c }}
+                  />
+                  <div className="flex gap-3 pl-3">
                     <div
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm"
-                      style={
-                        step.completed
-                          ? { backgroundColor: BRAND.green, color: "#fff" }
-                          : { backgroundColor: `${c}18`, color: c }
-                      }
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold"
+                      style={{
+                        background: step.completed
+                          ? `linear-gradient(135deg, ${BRAND.green}, #16a34a)`
+                          : `linear-gradient(135deg, ${c}25, ${c}15)`,
+                        color: step.completed ? "#fff" : c,
+                        boxShadow: step.completed ? `0 2px 8px 0 ${BRAND.green}40` : "none",
+                      }}
                     >
                       {step.completed ? (
-                        <Check size={15} />
+                        <Check size={16} />
                       ) : isTopic ? (
                         <BookOpen size={15} />
                       ) : (
@@ -177,16 +212,15 @@ function PathsDetailContent() {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      <span
+                        className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                        style={{ background: `${c}18`, color: c }}
+                      >
                         {isTopic ? "Chủ đề từ vựng" : "Bài học"}
-                      </p>
-                      <p className="mt-0.5 font-semibold text-foreground">
-                        {step.title}
-                      </p>
+                      </span>
+                      <p className="mt-1 font-bold text-foreground">{step.title}</p>
                       {step.summary ? (
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {step.summary}
-                        </p>
+                        <p className="mt-0.5 text-sm text-muted-foreground">{step.summary}</p>
                       ) : null}
                       <p className="mt-1 text-xs text-muted-foreground/70">
                         {step.topic
@@ -198,7 +232,8 @@ function PathsDetailContent() {
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Link
                           href={stepHref(step)}
-                          className="rounded-xl border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                          className="rounded-xl border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                          style={{ borderColor: "var(--border)" }}
                         >
                           Mở nội dung
                         </Link>
@@ -207,12 +242,22 @@ function PathsDetailContent() {
                             type="button"
                             onClick={() => void completeStep(step.id)}
                             disabled={busyStepId === step.id}
-                            className="rounded-xl px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
-                            style={{ background: GRADIENT }}
+                            className="rounded-xl px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+                            style={{
+                              background: `linear-gradient(135deg, ${BRAND.green}, #16a34a)`,
+                              boxShadow: `0 2px 8px 0 ${BRAND.green}40`,
+                            }}
                           >
                             Hoàn thành
                           </button>
-                        ) : null}
+                        ) : (
+                          <span
+                            className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold"
+                            style={{ background: `${BRAND.green}15`, color: BRAND.green }}
+                          >
+                            <Check size={12} /> Đã xong
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
