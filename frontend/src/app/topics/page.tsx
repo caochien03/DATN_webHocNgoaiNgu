@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { BookOpen } from "lucide-react";
+import { BookOpen, ArrowRight, Sparkles } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, levelColor } from "@/components/ui-kit/brand";
@@ -54,24 +54,25 @@ function TopicsContent() {
   const totalWords = (topics ?? []).reduce((a, t) => a + t._count.words, 0);
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Từ vựng theo chủ đề"
         sub={
           topics
-            ? `${topics.length} chủ đề · ${totalWords} từ`
-            : "Chọn một chủ đề để khám phá từ vựng và bắt đầu học"
+            ? `${topics.length} chủ đề phong phú · ${totalWords} từ vựng chuẩn`
+            : "Chọn một chủ đề để khám phá từ vựng và bắt đầu luyện phản xạ"
         }
       />
 
       {error ? (
-        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-bold text-red-500 shadow-2xs">
           {error}
         </p>
       ) : null}
 
+      {/* Level Pills */}
       {levels.length > 1 ? (
-        <div className="mb-6 flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
           {levels.map((l) => {
             const active = level === l;
             return (
@@ -79,23 +80,25 @@ function TopicsContent() {
                 key={l}
                 type="button"
                 onClick={() => setLevel(l)}
-                className="relative rounded-xl px-4 py-1.5 text-sm font-semibold transition-colors"
+                className="relative rounded-2xl px-4 py-2 text-xs font-black transition-all shadow-2xs"
                 style={{
                   color: active ? "#fff" : "var(--foreground)",
                   border: active ? "none" : "1px solid var(--border)",
                   background: active ? undefined : "var(--card)",
-                  boxShadow: active ? undefined : "var(--shadow-card)",
                 }}
               >
                 {active ? (
                   <motion.span
                     layoutId="topic-filter"
-                    className="absolute inset-0 rounded-xl"
-                    style={{ background: `linear-gradient(90deg,${BRAND.blue},${BRAND.cyan})` }}
+                    className="absolute inset-0 rounded-2xl"
+                    style={{
+                      background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                      boxShadow: `0 4px 14px 0 ${BRAND.blue}35`,
+                    }}
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 ) : null}
-                <span className="relative">{l}</span>
+                <span className="relative z-10">{l}</span>
               </button>
             );
           })}
@@ -103,9 +106,9 @@ function TopicsContent() {
       ) : null}
 
       {topics === null ? (
-        <p className="text-sm text-muted-foreground">Đang tải…</p>
+        <p className="text-xs font-bold text-muted-foreground">Đang tải danh sách chủ đề…</p>
       ) : filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs font-bold text-muted-foreground">
           Chưa có chủ đề phù hợp với ngôn ngữ hoặc cấp độ đang chọn.
         </p>
       ) : (
@@ -115,49 +118,64 @@ function TopicsContent() {
             return (
               <motion.div
                 key={t.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, delay: i * 0.04 }}
+                whileHover={{ y: -3 }}
               >
                 <Link
                   href={`/topics/${t.id}`}
-                  className="group block rounded-2xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40"
-                  style={{ boxShadow: "var(--shadow-card)" }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.boxShadow =
-                      "var(--shadow-card-hover)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.boxShadow =
-                      "var(--shadow-card)";
-                  }}
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/40 hover:shadow-md h-full"
                 >
-                  <div className="mb-4 flex items-start justify-between">
-                    {/* Icon thay thế chữ cái */}
-                    <span
-                      className="flex h-12 w-12 items-center justify-center rounded-xl"
-                      style={{ backgroundColor: `${color}22`, color }}
-                    >
-                      <BookOpen size={22} strokeWidth={2} />
-                    </span>
-                    {t.level ? <LevelBadge level={t.level} /> : null}
+                  {/* Top accent line */}
+                  <div
+                    className="absolute inset-x-0 top-0 h-[2.5px]"
+                    style={{
+                      background: `linear-gradient(90deg, ${color}, ${color}40)`,
+                    }}
+                  />
+
+                  <div>
+                    <div className="mb-4 flex items-start justify-between">
+                      <span
+                        className="flex h-11 w-11 items-center justify-center rounded-2xl shadow-2xs transition-transform group-hover:scale-105"
+                        style={{
+                          background: `linear-gradient(135deg, ${color}20, ${color}10)`,
+                          color,
+                          border: `1px solid ${color}30`,
+                        }}
+                      >
+                        <BookOpen size={20} strokeWidth={2.2} />
+                      </span>
+                      {t.level ? <LevelBadge level={t.level} /> : null}
+                    </div>
+
+                    <p className="truncate text-base font-black tracking-tight text-foreground">
+                      {t.title}
+                    </p>
+                    {t.description ? (
+                      <p className="mt-1.5 line-clamp-2 text-xs font-medium leading-relaxed text-muted-foreground">
+                        {t.description}
+                      </p>
+                    ) : (
+                      <p className="mt-1.5 text-xs font-medium text-muted-foreground">
+                        Chủ đề chứa các từ vựng thiết yếu
+                      </p>
+                    )}
                   </div>
 
-                  <p className="truncate text-lg font-bold text-foreground">
-                    {t.title}
-                  </p>
-                  {t.description ? (
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                      {t.description}
-                    </p>
-                  ) : (
-                    <p className="mt-1 text-sm text-muted-foreground">
+                  <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-3">
+                    <span className="text-xs font-black text-muted-foreground">
                       {t._count.words} từ vựng
-                    </p>
-                  )}
-                  <p className="mt-4 text-xs font-semibold" style={{ color }}>
-                    {t._count.words} từ →
-                  </p>
+                    </span>
+                    <span
+                      className="inline-flex items-center gap-1 text-xs font-black transition-transform group-hover:translate-x-1"
+                      style={{ color }}
+                    >
+                      <span>Học ngay</span>
+                      <ArrowRight size={13} />
+                    </span>
+                  </div>
                 </Link>
               </motion.div>
             );

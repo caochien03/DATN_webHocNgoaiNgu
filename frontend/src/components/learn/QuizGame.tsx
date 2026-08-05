@@ -9,7 +9,9 @@ import {
   RotateCcw,
   Sparkles,
   Trophy,
+  Volume2,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { BRAND, scoreColor } from "@/components/ui-kit/brand";
 import { shuffle } from "@/lib/shuffle";
 import type { AttemptHandler, LearnCard } from "./types";
@@ -21,6 +23,7 @@ type Question = {
 };
 
 const OPTION_COUNT = 4;
+const OPTION_LETTERS = ["A", "B", "C", "D"];
 
 function buildQuestions(target: LearnCard[], pool: LearnCard[]): Question[] {
   if (target.length === 0) return [];
@@ -59,6 +62,15 @@ export function QuizGame({
       setQuestions([]);
     }
   }, [cards]);
+
+  function speak(text: string) {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+  }
 
   if (cards.length < OPTION_COUNT) {
     return (
@@ -108,16 +120,19 @@ export function QuizGame({
         ? Math.round((score / questions.length) * 100)
         : 0;
     return (
-      <div className="relative mt-5 overflow-hidden rounded-3xl border border-border bg-card p-8 text-center shadow-lg md:p-10">
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary/15 to-transparent" />
+      <div className="relative mt-5 overflow-hidden rounded-3xl border border-border bg-card p-8 text-center shadow-md md:p-10">
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary/10 to-transparent" />
         <div
-          className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-xl shadow-primary/25"
-          style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})` }}
+          className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg"
+          style={{
+            background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})`,
+            boxShadow: `0 8px 24px 0 ${BRAND.purple}40`,
+          }}
         >
           <Trophy size={32} />
         </div>
-        <p className="relative mt-4 text-xs font-bold uppercase tracking-[0.16em] text-primary">
-          Tổng kết kết quả
+        <p className="relative mt-4 text-xs font-black uppercase tracking-[0.16em] text-primary">
+          Kết quả trắc nghiệm
         </p>
         <p
           className="relative mt-1 text-5xl font-black tracking-tight sm:text-6xl"
@@ -126,35 +141,39 @@ export function QuizGame({
           {pctScore}%
         </p>
         <div className="relative mt-3 flex items-center justify-center gap-3">
-          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-500">
+          <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-black text-emerald-600 dark:text-emerald-400">
             ✓ Đúng: {score} câu
           </span>
-          <span className="rounded-full bg-red-500/15 px-3 py-1 text-xs font-bold text-red-500">
-            ✗ Sai: {wrongCards.length} từ
+          <span className="rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-black text-red-600 dark:text-red-400">
+            ✗ Sai: {wrongCards.length} câu
           </span>
         </div>
 
-        <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3">
+        <div className="relative mt-7 flex flex-wrap items-center justify-center gap-3">
           {wrongCards.length > 0 ? (
-            <button
+            <motion.button
               type="button"
               onClick={() => restart(wrongCards)}
-              className="rounded-2xl px-6 py-3 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5"
+              className="rounded-2xl px-6 py-3 text-xs font-black text-white shadow-md transition"
               style={{
                 background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})`,
-                boxShadow: `0 4px 14px 0 ${BRAND.purple}35`,
+                boxShadow: `0 4px 16px 0 ${BRAND.purple}35`,
               }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
               Ôn lại {wrongCards.length} từ sai
-            </button>
+            </motion.button>
           ) : null}
-          <button
+          <motion.button
             type="button"
             onClick={() => restart()}
-            className="flex items-center gap-2 rounded-2xl border border-border bg-card px-6 py-3 text-sm font-bold text-foreground transition-all hover:bg-secondary hover:border-primary/40"
+            className="flex items-center gap-2 rounded-2xl border border-border bg-card px-6 py-3 text-xs font-black text-foreground shadow-xs transition hover:bg-secondary hover:border-primary/40"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
-            <RotateCcw size={16} /> Làm lại cả bộ
-          </button>
+            <RotateCcw size={15} /> Luyện lại từ đầu
+          </motion.button>
         </div>
       </div>
     );
@@ -165,161 +184,155 @@ export function QuizGame({
   const progressPercent = Math.round(((index + 1) / questions.length) * 100);
 
   return (
-    <section className="relative mt-5 overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-lg md:p-8">
+    <section className="relative mt-5 overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
       {/* Top Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span
             className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-md"
-            style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})` }}
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})`,
+              boxShadow: `0 4px 16px 0 ${BRAND.purple}35`,
+            }}
           >
             <HelpCircle size={22} />
           </span>
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Phản xạ nhanh</span>
-            <p className="text-lg font-extrabold text-foreground">Trắc Nghiệm 4 Lựa Chọn</p>
+            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">
+              Kiểm tra nhanh
+            </span>
+            <p className="text-lg font-black text-foreground">Trắc Nghiệm 4 Lựa Chọn</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-primary/10 px-3 py-1 font-mono text-xs font-bold text-primary">
+          <span className="rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 font-mono text-xs font-bold text-primary">
             Câu {index + 1} / {questions.length}
-          </span>
-          <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-mono text-xs font-bold text-emerald-500">
-            {score} điểm
           </span>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="mt-5 h-2 overflow-hidden rounded-full bg-secondary/80">
-        <div
-          className="h-full rounded-full transition-all duration-300"
+      <div className="mt-5 h-2 overflow-hidden rounded-full bg-secondary">
+        <motion.div
+          className="h-full rounded-full"
           style={{
-            width: `${progressPercent}%`,
             background: `linear-gradient(90deg, ${BRAND.purple}, ${BRAND.blue})`,
           }}
+          initial={{ width: 0 }}
+          animate={{ width: `${progressPercent}%` }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         />
       </div>
 
-      {/* Question Prompt Box */}
-      <div
-        className="mt-6 flex flex-col items-center justify-center rounded-3xl border border-border p-7 text-center shadow-sm"
-        style={{
-          background: `linear-gradient(135deg, ${BRAND.purple}12 0%, var(--card) 60%, ${BRAND.blue}12 100%)`,
-        }}
-      >
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-0.5 text-xs font-extrabold uppercase tracking-wider text-primary">
-          <Sparkles size={12} /> Chọn nghĩa chính xác của từ:
-        </span>
-        <p className="mt-3 text-3xl font-black text-foreground sm:text-4xl">
+      {/* Question Prompt Card */}
+      <div className="mt-6 rounded-2xl border border-border bg-gradient-to-br from-secondary/40 via-card to-primary/5 p-6 text-center shadow-xs">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+            Nghĩa tiếng Việt của từ này là gì?
+          </span>
+          <button
+            type="button"
+            onClick={() => speak(q.card.frontText)}
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary hover:text-primary"
+            title="Phát âm"
+          >
+            <Volume2 size={15} />
+          </button>
+        </div>
+        <p className="my-5 text-3xl sm:text-4xl font-black tracking-tight text-foreground">
           {q.card.frontText}
         </p>
-        {q.card.note ? (
-          <p className="mt-2 text-xs font-medium text-muted-foreground">
-            💡 Gợi ý: {q.card.note}
-          </p>
-        ) : null}
       </div>
 
       {/* 4 Options Grid */}
       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {q.options.map((opt, optionIndex) => {
-          const isCorrect = opt === q.correct;
+        {q.options.map((opt, i) => {
+          const letter = OPTION_LETTERS[i] ?? `${i + 1}`;
           const isPicked = picked === opt;
-          const revealed = picked !== null;
-          const letters = ["A", "B", "C", "D"];
+          const isCorrect = opt === q.correct;
+          const showAnswer = picked !== null;
 
-          let style = {};
-          let className =
-            "group relative flex min-h-[72px] w-full items-center gap-3.5 rounded-2xl border p-4 text-left transition-all duration-200 disabled:cursor-default ";
+          let btnStyle = "border-border bg-card hover:border-primary/50 hover:bg-secondary/60";
+          let letterStyle = "bg-secondary text-muted-foreground";
 
-          if (revealed) {
+          if (showAnswer) {
             if (isCorrect) {
-              className += "border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shadow-md shadow-emerald-500/10 scale-[1.01]";
-            } else if (isPicked) {
-              className += "border-red-500 bg-red-500/15 text-red-500 shadow-md shadow-red-500/10";
+              btnStyle = "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/30";
+              letterStyle = "bg-emerald-500 text-white";
+            } else if (isPicked && !isCorrect) {
+              btnStyle = "border-red-500 bg-red-500/10 text-red-700 dark:text-red-300 ring-2 ring-red-500/30";
+              letterStyle = "bg-red-500 text-white";
             } else {
-              className += "border-border bg-card/60 opacity-60";
+              btnStyle = "border-border bg-card opacity-50";
             }
-          } else {
-            className += "border-border bg-card hover:-translate-y-1 hover:border-primary/50 hover:bg-secondary/60 hover:shadow-md";
           }
 
           return (
-            <button
+            <motion.button
               key={opt}
               type="button"
-              disabled={revealed}
               onClick={() => choose(opt)}
-              className={className}
-              style={style}
+              disabled={picked !== null}
+              className={`flex items-center justify-between rounded-2xl border p-4 text-left font-bold transition-all ${btnStyle}`}
+              whileHover={picked === null ? { scale: 1.01, y: -1 } : {}}
+              whileTap={picked === null ? { scale: 0.98 } : {}}
             >
-              <span
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black transition-colors ${
-                  revealed && isCorrect
-                    ? "bg-emerald-500 text-white"
-                    : revealed && isPicked
-                    ? "bg-red-500 text-white"
-                    : "bg-secondary text-muted-foreground group-hover:bg-primary group-hover:text-white"
-                }`}
-              >
-                {revealed && isCorrect ? (
-                  <Check size={18} />
-                ) : revealed && isPicked ? (
-                  <CircleX size={18} />
-                ) : (
-                  letters[optionIndex]
-                )}
-              </span>
-              <span className="font-bold text-foreground leading-snug">{opt}</span>
-            </button>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-black transition-colors ${letterStyle}`}
+                >
+                  {letter}
+                </span>
+                <span className="text-sm text-foreground">{opt}</span>
+              </div>
+              {showAnswer && isCorrect ? (
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white">
+                  <Check size={14} />
+                </span>
+              ) : null}
+              {showAnswer && isPicked && !isCorrect ? (
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white">
+                  <CircleX size={14} />
+                </span>
+              ) : null}
+            </motion.button>
           );
         })}
       </div>
 
-      {/* Answer Feedback Banner & Next Button */}
+      {/* Next Question Footer */}
       {picked !== null ? (
-        <div
-          className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl p-4 shadow-sm"
-          style={{
-            backgroundColor: picked === q.correct ? `${BRAND.green}15` : `${BRAND.red}15`,
-            border: `1px solid ${picked === q.correct ? BRAND.green : BRAND.red}35`,
-          }}
+        <motion.div
+          className="mt-6 flex items-center justify-between border-t border-border pt-4"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 text-xs font-bold">
             {picked === q.correct ? (
-              <>
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500 text-white">
-                  <Check size={16} />
-                </span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                  Chính xác! Bạn ghi nhớ rất tốt.
-                </span>
-              </>
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                <Check size={16} /> Chính xác! Tuyệt vời.
+              </span>
             ) : (
-              <>
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white">
-                  <CircleX size={16} />
-                </span>
-                <span className="font-bold text-red-500 text-sm">
-                  Chưa đúng. Đáp án chính xác là: <strong className="underline text-foreground">{q.correct}</strong>
-                </span>
-              </>
+              <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400">
+                <CircleX size={16} /> Chưa đúng. Đáp án: {q.correct}
+              </span>
             )}
           </div>
-          <button
+          <motion.button
             type="button"
             onClick={nextQuestion}
-            className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5"
+            className="flex items-center gap-2 rounded-2xl px-6 py-2.5 text-xs font-black text-white shadow-md"
             style={{
-              background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})`,
-              boxShadow: `0 4px 12px 0 ${BRAND.purple}35`,
+              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+              boxShadow: `0 4px 14px 0 ${BRAND.blue}35`,
             }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
           >
-            <span>{index + 1 >= questions.length ? "Xem tổng kết" : "Câu tiếp theo"}</span>
+            <span>{index + 1 >= questions.length ? "Xem tổng kết" : "Câu tiếp"}</span>
             <ChevronRight size={16} />
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       ) : null}
     </section>
   );

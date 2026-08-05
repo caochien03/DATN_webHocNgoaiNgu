@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { ChevronRight, GraduationCap } from "lucide-react";
+import { ChevronRight, GraduationCap, ArrowRight, BookOpen, Layers } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
-import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import { BRAND } from "@/components/ui-kit/brand";
 import { PageHeader } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { appendLanguageQuery } from "@/lib/learning-language-api";
@@ -61,20 +61,20 @@ function LessonsContent() {
   const activeLevelObj = LEVELS.find((l) => l.code === level) ?? LEVELS[0];
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Bài học ngữ pháp"
-        sub="Mỗi bài gồm từ vựng trọng tâm, điểm ngữ pháp và bài tập thực hành"
+        sub="Mỗi bài học gồm từ vựng trọng tâm, cấu trúc ngữ pháp chi tiết và bài tập củng cố"
       />
 
       {error ? (
-        <p className="mb-4 rounded-2xl bg-red-500/10 p-3.5 text-sm text-red-400">
+        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-bold text-red-500 shadow-2xs">
           {error}
         </p>
       ) : null}
 
       {/* Level filter tabs */}
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         {LEVELS.map((l) => {
           const active = level === l.code;
           return (
@@ -82,10 +82,11 @@ function LessonsContent() {
               key={l.code}
               type="button"
               onClick={() => setLevel(l.code)}
-              className="relative rounded-2xl px-4 py-2 text-sm font-semibold transition-all"
+              className="relative rounded-2xl px-4 py-2 text-xs font-black transition-all shadow-2xs"
               style={{
                 color: active ? "#ffffff" : "var(--foreground)",
-                border: active ? "1px solid transparent" : "1px solid var(--border)",
+                border: active ? "none" : "1px solid var(--border)",
+                background: active ? undefined : "var(--card)",
               }}
             >
               {active ? (
@@ -94,19 +95,17 @@ function LessonsContent() {
                   className="absolute inset-0 rounded-2xl shadow-md"
                   style={{
                     background: `linear-gradient(135deg, ${l.color}, ${l.color}cc)`,
-                    boxShadow: `0 4px 12px 0 ${l.color}40`,
+                    boxShadow: `0 4px 14px 0 ${l.color}40`,
                   }}
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
-              ) : (
-                <span className="absolute inset-0 rounded-2xl bg-card" />
-              )}
-              <span className="relative flex items-center gap-2">
+              ) : null}
+              <span className="relative z-10 flex items-center gap-2">
                 {l.label}
                 <span
-                  className="rounded-full px-2 py-0.2 text-xs font-bold"
+                  className="rounded-full px-2 py-0.2 text-[10px] font-black"
                   style={{
-                    background: active ? "rgba(255,255,255,0.25)" : "var(--muted)",
+                    background: active ? "rgba(255,255,255,0.25)" : "var(--secondary)",
                     color: active ? "#fff" : "var(--muted-foreground)",
                   }}
                 >
@@ -118,84 +117,88 @@ function LessonsContent() {
         })}
       </div>
 
-      {lessons === null && !error ? (
-        <p className="text-sm text-muted-foreground">Đang tải…</p>
+      {lessons === null ? (
+        <p className="text-xs font-bold text-muted-foreground">Đang tải bài học…</p>
       ) : filtered.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-border bg-card/60 p-10 text-center text-sm text-muted-foreground">
-          Chưa có bài học nào ở cấp độ {activeLevelObj.label}.
+        <div className="rounded-3xl border-2 border-dashed border-border bg-secondary/20 p-10 text-center shadow-2xs">
+          <p className="text-sm font-bold text-muted-foreground">
+            Chưa có bài học nào trong cấp độ {activeLevelObj.label}.
+          </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((l, i) => (
             <motion.div
               key={l.id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
+              transition={{ duration: 0.25, delay: i * 0.04 }}
+              whileHover={{ y: -3 }}
             >
               <Link
                 href={`/lessons/${l.id}`}
-                className="group relative flex items-center gap-4 overflow-hidden rounded-3xl border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                style={{
-                  borderColor: `${activeLevelObj.color}25`,
-                  boxShadow: "var(--shadow-card)",
-                }}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/40 hover:shadow-md h-full"
               >
-                {/* Left color bar */}
+                {/* Top accent line */}
                 <div
-                  className="absolute inset-y-0 left-0 w-1.5"
-                  style={{ background: activeLevelObj.color }}
+                  className="absolute inset-x-0 top-0 h-[2.5px]"
+                  style={{
+                    background: `linear-gradient(90deg, ${activeLevelObj.color}, ${activeLevelObj.color}40)`,
+                  }}
                 />
 
-                <span
-                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-white shadow-sm"
-                  style={{
-                    background: `linear-gradient(135deg, ${activeLevelObj.color}, ${activeLevelObj.color}90)`,
-                  }}
-                >
-                  <GraduationCap size={22} />
-                </span>
-
-                <div className="min-w-0 flex-1 pl-1">
-                  <div className="flex flex-wrap items-center gap-2">
+                <div>
+                  <div className="mb-4 flex items-start justify-between">
                     <span
-                      className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                      className="flex h-11 w-11 items-center justify-center rounded-2xl shadow-2xs transition-transform group-hover:scale-105"
+                      style={{
+                        background: `linear-gradient(135deg, ${activeLevelObj.color}20, ${activeLevelObj.color}10)`,
+                        color: activeLevelObj.color,
+                        border: `1px solid ${activeLevelObj.color}30`,
+                      }}
+                    >
+                      <GraduationCap size={20} strokeWidth={2.2} />
+                    </span>
+                    <span
+                      className="rounded-full px-2.5 py-0.5 text-[11px] font-black"
                       style={{
                         background: `${activeLevelObj.color}15`,
                         color: activeLevelObj.color,
                         border: `1px solid ${activeLevelObj.color}30`,
                       }}
                     >
-                      {activeLevelObj.label}
+                      Bài {l.sortOrder + 1}
                     </span>
                   </div>
-                  <p className="mt-1 text-base font-bold text-foreground group-hover:text-primary transition-colors">
+
+                  <p className="text-base font-black tracking-tight text-foreground transition-colors group-hover:text-primary">
                     {l.title}
                   </p>
                   {l.summary ? (
-                    <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                    <p className="mt-1.5 line-clamp-2 text-xs font-medium leading-relaxed text-muted-foreground">
                       {l.summary}
                     </p>
-                  ) : null}
-                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-muted-foreground">
-                    <span className="rounded-lg bg-secondary/80 px-2 py-0.5 text-foreground">
-                      📖 {l._count.vocabulary} từ vựng
-                    </span>
-                    <span className="rounded-lg bg-secondary/80 px-2 py-0.5 text-foreground">
-                      💡 {l._count.points} điểm ngữ pháp
-                    </span>
-                    {l._count.exercises > 0 ? (
-                      <span className="rounded-lg bg-secondary/80 px-2 py-0.5 text-foreground">
-                        ✍️ {l._count.exercises} bài tập
-                      </span>
-                    ) : null}
-                  </div>
+                  ) : (
+                    <p className="mt-1.5 text-xs font-medium text-muted-foreground">
+                      Điểm ngữ pháp quan trọng cần nắm vững
+                    </p>
+                  )}
                 </div>
 
-                <ChevronRight
-                  size={20}
-                  className="text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground"
-                />
+                <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-3">
+                  <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
+                    <span>{l._count.points} điểm ngữ pháp</span>
+                    <span>·</span>
+                    <span>{l._count.vocabulary} từ</span>
+                  </div>
+                  <span
+                    className="inline-flex items-center gap-1 text-xs font-black transition-transform group-hover:translate-x-1"
+                    style={{ color: activeLevelObj.color }}
+                  >
+                    <span>Vào học</span>
+                    <ArrowRight size={13} />
+                  </span>
+                </div>
               </Link>
             </motion.div>
           ))}

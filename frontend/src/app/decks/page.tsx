@@ -10,6 +10,7 @@ import {
   Plus,
   RefreshCw,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
@@ -48,62 +49,66 @@ function DecksContent() {
   }, [load]);
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Bộ thẻ của tôi"
-        sub={`Tạo và quản lý bộ từ riêng — ${learningLanguageLabel(languageCode)}`}
+        sub={`Tự tạo và quản lý kho từ vựng cá nhân — ${learningLanguageLabel(languageCode)}`}
         action={
-          <Link
-            href="/decks/new"
-            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5"
-            style={{
-              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
-              boxShadow: `0 4px 12px 0 ${BRAND.blue}40`,
-            }}
-          >
-            <Plus size={16} /> Tạo bộ mới
-          </Link>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+            <Link
+              href="/decks/new"
+              className="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-xs font-black text-white shadow-md transition-all"
+              style={{
+                background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                boxShadow: `0 4px 14px 0 ${BRAND.blue}40`,
+              }}
+            >
+              <Plus size={15} /> Tạo bộ thẻ mới
+            </Link>
+          </motion.div>
         }
       />
 
       {error ? (
-        <p className="mb-4 rounded-2xl bg-red-500/10 p-3.5 text-sm text-red-400">
+        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-bold text-red-500 shadow-2xs">
           {error}
         </p>
       ) : null}
 
       {data === null && !error ? (
-        <p className="text-sm text-muted-foreground">Đang tải…</p>
+        <p className="text-xs font-bold text-muted-foreground">Đang tải bộ thẻ…</p>
       ) : null}
 
       {data ? (
         <>
-          <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
             <Stat label="Số bộ thẻ" value={data.totals.decks} icon={<Layers size={18} />} color={BRAND.blue} delay={0.05} />
             <Stat label="Tổng thẻ từ" value={data.totals.cards} icon={<BookOpen size={18} />} color={BRAND.cyan} delay={0.1} />
-            <Stat label="Đã thuộc" value={data.totals.learned} icon={<CheckCircle2 size={18} />} color={BRAND.green} delay={0.15} />
-            <Stat label="Cần ôn lại" value={data.totals.weak} icon={<RefreshCw size={18} />} color={BRAND.yellow} delay={0.2} />
+            <Stat label="Đã ghi nhớ" value={data.totals.learned} icon={<CheckCircle2 size={18} />} color={BRAND.green} delay={0.15} />
+            <Stat label="Cần ôn tập" value={data.totals.weak} icon={<RefreshCw size={18} />} color={BRAND.yellow} delay={0.2} />
           </div>
 
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-base font-bold text-foreground">
-              Danh sách bộ ({data.decks.length})
+          <div className="flex items-center justify-between pt-2">
+            <h2 className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+              Danh sách bộ thẻ ({data.decks.length})
             </h2>
           </div>
 
           {data.decks.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-border bg-card/60 p-10 text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <Sparkles size={24} />
+            <div className="rounded-3xl border-2 border-dashed border-border bg-secondary/20 p-10 text-center shadow-2xs">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+                <Sparkles size={26} />
               </div>
-              <p className="text-base font-semibold text-foreground">Chưa có bộ thẻ nào</p>
-              <p className="mt-1 text-sm text-muted-foreground">Tạo bộ thẻ để bắt đầu lưu từ vựng của riêng bạn.</p>
+              <p className="text-base font-black text-foreground">Bạn chưa có bộ thẻ nào</p>
+              <p className="mt-1 text-xs font-medium text-muted-foreground">
+                Tạo bộ thẻ để ghi lại các từ vựng mới bạn bắt gặp trong quá trình học.
+              </p>
               <Link
                 href="/decks/new"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white shadow-sm"
+                className="mt-5 inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-xs font-black text-white shadow-md transition-all"
                 style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}
               >
-                <Plus size={14} /> Tạo ngay
+                <Plus size={14} /> Bắt đầu tạo ngay
               </Link>
             </div>
           ) : (
@@ -114,35 +119,32 @@ function DecksContent() {
                 return (
                   <motion.div
                     key={d.id}
-                    initial={{ opacity: 0, y: 12 }}
+                    initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
+                    whileHover={{ y: -3 }}
                   >
                     <Link
                       href={`/decks/${d.id}`}
-                      className="group relative block overflow-hidden rounded-3xl border bg-card p-5 transition-all duration-200 hover:-translate-y-1"
-                      style={{
-                        borderColor: `${color}25`,
-                        boxShadow: "var(--shadow-card)",
-                      }}
+                      className="group relative block overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
                     >
                       {/* Top accent line */}
                       <div
-                        className="absolute inset-x-0 top-0 h-[3px]"
-                        style={{ background: `linear-gradient(90deg, ${color}, ${color}50)` }}
+                        className="absolute inset-x-0 top-0 h-[2.5px]"
+                        style={{ background: `linear-gradient(90deg, ${color}, ${color}40)` }}
                       />
 
                       <div className="mb-3 flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                          <p className="truncate text-base font-black text-foreground transition-colors group-hover:text-primary">
                             {d.title}
                           </p>
-                          <p className="mt-0.5 text-xs text-muted-foreground">
-                            {d.total} thẻ trong bộ
+                          <p className="mt-0.5 text-xs font-bold text-muted-foreground">
+                            {d.total} thẻ từ vựng
                           </p>
                         </div>
                         <span
-                          className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold"
+                          className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-black"
                           style={{
                             background: `${color}15`,
                             color: color,
@@ -157,20 +159,20 @@ function DecksContent() {
                         <Bar done={d.learned} total={d.total || 1} color={color} />
                       </div>
 
-                      <div className="mt-3 flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground font-medium">
-                          Đã thuộc: <span className="font-bold text-foreground">{d.learned}/{d.total}</span>
+                      <div className="mt-4 flex items-center justify-between text-xs">
+                        <span className="font-bold text-muted-foreground">
+                          Đã thuộc: <span className="font-black text-foreground">{d.learned}/{d.total}</span>
                         </span>
                         {d.weak > 0 ? (
                           <span
-                            className="rounded-lg px-2 py-0.5 font-semibold text-[11px]"
+                            className="rounded-lg px-2 py-0.5 text-[11px] font-black"
                             style={{ background: `${BRAND.yellow}18`, color: BRAND.yellow }}
                           >
                             Cần ôn {d.weak} thẻ
                           </span>
                         ) : (
-                          <span className="text-emerald-500 font-semibold text-[11px]">
-                            ✓ Hoàn thành tốt
+                          <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400">
+                            ✓ Đã ghi nhớ tốt
                           </span>
                         )}
                       </div>

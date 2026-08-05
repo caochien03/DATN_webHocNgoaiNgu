@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Calendar, Flame, Sparkles, Target } from "lucide-react";
+import { Calendar, Flame, Sparkles, Target, Save, CheckCircle2 } from "lucide-react";
+import { motion } from "motion/react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
-import { BRAND, GRADIENT, pct } from "@/components/ui-kit/brand";
+import { BRAND, pct } from "@/components/ui-kit/brand";
 import { PageHeader, Stat } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import { appendLanguageQuery } from "@/lib/learning-language-api";
@@ -18,6 +19,7 @@ function GoalsContent() {
   const [inputTarget, setInputTarget] = useState("20");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedSuccess, setSavedSuccess] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
@@ -54,6 +56,7 @@ function GoalsContent() {
     }
     setSaving(true);
     setError(null);
+    setSavedSuccess(false);
     try {
       const res = await fetchWithAuth(
         appendLanguageQuery("/goals/me", languageCode),
@@ -67,6 +70,8 @@ function GoalsContent() {
         return;
       }
       setGoal((await res.json()) as GoalMeResponse);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không lưu được mục tiêu");
@@ -83,19 +88,19 @@ function GoalsContent() {
   const todayPercent = goal?.today.percent ?? 0;
 
   return (
-    <div className="pb-10">
+    <div className="space-y-6">
       <PageHeader
         title="Mục tiêu ngày"
-        sub={`Đặt số thẻ ôn mỗi ngày và theo dõi chuỗi học — ${learningLanguageLabel(languageCode)}`}
+        sub={`Thiết lập mục tiêu ôn luyện hàng ngày để duy trì động lực — ${learningLanguageLabel(languageCode)}`}
       />
 
       {error ? (
-        <p className="mb-4 rounded-2xl bg-red-500/10 p-3.5 text-sm text-red-400">
+        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-bold text-red-500 shadow-2xs">
           {error}
         </p>
       ) : null}
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
         <Stat
           label="Chuỗi hiện tại"
           value={`${goal?.streak ?? 0} ngày`}
@@ -104,14 +109,14 @@ function GoalsContent() {
           delay={0.05}
         />
         <Stat
-          label="Hôm nay"
+          label="Tiến độ hôm nay"
           value={goal ? `${goal.today.reviewedCards}/${goal.today.target}` : "—"}
           icon={<Target size={18} />}
           color={BRAND.blue}
           delay={0.1}
         />
         <Stat
-          label="Chuỗi tốt nhất"
+          label="Chuỗi kỷ lục"
           value={`${goal?.bestStreak ?? 0} ngày`}
           icon={<Calendar size={18} />}
           color={BRAND.cyan}
@@ -121,13 +126,14 @@ function GoalsContent() {
 
       {/* Target config & Circular Progress */}
       <div
-        className="mb-6 relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8"
+        className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8"
         style={{
           background: `linear-gradient(135deg, ${BRAND.blue}12 0%, transparent 60%, ${BRAND.cyan}12 100%)`,
         }}
       >
-        <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
-          <div className="relative h-32 w-32 flex-shrink-0">
+        <div className="flex flex-col items-center gap-8 sm:flex-row">
+          {/* Progress Ring */}
+          <div className="relative h-32 w-32 shrink-0">
             <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
               <circle
                 cx="50"
@@ -135,7 +141,7 @@ function GoalsContent() {
                 r="40"
                 fill="none"
                 stroke="var(--border)"
-                strokeWidth="9"
+                strokeWidth="8"
               />
               <circle
                 cx="50"
@@ -143,24 +149,26 @@ function GoalsContent() {
                 r="40"
                 fill="none"
                 stroke={BRAND.blue}
-                strokeWidth="9"
+                strokeWidth="8"
                 strokeLinecap="round"
                 strokeDasharray={`${(todayPercent / 100) * 251.3} 251.3`}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <p className="text-2xl font-black text-foreground">{todayPercent}%</p>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                 Hôm nay
               </p>
             </div>
           </div>
 
           <div className="flex-1 text-center sm:text-left">
-            <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Cấu hình</span>
-            <h3 className="mt-1 text-xl font-bold text-foreground">Đặt mục tiêu mỗi ngày</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Số thẻ từ vựng ({learningLanguageLabel(languageCode)}) cần ôn luyện mỗi ngày để duy trì chuỗi Streak.
+            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">
+              Cài đặt hạn mức
+            </span>
+            <h3 className="mt-1 text-lg font-black text-foreground">Số thẻ ôn mỗi ngày</h3>
+            <p className="mt-1 text-xs font-medium leading-relaxed text-muted-foreground">
+              Số lượng thẻ ({learningLanguageLabel(languageCode)}) bạn cam kết ôn tập mỗi ngày để giữ vững chuỗi Streak.
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
               <input
@@ -169,21 +177,24 @@ function GoalsContent() {
                 max={500}
                 value={inputTarget}
                 onChange={(e) => setInputTarget(e.target.value)}
-                className="w-28 rounded-2xl border border-border bg-card px-4 py-2.5 text-center font-mono text-base font-bold text-foreground outline-none shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-28 rounded-2xl border border-border bg-card px-4 py-2.5 text-center font-mono text-base font-black text-foreground outline-none shadow-2xs focus:border-primary focus:ring-4 focus:ring-primary/15"
               />
-              <span className="text-sm font-semibold text-muted-foreground">thẻ / ngày</span>
-              <button
+              <span className="text-xs font-bold text-muted-foreground">thẻ / ngày</span>
+              <motion.button
                 type="button"
                 onClick={() => void saveTarget()}
                 disabled={saving}
-                className="rounded-2xl px-6 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5 disabled:opacity-60"
+                className="flex items-center gap-1.5 rounded-2xl px-6 py-2.5 text-xs font-black text-white shadow-md disabled:opacity-60"
                 style={{
                   background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
-                  boxShadow: `0 4px 12px 0 ${BRAND.blue}35`,
+                  boxShadow: `0 4px 14px 0 ${BRAND.blue}35`,
                 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
-                {saving ? "Đang lưu…" : "Lưu mục tiêu"}
-              </button>
+                {savedSuccess ? <CheckCircle2 size={15} /> : <Save size={15} />}
+                <span>{saving ? "Đang lưu…" : savedSuccess ? "Đã lưu!" : "Lưu mục tiêu"}</span>
+              </motion.button>
             </div>
           </div>
         </div>
@@ -192,21 +203,23 @@ function GoalsContent() {
       {/* 30-Day Activity History */}
       <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
         <div
-          className="absolute inset-x-0 top-0 h-[3px]"
+          className="absolute inset-x-0 top-0 h-[2.5px]"
           style={{ background: `linear-gradient(90deg, ${BRAND.green}, ${BRAND.cyan})` }}
         />
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Lịch sử</span>
-            <h3 className="mt-1 text-lg font-bold text-foreground">30 ngày gần đây</h3>
+            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">
+              Ma trận hoạt động
+            </span>
+            <h3 className="mt-1 text-base font-black text-foreground">30 ngày gần đây</h3>
           </div>
-          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-500">
+          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-black text-emerald-600 dark:text-emerald-400">
             Đạt chuẩn: {achievedDays} / 30 ngày
           </span>
         </div>
 
         {history.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Chưa có dữ liệu lịch sử.</p>
+          <p className="text-xs font-bold text-muted-foreground">Chưa có dữ liệu lịch sử.</p>
         ) : (
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-5">
             {history.map((row) => {
@@ -214,7 +227,7 @@ function GoalsContent() {
               return (
                 <div
                   key={row.date}
-                  className="group rounded-2xl border p-3 text-xs transition-all duration-150 hover:-translate-y-0.5"
+                  className="rounded-2xl border p-3 text-xs transition-all duration-150 hover:-translate-y-0.5"
                   style={
                     row.goalAchieved
                       ? {
@@ -236,16 +249,16 @@ function GoalsContent() {
                         }
                   }
                 >
-                  <p className="font-semibold text-[11px]">
+                  <p className="font-bold text-[11px]">
                     {new Date(row.date).toLocaleDateString("vi-VN", {
                       day: "2-digit",
                       month: "2-digit",
                     })}
                   </p>
-                  <p className="mt-1 font-mono font-bold text-sm">
+                  <p className="mt-1 font-mono font-black text-sm">
                     {row.reviewedCards}/{row.goalTarget}
                   </p>
-                  <p className="mt-0.5 text-[10px] font-semibold opacity-80">{p}% hoàn thành</p>
+                  <p className="mt-0.5 text-[10px] font-bold opacity-80">{p}% hoàn thành</p>
                 </div>
               );
             })}

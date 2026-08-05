@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
-  HelpCircle,
   Keyboard,
   Layers3,
   Repeat2,
@@ -12,7 +11,8 @@ import {
   Sparkles,
   Volume2,
 } from "lucide-react";
-import { BRAND, GRADIENT_DIAGONAL } from "@/components/ui-kit/brand";
+import { motion, AnimatePresence } from "motion/react";
+import { BRAND } from "@/components/ui-kit/brand";
 import { shuffle } from "@/lib/shuffle";
 import type { LearnCard } from "./types";
 
@@ -33,10 +33,24 @@ export function FlashcardGame({ cards }: { cards: LearnCard[] }) {
 
   const current = order[index];
 
+  // Speech TTS
+  function speak(text: string) {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+
   // Keyboard navigation
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
       if (e.code === "Space") {
         e.preventDefault();
         setFlipped((f) => !f);
@@ -75,133 +89,197 @@ export function FlashcardGame({ cards }: { cards: LearnCard[] }) {
   const progressPercent = Math.round(((index + 1) / order.length) * 100);
 
   return (
-    <section className="relative mt-5 overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-lg md:p-8">
+    <section className="relative mt-5 overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
       {/* Top Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span
             className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-md"
-            style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})` }}
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+              boxShadow: `0 4px 16px 0 ${BRAND.blue}35`,
+            }}
           >
             <Layers3 size={22} />
           </span>
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Luyện phản xạ</span>
-            <p className="text-lg font-extrabold text-foreground">Flashcard Lật Thẻ</p>
+            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">
+              Luyện phản xạ từ vựng
+            </span>
+            <p className="text-lg font-black text-foreground">Flashcard 3D</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-primary/10 px-3 py-1 font-mono text-xs font-bold text-primary">
-            Thẻ {index + 1} / {order.length}
+          <span className="rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 font-mono text-xs font-bold text-primary">
+            {index + 1} / {order.length}
           </span>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="mt-5 h-2 overflow-hidden rounded-full bg-secondary/80">
-        <div
-          className="h-full rounded-full transition-all duration-300"
+      <div className="mt-5 h-2 overflow-hidden rounded-full bg-secondary">
+        <motion.div
+          className="h-full rounded-full"
           style={{
-            width: `${progressPercent}%`,
             background: `linear-gradient(90deg, ${BRAND.blue}, ${BRAND.cyan})`,
           }}
+          initial={{ width: 0 }}
+          animate={{ width: `${progressPercent}%` }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         />
       </div>
 
       {/* Flashcard 3D interactive Box */}
-      <div className="perspective-1000 mt-6">
-        <button
-          type="button"
+      <div className="mt-6 flex justify-center [perspective:1200px]">
+        <motion.div
           onClick={() => setFlipped((f) => !f)}
-          aria-pressed={flipped}
-          className={`group relative flex min-h-[320px] w-full flex-col items-center justify-center overflow-hidden rounded-3xl border p-8 text-center transition-all duration-300 hover:-translate-y-1 ${
-            flipped
-              ? "border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-card to-cyan-500/10 shadow-xl shadow-emerald-500/10"
-              : "border-primary/30 bg-gradient-to-br from-primary/10 via-card to-amber-500/10 shadow-xl shadow-primary/10"
-          }`}
+          className="relative min-h-[340px] w-full max-w-2xl cursor-pointer select-none rounded-3xl border border-border bg-gradient-to-br from-card via-card to-secondary/30 p-8 text-center shadow-md transition-shadow hover:shadow-xl"
+          animate={{ rotateY: flipped ? 180 : 0 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           style={{
+            transformStyle: "preserve-3d",
             boxShadow: flipped
-              ? "0 20px 40px -15px rgba(16, 185, 129, 0.2)"
-              : "0 20px 40px -15px rgba(249, 115, 22, 0.2)",
+              ? "0 20px 40px -15px rgba(5, 150, 105, 0.2)"
+              : "0 20px 40px -15px rgba(59, 110, 255, 0.2)",
           }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
         >
-          {/* Top Pill Tag */}
-          <div className="mb-4">
-            <span
-              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider shadow-sm"
-              style={{
-                background: flipped ? "rgba(16, 185, 129, 0.18)" : "rgba(249, 115, 22, 0.18)",
-                color: flipped ? BRAND.green : BRAND.blue,
-              }}
-            >
-              <Sparkles size={13} />
-              {flipped ? "Mặt sau: Ý nghĩa tiếng Việt" : "Mặt trước: Từ vựng gốc"}
-            </span>
-          </div>
+          {/* FRONT SIDE */}
+          <div
+            className={`absolute inset-0 flex flex-col items-center justify-between p-8 ${
+              flipped ? "pointer-events-none opacity-0" : "opacity-100"
+            }`}
+            style={{
+              backfaceVisibility: "hidden",
+              transition: "opacity 0.2s ease",
+            }}
+          >
+            <div className="flex w-full items-center justify-between">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider"
+                style={{
+                  background: `${BRAND.blue}15`,
+                  color: BRAND.blue,
+                  border: `1px solid ${BRAND.blue}30`,
+                }}
+              >
+                <Sparkles size={13} /> Mặt trước · Từ gốc
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  speak(current.frontText);
+                }}
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-secondary/80 text-muted-foreground transition hover:border-primary hover:text-primary"
+                title="Phát âm"
+              >
+                <Volume2 size={16} />
+              </button>
+            </div>
 
-          {/* Main Text */}
-          <div className="my-auto flex flex-col items-center justify-center max-w-xl">
-            <span className="text-3xl font-black leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
-              {flipped ? current.backText : current.frontText}
-            </span>
-            {current.note && flipped ? (
-              <p className="mt-4 rounded-xl bg-background/80 px-4 py-2 text-xs font-semibold text-muted-foreground shadow-sm">
-                💡 {current.note}
+            <div className="my-auto">
+              <p className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">
+                {current.frontText}
               </p>
-            ) : null}
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+              <Repeat2 size={14} className="text-primary" />
+              <span>Bấm vào thẻ hoặc phím Space để xem nghĩa</span>
+            </div>
           </div>
 
-          {/* Bottom Flip Hint */}
-          <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-            <Repeat2 size={15} />
-            <span>Nhấn vào thẻ hoặc phím cách (Space) để lật</span>
+          {/* BACK SIDE */}
+          <div
+            className={`absolute inset-0 flex flex-col items-center justify-between p-8 [transform:rotateY(180deg)] ${
+              flipped ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
+            style={{
+              backfaceVisibility: "hidden",
+              transition: "opacity 0.2s ease",
+            }}
+          >
+            <div className="flex w-full items-center justify-between">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider"
+                style={{
+                  background: `${BRAND.green}15`,
+                  color: BRAND.green,
+                  border: `1px solid ${BRAND.green}30`,
+                }}
+              >
+                <Sparkles size={13} /> Mặt sau · Giải nghĩa
+              </span>
+              <span className="text-xs font-bold text-muted-foreground">Tiếng Việt</span>
+            </div>
+
+            <div className="my-auto flex flex-col items-center">
+              <p className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">
+                {current.backText}
+              </p>
+              {current.note ? (
+                <p className="mt-4 rounded-xl border border-border bg-secondary/70 px-4 py-2 text-xs font-bold text-muted-foreground">
+                  💡 {current.note}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+              <Repeat2 size={14} className="text-emerald-500" />
+              <span>Bấm để lật lại mặt trước</span>
+            </div>
           </div>
-        </button>
+        </motion.div>
       </div>
 
       {/* Control Buttons Bar */}
       <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <button
+          <motion.button
             type="button"
             onClick={prev}
-            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground shadow-sm transition-all hover:border-primary/40 hover:bg-secondary hover:text-foreground hover:scale-105"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground shadow-xs transition hover:border-primary/40 hover:bg-secondary hover:text-foreground"
             aria-label="Thẻ trước"
+            whileTap={{ scale: 0.94 }}
           >
-            <ArrowLeft size={20} />
-          </button>
-          <button
+            <ArrowLeft size={18} />
+          </motion.button>
+          <motion.button
             type="button"
             onClick={() => setFlipped((f) => !f)}
-            className="flex items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-sm font-bold text-foreground shadow-sm transition-all hover:border-primary/40 hover:bg-secondary hover:scale-105"
+            className="flex items-center gap-2 rounded-2xl border border-border bg-card px-5 py-2.5 text-xs font-black text-foreground shadow-xs transition hover:border-primary/40 hover:bg-secondary"
+            whileTap={{ scale: 0.94 }}
           >
-            <Repeat2 size={18} className="text-primary" /> Lật thẻ
-          </button>
-          <button
+            <Repeat2 size={16} className="text-primary" /> Lật thẻ
+          </motion.button>
+          <motion.button
             type="button"
             onClick={next}
-            className="flex h-12 items-center gap-2 rounded-2xl px-6 text-sm font-bold text-white shadow-md transition-all hover:scale-105"
+            className="flex h-11 items-center gap-2 rounded-2xl px-6 text-xs font-black text-white shadow-md transition hover:opacity-95"
             style={{
               background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
-              boxShadow: `0 4px 14px 0 ${BRAND.blue}35`,
+              boxShadow: `0 4px 16px 0 ${BRAND.blue}40`,
             }}
             aria-label="Thẻ tiếp theo"
+            whileTap={{ scale: 0.94 }}
           >
             <span>Tiếp theo</span>
-            <ArrowRight size={18} />
-          </button>
+            <ArrowRight size={16} />
+          </motion.button>
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center gap-4 text-xs font-bold text-muted-foreground">
           <button
             type="button"
             onClick={reshuffle}
-            className="flex items-center gap-1.5 font-bold transition hover:text-primary"
+            className="flex items-center gap-1.5 transition hover:text-primary"
           >
             <Shuffle size={14} /> Trộn ngẫu nhiên
           </button>
           <span className="hidden md:inline-flex items-center gap-1 opacity-70">
-            <Keyboard size={13} /> Phím ← / →
+            <Keyboard size={13} /> Phím ← / → / Space
           </span>
         </div>
       </div>

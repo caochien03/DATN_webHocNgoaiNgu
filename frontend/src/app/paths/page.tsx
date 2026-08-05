@@ -41,27 +41,29 @@ function PathsContent() {
   }, [load]);
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Lộ trình học"
-        sub={`Học từng bước từ cơ bản đến nâng cao — ${learningLanguageLabel(languageCode)}`}
+        sub={`Học từng bước từ cơ bản đến nâng cao theo giáo trình chuẩn — ${learningLanguageLabel(languageCode)}`}
       />
 
       {error ? (
-        <p className="mb-4 rounded-2xl bg-red-500/10 p-3.5 text-sm text-red-400">
+        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-bold text-red-500 shadow-2xs">
           {error}
         </p>
       ) : null}
 
       {paths === null && !error ? (
-        <p className="text-sm text-muted-foreground">Đang tải…</p>
+        <p className="text-xs font-bold text-muted-foreground">Đang tải lộ trình…</p>
       ) : null}
 
       {paths ? (
         <div className="space-y-4">
           {paths.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-border bg-card/60 p-10 text-center text-sm text-muted-foreground">
-              Chưa có lộ trình học nào cho ngôn ngữ này.
+            <div className="rounded-3xl border-2 border-dashed border-border bg-secondary/20 p-10 text-center shadow-2xs">
+              <p className="text-sm font-bold text-muted-foreground">
+                Chưa có lộ trình học nào cho ngôn ngữ này.
+              </p>
             </div>
           ) : (
             paths.map((p, i) => {
@@ -70,32 +72,30 @@ function PathsContent() {
               return (
                 <motion.div
                   key={p.id}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.06 }}
+                  whileHover={{ y: -3 }}
                 >
                   <Link
                     href={`/paths/${p.id}`}
-                    className="group relative block overflow-hidden rounded-3xl border bg-card p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-                    style={{
-                      borderColor: `${color}30`,
-                      boxShadow: "var(--shadow-card)",
-                    }}
+                    className="group relative block overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
                   >
                     {/* Top gradient line */}
                     <div
-                      className="absolute inset-x-0 top-0 h-[3px]"
+                      className="absolute inset-x-0 top-0 h-[2.5px]"
                       style={{
-                        background: `linear-gradient(90deg, ${color}, ${color}50)`,
+                        background: `linear-gradient(90deg, ${color}, ${color}40)`,
                       }}
                     />
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-start gap-4">
                         <span
-                          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-white shadow-sm"
+                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-sm"
                           style={{
-                            background: `linear-gradient(135deg, ${color}, ${color}90)`,
+                            background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+                            boxShadow: `0 4px 14px 0 ${color}35`,
                           }}
                         >
                           <Route size={22} />
@@ -103,7 +103,7 @@ function PathsContent() {
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
                             <span
-                              className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                              className="rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider"
                               style={{
                                 background: `${color}15`,
                                 color: color,
@@ -113,16 +113,16 @@ function PathsContent() {
                               {p.level ?? p.languageCode.toUpperCase()}
                             </span>
                             {isCompleted ? (
-                              <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-500">
+                              <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-black text-emerald-600 dark:text-emerald-400">
                                 <CheckCircle2 size={12} /> Đã hoàn thành
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-1 text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                          <p className="mt-1 text-base font-black text-foreground transition-colors group-hover:text-primary">
                             {p.title}
                           </p>
                           {p.description ? (
-                            <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                            <p className="mt-1 line-clamp-2 text-xs font-medium text-muted-foreground">
                               {p.description}
                             </p>
                           ) : null}
@@ -131,16 +131,16 @@ function PathsContent() {
 
                       <div className="flex shrink-0 items-center justify-between sm:flex-col sm:items-end gap-2">
                         <span
-                          className="rounded-full px-3 py-1 text-xs font-extrabold"
+                          className="rounded-full px-3 py-1 text-xs font-black"
                           style={{
-                            background: isCompleted ? "rgba(16, 185, 129, 0.15)" : `${color}18`,
-                            color: isCompleted ? "#10b981" : color,
+                            background: isCompleted ? "rgba(5, 150, 105, 0.15)" : `${color}18`,
+                            color: isCompleted ? BRAND.green : color,
                           }}
                         >
                           {p.percent}% hoàn thành
                         </span>
-                        <span className="text-xs font-semibold text-muted-foreground">
-                          {p.completedSteps}/{p.totalSteps} bước
+                        <span className="text-xs font-bold text-muted-foreground">
+                          {p.completedSteps}/{p.totalSteps} bước học
                         </span>
                       </div>
                     </div>

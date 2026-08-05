@@ -19,6 +19,7 @@ import {
   Settings,
   Target,
   Trophy,
+  Menu,
 } from "lucide-react";
 import {
   clearStoredAuth,
@@ -30,7 +31,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LearningLanguageSelector } from "@/components/LearningLanguageSelector";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { cn } from "@/lib/cn";
-import { AppMark, AvatarCircle } from "./AppMark";
+import { AppMark, AppWordmark, AvatarCircle } from "./AppMark";
 import { APP, BRAND } from "./brand";
 
 const AUTH_PATHS = new Set(["/login", "/register"]);
@@ -80,7 +81,7 @@ const NAV: NavGroup[] = [
         activePrefixes: ["/toeic"],
         examPrep: "en" as const,
       },
-      { href: "/speaking", icon: Mic, label: "Luyện nói" },
+      { href: "/speaking", icon: Mic, label: "Luyện nói AI" },
       { href: "/tests", icon: Brain, label: "Kiểm tra" },
     ],
   },
@@ -128,10 +129,12 @@ function Sidebar({
   user,
   showTopik,
   showToeic,
+  onCloseMobile,
 }: {
   user: AuthUser | null;
   showTopik: boolean;
   showToeic: boolean;
+  onCloseMobile?: () => void;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -145,49 +148,53 @@ function Sidebar({
   }
 
   return (
-    <motion.aside
-      className="flex w-[240px] flex-shrink-0 flex-col overflow-y-auto border-r border-border"
-      style={{ backgroundColor: "var(--sidebar)", boxShadow: "var(--shadow-sidebar)" }}
-      initial={{ x: -240, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-    >
+    <div className="flex h-full w-[250px] flex-col overflow-y-auto bg-card border-r border-border shadow-xs">
       {/* Logo */}
       <Link
         href="/"
-        className="flex items-center gap-3 px-5 py-5"
-        style={{ borderBottom: "1px solid var(--border)" }}
+        onClick={onCloseMobile}
+        className="flex items-center gap-3 px-5 py-4 border-b border-border transition-colors hover:bg-secondary/40"
       >
-        <AppMark className="h-10 w-10" />
+        <motion.div
+          whileHover={{ scale: 1.05, rotate: -2 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
+        >
+          <AppMark size={36} className="h-9 w-9" />
+        </motion.div>
         <div>
-          <p className="text-sm font-extrabold leading-none tracking-tight text-foreground">{APP.name}</p>
-          <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">{APP.tagline}</p>
+          <AppWordmark className="text-base font-black leading-none tracking-tight" />
+          <p className="mt-1 text-[10px] font-bold text-primary">{APP.tagline}</p>
         </div>
       </Link>
 
       {/* User section */}
       {user ? (
-        <div
-          className="mx-3 my-3 flex items-center gap-3 rounded-xl px-3 py-3"
-          style={{
-            background: `linear-gradient(135deg, ${BRAND.blue}12, ${BRAND.cyan}08)`,
-            border: `1px solid ${BRAND.blue}20`,
-          }}
-        >
-          <AvatarCircle label={initial} className="h-9 w-9 flex-shrink-0 text-sm" />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-foreground">
-              {user.name || user.email}
-            </p>
-            <p className="text-[11px] font-medium" style={{ color: BRAND.blue }}>
-              {admin ? "🛡️ Quản trị viên" : "🏃 Học viên"}
-            </p>
+        <div className="mx-3 my-3 p-3 rounded-2xl border border-primary/20 bg-primary/5 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <AvatarCircle label={initial} className="h-9 w-9 flex-shrink-0 text-sm ring-2 ring-primary/30" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-black text-foreground">
+                {user.name || user.email}
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span
+                  className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.2 rounded-md"
+                  style={{
+                    backgroundColor: admin ? `${BRAND.purple}20` : `${BRAND.blue}20`,
+                    color: admin ? BRAND.purple : BRAND.blue,
+                  }}
+                >
+                  {admin ? "🛡️ Quản trị" : "🏃 Học viên"}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       ) : null}
 
-      {/* Nav */}
-      <nav className="flex-1 space-y-5 px-3 py-3">
+      {/* Navigation Groups */}
+      <nav className="flex-1 space-y-4 px-3 py-2">
         {NAV.map((grp) => {
           const items = grp.items.filter((it) => {
             if (it.admin && !admin) return false;
@@ -199,40 +206,47 @@ function Sidebar({
           if (items.length === 0) return null;
           return (
             <div key={grp.group}>
-              <p className="mb-1.5 px-2 text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">
+              <p className="mb-1.5 px-2 text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/70">
                 {grp.group}
               </p>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {items.map((item) => {
                   const active = isActive(pathname, item.href, item.activePrefixes);
                   const Icon = item.icon;
                   return (
-                    <Link
+                    <motion.div
                       key={item.href}
-                      href={item.href}
-                      className={cn(
-                        "relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150",
-                        active
-                          ? "text-white"
-                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-                      )}
+                      whileHover={{ x: 2 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
-                      {active ? (
-                        <motion.span
-                          layoutId="nav-active"
-                          className="absolute inset-0 rounded-xl"
-                          style={{
-                            background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
-                            boxShadow: `0 4px 12px 0 ${BRAND.blue}40`,
-                          }}
-                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                        />
-                      ) : null}
-                      <span className="relative z-10 flex items-center gap-2.5">
-                        <Icon size={15} />
-                        {item.label}
-                      </span>
-                    </Link>
+                      <Link
+                        href={item.href}
+                        onClick={onCloseMobile}
+                        className={cn(
+                          "relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold transition-all duration-150",
+                          active
+                            ? "text-white shadow-xs"
+                            : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground",
+                        )}
+                      >
+                        {active ? (
+                          <motion.span
+                            layoutId="sidebar-active-pill"
+                            className="absolute inset-0 rounded-xl"
+                            style={{
+                              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                              boxShadow: `0 4px 14px 0 ${BRAND.blue}40`,
+                            }}
+                            transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                          />
+                        ) : null}
+                        <span className="relative z-10 flex items-center gap-2.5">
+                          <Icon size={15} />
+                          {item.label}
+                        </span>
+                      </Link>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -242,52 +256,65 @@ function Sidebar({
       </nav>
 
       {/* Bottom actions */}
-      <div className="space-y-0.5 border-t border-border px-3 pb-5 pt-3">
-        <Link
-          href="/me"
-          className={cn(
-            "relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150",
-            isActive(pathname, "/me")
-              ? "text-white"
-              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-          )}
+      <div className="space-y-1 border-t border-border px-3 pb-4 pt-3">
+        <motion.div
+          whileHover={{ x: 2 }}
+          whileTap={{ scale: 0.96 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
-          {isActive(pathname, "/me") ? (
-            <motion.span
-              layoutId="nav-active"
-              className="absolute inset-0 rounded-xl"
-              style={{
-                background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
-                boxShadow: `0 4px 12px 0 ${BRAND.blue}40`,
-              }}
-              transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            />
-          ) : null}
-          <span className="relative z-10 flex items-center gap-2.5">
-            <Settings size={15} />
-            Hồ sơ
-          </span>
-        </Link>
+          <Link
+            href="/me"
+            onClick={onCloseMobile}
+            className={cn(
+              "relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold transition-all duration-150",
+              isActive(pathname, "/me")
+                ? "text-white shadow-xs"
+                : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground",
+            )}
+          >
+            {isActive(pathname, "/me") ? (
+              <motion.span
+                layoutId="sidebar-active-pill"
+                className="absolute inset-0 rounded-xl"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                  boxShadow: `0 4px 14px 0 ${BRAND.blue}40`,
+                }}
+                transition={{ type: "spring", stiffness: 380, damping: 28 }}
+              />
+            ) : null}
+            <span className="relative z-10 flex items-center gap-2.5">
+              <Settings size={15} />
+              Hồ sơ học tập
+            </span>
+          </Link>
+        </motion.div>
+
         {user ? (
-          <button
+          <motion.button
             type="button"
             onClick={logout}
-            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted-foreground transition-all duration-150 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+            whileHover={{ x: 2 }}
+            whileTap={{ scale: 0.96 }}
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400"
           >
             <LogOut size={15} />
             Đăng xuất
-          </button>
+          </motion.button>
         ) : (
-          <Link
-            href="/login"
-            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted-foreground transition-all duration-150 hover:bg-muted/60 hover:text-foreground"
-          >
-            <LogOut size={15} />
-            Đăng nhập
-          </Link>
+          <motion.div whileHover={{ x: 2 }} whileTap={{ scale: 0.96 }}>
+            <Link
+              href="/login"
+              onClick={onCloseMobile}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground"
+            >
+              <LogOut size={15} />
+              Đăng nhập
+            </Link>
+          </motion.div>
         )}
       </div>
-    </motion.aside>
+    </div>
   );
 }
 
@@ -303,9 +330,10 @@ const TITLES: { match: (p: string) => boolean; title: string }[] = [
   { match: (p) => p.startsWith("/toeic"), title: "Luyện thi TOEIC" },
   { match: (p) => p.startsWith("/topik/attempts"), title: "Lịch sử TOPIK" },
   { match: (p) => p.startsWith("/topik"), title: "Luyện thi TOPIK" },
+  { match: (p) => p.startsWith("/speaking"), title: "Luyện nói AI" },
   { match: (p) => p.startsWith("/tests"), title: "Kiểm tra" },
-  { match: (p) => p.startsWith("/admin"), title: "Quản trị" },
-  { match: (p) => p.startsWith("/me"), title: "Hồ sơ" },
+  { match: (p) => p.startsWith("/admin"), title: "Quản trị hệ thống" },
+  { match: (p) => p.startsWith("/me"), title: "Hồ sơ học viên" },
 ];
 
 function pageTitle(pathname: string) {
@@ -313,69 +341,82 @@ function pageTitle(pathname: string) {
 }
 
 const PAGE_ICONS: Record<string, React.ReactNode> = {
-  "Trang chủ": <Home size={17} />,
-  "Mục tiêu ngày": <Target size={17} />,
-  "Từ vựng": <BookOpen size={17} />,
-  "Bộ thẻ": <Layers size={17} />,
-  "Ôn tập SRS": <RefreshCw size={17} />,
-  "Ngữ pháp": <FileText size={17} />,
-  "Lộ trình": <Route size={17} />,
-  "Luyện thi TOEIC": <Trophy size={17} />,
-  "Lịch sử TOEIC": <Trophy size={17} />,
-  "Luyện thi TOPIK": <Trophy size={17} />,
-  "Lịch sử TOPIK": <Trophy size={17} />,
-  "Luyện nói": <Mic size={17} />,
-  "Kiểm tra": <Brain size={17} />,
-  "Quản trị": <Settings size={17} />,
-  "Hồ sơ": <Settings size={17} />,
+  "Trang chủ": <Home size={16} />,
+  "Mục tiêu ngày": <Target size={16} />,
+  "Từ vựng": <BookOpen size={16} />,
+  "Bộ thẻ": <Layers size={16} />,
+  "Ôn tập SRS": <RefreshCw size={16} />,
+  "Ngữ pháp": <FileText size={16} />,
+  "Lộ trình": <Route size={16} />,
+  "Luyện thi TOEIC": <Trophy size={16} />,
+  "Lịch sử TOEIC": <Trophy size={16} />,
+  "Luyện thi TOPIK": <Trophy size={16} />,
+  "Lịch sử TOPIK": <Trophy size={16} />,
+  "Luyện nói AI": <Mic size={16} />,
+  "Kiểm tra": <Brain size={16} />,
+  "Quản trị hệ thống": <Settings size={16} />,
+  "Hồ sơ học viên": <Settings size={16} />,
 };
 
 function TopBar({
   title,
   showLearningLanguage,
+  onOpenMobileMenu,
 }: {
   title: string;
   showLearningLanguage: boolean;
+  onOpenMobileMenu: () => void;
 }) {
   const icon = PAGE_ICONS[title] ?? null;
   return (
-    <div
-      className="relative flex flex-shrink-0 items-center justify-between bg-background px-8 py-4"
-      style={{ boxShadow: "var(--shadow-topbar)", borderBottom: "1px solid var(--border)" }}
-    >
-      {/* Bottom gradient accent */}
+    <div className="relative flex flex-shrink-0 items-center justify-between bg-card/90 backdrop-blur-md px-6 py-3.5 border-b border-border shadow-2xs z-20">
+      {/* Bottom gradient line */}
       <div
-        className="absolute inset-x-0 bottom-0 h-[2px]"
-        style={{ background: `linear-gradient(90deg, ${BRAND.blue}60, ${BRAND.cyan}40, transparent)` }}
+        className="absolute inset-x-0 bottom-0 h-[1.5px]"
+        style={{
+          background: `linear-gradient(90deg, ${BRAND.blue}80, ${BRAND.cyan}50, transparent)`,
+        }}
       />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={title}
-          className="flex items-center gap-3"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 10 }}
-          transition={{ duration: 0.2 }}
-        >
-          {icon ? (
-            <span
-              className="flex h-8 w-8 items-center justify-center rounded-xl"
-              style={{
-                background: `linear-gradient(135deg, ${BRAND.blue}20, ${BRAND.cyan}15)`,
-                color: BRAND.blue,
-                border: `1px solid ${BRAND.blue}25`,
-              }}
-            >
-              {icon}
-            </span>
-          ) : null}
-          <h2 className="text-base font-bold text-foreground">{title}</h2>
-        </motion.div>
-      </AnimatePresence>
       <div className="flex items-center gap-3">
-        {showLearningLanguage ? (
-          <LearningLanguageSelector className="hidden sm:block" />
-        ) : null}
+        {/* Mobile menu hamburger */}
+        <motion.button
+          type="button"
+          onClick={onOpenMobileMenu}
+          className="p-1.5 rounded-xl border border-border bg-secondary md:hidden text-foreground"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Menu size={18} />
+        </motion.button>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={title}
+            className="flex items-center gap-2.5"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 8 }}
+            transition={{ duration: 0.2 }}
+          >
+            {icon ? (
+              <span
+                className="flex h-8 w-8 items-center justify-center rounded-xl shadow-2xs"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}20, ${BRAND.cyan}15)`,
+                  color: BRAND.blue,
+                  border: `1px solid ${BRAND.blue}30`,
+                }}
+              >
+                {icon}
+              </span>
+            ) : null}
+            <h2 className="text-sm font-black tracking-tight text-foreground">{title}</h2>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {showLearningLanguage ? <LearningLanguageSelector /> : null}
         <ThemeToggle />
       </div>
     </div>
@@ -385,11 +426,14 @@ function TopBar({
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { languageCode } = useLearningLanguage();
   const showTopik = languageCode === "ko";
   const showToeic = languageCode === "en";
 
   useEffect(() => {
+    setMounted(true);
     function sync() {
       setUser(getStoredAuth()?.user ?? null);
     }
@@ -406,22 +450,61 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  // Unauthenticated landing page takes full width without the app sidebar
+  if (mounted && !user && pathname === "/") {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex h-dvh overflow-hidden bg-background text-foreground">
-      <Sidebar user={user} showTopik={showTopik} showToeic={showToeic} />
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block h-full">
+        <Sidebar user={user} showTopik={showTopik} showToeic={showToeic} />
+      </div>
+
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-xs"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.div
+              className="fixed inset-y-0 left-0 z-50 md:hidden"
+              initial={{ x: -260 }}
+              animate={{ x: 0 }}
+              exit={{ x: -260 }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            >
+              <Sidebar
+                user={user}
+                showTopik={showTopik}
+                showToeic={showToeic}
+                onCloseMobile={() => setMobileOpen(false)}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar
           title={pageTitle(pathname)}
           showLearningLanguage={!pathname.startsWith("/admin")}
+          onOpenMobileMenu={() => setMobileOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto p-6 md:p-8">
+        <main className="flex-1 overflow-y-auto p-5 md:p-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="mx-auto max-w-6xl"
             >
               {children}

@@ -1,81 +1,56 @@
 "use client";
 
-import { ChevronDown, Globe } from "lucide-react";
+import { motion } from "motion/react";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
-import {
-  LEARNING_LANGUAGE_OPTIONS,
-  learningLanguageLabel,
-  type LearningLanguageCode,
-} from "@/lib/learning-language";
+import { type LearningLanguageCode } from "@/lib/learning-language";
 import { cn } from "@/lib/cn";
-import { useEffect, useRef, useState } from "react";
+import { BRAND } from "@/components/ui-kit/brand";
+
+const LANGS: { code: LearningLanguageCode; label: string; flag: string }[] = [
+  { code: "ko", label: "Tiếng Hàn", flag: "🇰🇷" },
+  { code: "en", label: "Tiếng Anh", flag: "🇬🇧" },
+];
 
 export function LearningLanguageSelector({ className }: { className?: string }) {
-  const { languageCode, languages, setActive } = useLearningLanguage();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  const enrolled = new Set(languages.map((l) => l.languageCode));
-  const options = LEARNING_LANGUAGE_OPTIONS.filter((o) => enrolled.has(o.code));
-
-  useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
-
-  async function pick(code: LearningLanguageCode) {
-    setOpen(false);
-    if (code !== languageCode) await setActive(code);
-  }
-
-  if (options.length === 0) {
-    return (
-      <div
-        className={cn(
-          "flex items-center gap-2 rounded-xl border border-border bg-secondary px-3 py-1.5 text-sm text-muted-foreground",
-          className,
-        )}
-      >
-        <Globe size={14} />
-        {learningLanguageLabel(languageCode)}
-      </div>
-    );
-  }
+  const { languageCode, setActive } = useLearningLanguage();
 
   return (
-    <div ref={ref} className={cn("relative", className)}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-xl border border-border bg-secondary px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary/40"
-      >
-        <Globe size={14} className="text-muted-foreground" />
-        <span className="hidden sm:inline text-muted-foreground">Đang học:</span>
-        {learningLanguageLabel(languageCode)}
-        <ChevronDown size={14} className="text-muted-foreground" />
-      </button>
-      {open ? (
-        <div className="absolute right-0 top-full z-50 mt-1 min-w-[10rem] rounded-xl border border-border bg-card py-1 shadow-lg">
-          {options.map((opt) => (
-            <button
-              key={opt.code}
-              type="button"
-              onClick={() => void pick(opt.code)}
-              className={cn(
-                "flex w-full items-center px-3 py-2 text-left text-sm transition-colors hover:bg-secondary",
-                opt.code === languageCode
-                  ? "font-semibold text-primary"
-                  : "text-foreground",
-              )}
-            >
-              {opt.nameVi}
-            </button>
-          ))}
-        </div>
-      ) : null}
+    <div
+      className={cn(
+        "flex items-center gap-1 rounded-xl border border-border bg-secondary/80 p-1 shadow-2xs",
+        className,
+      )}
+    >
+      {LANGS.map((lang) => {
+        const isActive = languageCode === lang.code;
+        return (
+          <motion.button
+            key={lang.code}
+            type="button"
+            onClick={() => void setActive(lang.code)}
+            className={cn(
+              "relative flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-colors whitespace-nowrap",
+              isActive ? "text-white" : "text-muted-foreground hover:text-foreground",
+            )}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          >
+            {isActive && (
+              <motion.div
+                layoutId="topbar-lang-pill"
+                className="absolute inset-0 rounded-lg shadow-xs"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                }}
+                transition={{ type: "spring", stiffness: 380, damping: 28 }}
+              />
+            )}
+            <span className="relative z-10 text-sm leading-none">{lang.flag}</span>
+            <span className="relative z-10">{lang.label}</span>
+          </motion.button>
+        );
+      })}
     </div>
   );
 }
