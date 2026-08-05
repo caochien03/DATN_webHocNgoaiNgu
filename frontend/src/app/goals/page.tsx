@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Calendar, Flame, Target } from "lucide-react";
+import { Calendar, Flame, Sparkles, Target } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, GRADIENT, pct } from "@/components/ui-kit/brand";
@@ -83,14 +83,14 @@ function GoalsContent() {
   const todayPercent = goal?.today.percent ?? 0;
 
   return (
-    <div>
+    <div className="pb-10">
       <PageHeader
         title="Mục tiêu ngày"
         sub={`Đặt số thẻ ôn mỗi ngày và theo dõi chuỗi học — ${learningLanguageLabel(languageCode)}`}
       />
 
       {error ? (
-        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+        <p className="mb-4 rounded-2xl bg-red-500/10 p-3.5 text-sm text-red-400">
           {error}
         </p>
       ) : null}
@@ -119,89 +119,133 @@ function GoalsContent() {
         />
       </div>
 
-      <div className="mb-6 flex items-center gap-8 rounded-2xl border border-border bg-card p-6">
-        <div className="relative h-28 w-28 flex-shrink-0">
-          <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="10" />
-            <circle
-              cx="50"
-              cy="50"
-              r="40"
-              fill="none"
-              stroke={BRAND.blue}
-              strokeWidth="10"
-              strokeLinecap="round"
-              strokeDasharray={`${(todayPercent / 100) * 251.3} 251.3`}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-2xl font-bold text-foreground">{todayPercent}%</p>
-            <p className="text-[10px] text-muted-foreground">hôm nay</p>
+      {/* Target config & Circular Progress */}
+      <div
+        className="mb-6 relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8"
+        style={{
+          background: `linear-gradient(135deg, ${BRAND.blue}12 0%, transparent 60%, ${BRAND.cyan}12 100%)`,
+        }}
+      >
+        <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+          <div className="relative h-32 w-32 flex-shrink-0">
+            <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke="var(--border)"
+                strokeWidth="9"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke={BRAND.blue}
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeDasharray={`${(todayPercent / 100) * 251.3} 251.3`}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <p className="text-2xl font-black text-foreground">{todayPercent}%</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Hôm nay
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex-1">
-          <h3 className="font-semibold text-foreground">Đặt mục tiêu mỗi ngày</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Số thẻ cần ôn ({learningLanguageLabel(languageCode)}) để duy trì chuỗi học.
-          </p>
-          <div className="mt-3 flex items-center gap-2">
-            <input
-              type="number"
-              min={1}
-              max={500}
-              value={inputTarget}
-              onChange={(e) => setInputTarget(e.target.value)}
-              className="w-28 rounded-xl border border-border bg-secondary px-3 py-2 text-center font-mono text-foreground outline-none focus:border-primary/50"
-            />
-            <span className="text-sm text-muted-foreground">thẻ/ngày</span>
-            <button
-              type="button"
-              onClick={() => void saveTarget()}
-              disabled={saving}
-              className="ml-auto rounded-xl px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
-              style={{ background: GRADIENT }}
-            >
-              Lưu
-            </button>
+
+          <div className="flex-1 text-center sm:text-left">
+            <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Cấu hình</span>
+            <h3 className="mt-1 text-xl font-bold text-foreground">Đặt mục tiêu mỗi ngày</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Số thẻ từ vựng ({learningLanguageLabel(languageCode)}) cần ôn luyện mỗi ngày để duy trì chuỗi Streak.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
+              <input
+                type="number"
+                min={1}
+                max={500}
+                value={inputTarget}
+                onChange={(e) => setInputTarget(e.target.value)}
+                className="w-28 rounded-2xl border border-border bg-card px-4 py-2.5 text-center font-mono text-base font-bold text-foreground outline-none shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+              <span className="text-sm font-semibold text-muted-foreground">thẻ / ngày</span>
+              <button
+                type="button"
+                onClick={() => void saveTarget()}
+                disabled={saving}
+                className="rounded-2xl px-6 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5 disabled:opacity-60"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                  boxShadow: `0 4px 12px 0 ${BRAND.blue}35`,
+                }}
+              >
+                {saving ? "Đang lưu…" : "Lưu mục tiêu"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">30 ngày gần đây</h3>
-          <p className="text-xs text-muted-foreground">
-            Đạt mục tiêu: {achievedDays} ngày
-          </p>
+      {/* 30-Day Activity History */}
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <div
+          className="absolute inset-x-0 top-0 h-[3px]"
+          style={{ background: `linear-gradient(90deg, ${BRAND.green}, ${BRAND.cyan})` }}
+        />
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Lịch sử</span>
+            <h3 className="mt-1 text-lg font-bold text-foreground">30 ngày gần đây</h3>
+          </div>
+          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-500">
+            Đạt chuẩn: {achievedDays} / 30 ngày
+          </span>
         </div>
+
         {history.length === 0 ? (
           <p className="text-sm text-muted-foreground">Chưa có dữ liệu lịch sử.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-5">
             {history.map((row) => {
               const p = pct(row.reviewedCards, row.goalTarget);
               return (
                 <div
                   key={row.date}
-                  className="rounded-xl border px-3 py-2 text-xs"
+                  className="group rounded-2xl border p-3 text-xs transition-all duration-150 hover:-translate-y-0.5"
                   style={
                     row.goalAchieved
                       ? {
                           borderColor: `${BRAND.green}40`,
-                          backgroundColor: `${BRAND.green}12`,
+                          backgroundColor: `${BRAND.green}14`,
                           color: BRAND.green,
+                          boxShadow: `0 2px 8px 0 ${BRAND.green}15`,
+                        }
+                      : row.reviewedCards > 0
+                      ? {
+                          borderColor: `${BRAND.yellow}35`,
+                          backgroundColor: `${BRAND.yellow}10`,
+                          color: BRAND.yellow,
                         }
                       : {
                           borderColor: "var(--border)",
-                          backgroundColor: "rgba(255,255,255,0.02)",
-                          color: BRAND.muted,
+                          backgroundColor: "var(--card)",
+                          color: "var(--muted-foreground)",
                         }
                   }
                 >
-                  <p>{new Date(row.date).toLocaleDateString("vi-VN")}</p>
-                  <p className="mt-1 font-mono">
-                    {row.reviewedCards}/{row.goalTarget} ({p}%)
+                  <p className="font-semibold text-[11px]">
+                    {new Date(row.date).toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })}
                   </p>
+                  <p className="mt-1 font-mono font-bold text-sm">
+                    {row.reviewedCards}/{row.goalTarget}
+                  </p>
+                  <p className="mt-0.5 text-[10px] font-semibold opacity-80">{p}% hoàn thành</p>
                 </div>
               );
             })}

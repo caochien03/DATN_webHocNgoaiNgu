@@ -3,19 +3,19 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Play, Plus, Trash2 } from "lucide-react";
+import { Layers, Play, Plus, Trash2 } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
-import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import { BRAND, GRADIENT, GRADIENT_DIAGONAL } from "@/components/ui-kit/brand";
 import {
   backLinkClass,
   errorBannerClass,
   inputClass,
-  listItemClass,
-  sectionTitleClass,
 } from "@/components/ui-kit/form-styles";
 import { GradientButton } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { DeckDetail } from "@/lib/types";
+
+const PALETTE = [BRAND.blue, BRAND.cyan, BRAND.green, BRAND.purple, BRAND.red] as const;
 
 function DeckDetailContent() {
   const params = useParams();
@@ -114,9 +114,9 @@ function DeckDetailContent() {
   }
 
   return (
-    <div className="mx-auto max-w-lg">
+    <div className="mx-auto max-w-4xl pb-10">
       <Link href="/decks" className={backLinkClass}>
-        ← Danh sách bộ
+        ← Danh sách bộ thẻ
       </Link>
 
       {error ? <p className={errorBannerClass}>{error}</p> : null}
@@ -127,106 +127,187 @@ function DeckDetailContent() {
 
       {deck ? (
         <>
-          <div className="mt-4 flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{deck.title}</h1>
-              {deck.description ? (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {deck.description}
-                </p>
-              ) : null}
-            </div>
-            <div className="flex shrink-0 items-center gap-3">
-              {deck.cards.length > 0 ? (
-                <Link
-                  href={`/decks/${id}/learn`}
-                  className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
-                  style={{ background: GRADIENT }}
+          {/* Header Hero Banner */}
+          <section className="relative mt-4 overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}14 0%, transparent 60%, ${BRAND.cyan}14 100%)`,
+            }}
+          >
+            <div
+              className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full blur-3xl"
+              style={{ background: `${BRAND.blue}20` }}
+            />
+            <div className="relative flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-4">
+                <div
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg"
+                  style={{ background: GRADIENT_DIAGONAL }}
                 >
-                  <Play size={14} /> Học
-                </Link>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => void removeDeck()}
-                className="text-sm hover:underline"
-                style={{ color: BRAND.red }}
-              >
-                Xóa bộ
-              </button>
-            </div>
-          </div>
-
-          <section className="mt-8 rounded-2xl border border-border bg-card p-5">
-            <h2 className={`mb-3 ${sectionTitleClass}`}>Thêm thẻ</h2>
-            <form onSubmit={addCard} className="flex flex-col gap-3">
-              <input
-                required
-                value={front}
-                onChange={(e) => setFront(e.target.value)}
-                placeholder={
-                  deck.languageCode === "ko"
-                    ? "Mặt trước (ví dụ: 안녕하세요)"
-                    : "Mặt trước (ví dụ: airport)"
-                }
-                className={inputClass}
-              />
-              <input
-                required
-                value={back}
-                onChange={(e) => setBack(e.target.value)}
-                placeholder="Mặt sau (VD: nghĩa tiếng Việt)"
-                className={inputClass}
-              />
-              <input
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Ghi chú (tuỳ chọn)"
-                className={inputClass}
-              />
-              <GradientButton
-                type="submit"
-                disabled={adding}
-                className="flex w-full items-center justify-center gap-1.5 py-2.5"
-              >
-                <Plus size={14} /> {adding ? "Đang thêm…" : "Thêm thẻ"}
-              </GradientButton>
-            </form>
-          </section>
-
-          <section className="mt-8">
-            <h2 className={`mb-3 ${sectionTitleClass}`}>
-              Danh sách thẻ ({deck.cards.length})
-            </h2>
-            {deck.cards.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Chưa có thẻ nào.</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {deck.cards.map((c) => (
-                  <div
-                    key={c.id}
-                    className={`flex justify-between gap-2 ${listItemClass}`}
+                  <Layers size={26} />
+                </div>
+                <div>
+                  <span
+                    className="inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                    style={{ background: `${BRAND.blue}20`, color: BRAND.blue }}
                   >
-                    <div className="min-w-0 text-sm">
-                      <p className="font-semibold text-foreground">{c.frontText}</p>
-                      <p className="text-muted-foreground">{c.backText}</p>
-                      {c.note ? (
-                        <p className="mt-1 text-xs text-muted-foreground/70">{c.note}</p>
-                      ) : null}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => void removeCard(c.id)}
-                      className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-red-400"
-                      aria-label="Xóa thẻ"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
+                    {deck.languageCode.toUpperCase()} · BỘ TỰ TẠO
+                  </span>
+                  <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+                    {deck.title}
+                  </h1>
+                  {deck.description ? (
+                    <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                      {deck.description}
+                    </p>
+                  ) : null}
+                  <p className="mt-2 text-xs font-semibold text-muted-foreground">
+                    Tổng số: <span className="font-bold text-foreground">{deck.cards.length} thẻ</span>
+                  </p>
+                </div>
               </div>
-            )}
+
+              <div className="flex shrink-0 items-center gap-3 self-start">
+                {deck.cards.length > 0 ? (
+                  <Link
+                    href={`/decks/${id}/learn`}
+                    className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5"
+                    style={{
+                      background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                      boxShadow: `0 4px 14px 0 ${BRAND.blue}35`,
+                    }}
+                  >
+                    <Play size={15} fill="currentColor" /> Luyện tập
+                  </Link>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => void removeDeck()}
+                  className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold transition hover:bg-red-500/20"
+                  style={{ color: BRAND.red }}
+                >
+                  Xóa bộ
+                </button>
+              </div>
+            </div>
           </section>
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.3fr]">
+            {/* Form Thêm Thẻ */}
+            <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
+              <div
+                className="absolute inset-x-0 top-0 h-[3px]"
+                style={{ background: `linear-gradient(90deg, ${BRAND.blue}, ${BRAND.cyan})` }}
+              />
+              <div className="mb-4">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Tạo mới</span>
+                <h2 className="mt-1 text-lg font-bold text-foreground">Thêm thẻ từ vựng</h2>
+              </div>
+
+              <form onSubmit={addCard} className="flex flex-col gap-3.5">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-muted-foreground">Mặt trước (từ vựng)</label>
+                  <input
+                    required
+                    value={front}
+                    onChange={(e) => setFront(e.target.value)}
+                    placeholder={
+                      deck.languageCode === "ko"
+                        ? "Ví dụ: 안녕하세요"
+                        : "Ví dụ: airport"
+                    }
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-muted-foreground">Mặt sau (nghĩa tiếng Việt)</label>
+                  <input
+                    required
+                    value={back}
+                    onChange={(e) => setBack(e.target.value)}
+                    placeholder="Ví dụ: Xin chào / sân bay"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-muted-foreground">Ghi chú / ví dụ (tuỳ chọn)</label>
+                  <input
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Ghi chú ngữ cảnh, cách dùng…"
+                    className={inputClass}
+                  />
+                </div>
+                <GradientButton
+                  type="submit"
+                  disabled={adding}
+                  className="mt-1 flex w-full items-center justify-center gap-2 py-2.5 font-bold"
+                >
+                  <Plus size={16} /> {adding ? "Đang thêm…" : "Thêm thẻ vào bộ"}
+                </GradientButton>
+              </form>
+            </section>
+
+            {/* Danh sách thẻ */}
+            <section>
+              <div className="mb-4 flex items-end justify-between">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Danh sách</span>
+                  <h2 className="mt-1 text-lg font-bold text-foreground">Thẻ trong bộ ({deck.cards.length})</h2>
+                </div>
+              </div>
+
+              {deck.cards.length === 0 ? (
+                <div className="rounded-3xl border border-dashed border-border bg-card/50 px-5 py-12 text-center text-sm text-muted-foreground">
+                  Chưa có thẻ nào trong bộ này. Hãy thêm từ vựng đầu tiên ở biểu mẫu bên cạnh!
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {deck.cards.map((c, index) => {
+                    const color = PALETTE[index % PALETTE.length];
+                    return (
+                      <div
+                        key={c.id}
+                        className="group relative flex items-start justify-between gap-3 overflow-hidden rounded-2xl border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5"
+                        style={{
+                          borderColor: `${color}25`,
+                          boxShadow: "var(--shadow-card)",
+                        }}
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          <span
+                            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-extrabold text-white"
+                            style={{ background: `linear-gradient(135deg, ${color}, ${color}80)` }}
+                          >
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <div className="min-w-0 text-sm">
+                            <p className="font-bold text-foreground">{c.frontText}</p>
+                            <p className="mt-0.5 font-medium" style={{ color }}>{c.backText}</p>
+                            {c.note ? (
+                              <p
+                                className="mt-1.5 rounded-lg px-2.5 py-1 text-xs leading-relaxed text-muted-foreground"
+                                style={{ background: `${color}10` }}
+                              >
+                                {c.note}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void removeCard(c.id)}
+                          className="shrink-0 rounded-xl p-2 text-muted-foreground opacity-60 transition-all hover:bg-red-500/10 hover:text-red-500 hover:opacity-100"
+                          aria-label="Xóa thẻ"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          </div>
         </>
       ) : null}
     </div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { CheckCircle2, Flame, Layers, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
@@ -83,15 +83,15 @@ function ReviewTodayContent() {
   }
 
   return (
-    <div className="mx-auto max-w-xl">
+    <div className="mx-auto max-w-xl pb-10">
       <PageHeader
-        title="Ôn tập SRS"
-        sub="Nhìn nghĩa, tự gõ lại từ vựng — hệ thống tự chấm để cập nhật lịch ôn"
+        title="Ôn tập SRS ngắt quãng"
+        sub="Nhìn nghĩa, tự gõ lại từ vựng — thuật toán sẽ tự động tối ưu lịch ôn"
         action={
           <button
             type="button"
             onClick={() => void load()}
-            className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="flex items-center gap-1.5 rounded-2xl border border-border bg-card px-3.5 py-2 text-xs font-bold text-muted-foreground transition-all hover:border-primary/40 hover:text-foreground"
           >
             <RotateCcw size={14} /> Tải lại
           </button>
@@ -99,106 +99,146 @@ function ReviewTodayContent() {
       />
 
       {error ? (
-        <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+        <p className="mb-4 rounded-2xl bg-red-500/10 p-3.5 text-sm text-red-400">
           {error}
         </p>
       ) : null}
 
-      <div className="mb-6">
-        <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
-          <span>Tiến độ phiên</span>
-          <span className="font-mono">
+      <div className="mb-6 rounded-3xl border border-border bg-card p-4 shadow-sm">
+        <div className="mb-2 flex items-center justify-between text-xs font-bold">
+          <span className="text-muted-foreground">Tiến độ lượt ôn</span>
+          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-primary">
             {done}/{total} ({progress}%)
           </span>
         </div>
-        <Bar done={done} total={total || 1} color={BRAND.cyan} />
+        <Bar done={done} total={total || 1} color={BRAND.blue} />
       </div>
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Đang tải…</p>
+        <p className="text-sm text-muted-foreground">Đang tải thẻ ôn…</p>
       ) : null}
 
       {!loading && !current ? (
-        <div className="rounded-2xl border border-border bg-card p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Không còn thẻ đến hạn. Bạn đã hoàn thành lượt ôn hôm nay.
+        <div className="rounded-3xl border border-border bg-card p-10 text-center shadow-sm">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500">
+            <CheckCircle2 size={28} />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">Hoàn thành lượt ôn hôm nay!</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Không còn thẻ nào đến hạn cần ôn. Hãy quay lại vào ngày mai nhé.
           </p>
           <Link
             href="/decks"
-            className="mt-4 inline-block rounded-xl px-4 py-2 text-sm font-semibold text-white"
-            style={{ background: GRADIENT }}
+            className="mt-5 inline-block rounded-2xl px-6 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+              boxShadow: `0 4px 14px 0 ${BRAND.blue}35`,
+            }}
           >
-            Quay lại bộ thẻ
+            Xem danh sách bộ thẻ
           </Link>
         </div>
       ) : null}
 
       {current ? (
-        <section>
-          <p className="mb-3 text-sm text-muted-foreground">
-            Còn {remaining} thẻ · Bộ: {current.deckTitle} · Streak: {current.streak}
-          </p>
-          <div className="flex min-h-[180px] w-full items-center justify-center rounded-3xl border border-border bg-card p-8 text-center">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Nghĩa
-              </p>
-              <p className="mt-2 text-3xl font-bold text-foreground">
-                {current.backText}
-              </p>
-            </div>
+        <section className="space-y-4">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-foreground">
+              <Layers size={13} className="text-primary" /> {current.deckTitle}
+            </span>
+            <span className="flex items-center gap-1 text-amber-500">
+              <Flame size={13} /> Chuỗi nhớ: {current.streak}
+            </span>
           </div>
-          {current.note ? (
-            <p className="mt-2 text-center text-xs text-muted-foreground">
-              {current.note}
+
+          <div
+            className="relative flex min-h-[200px] w-full flex-col items-center justify-center overflow-hidden rounded-3xl border border-border bg-card p-8 text-center shadow-sm"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}10 0%, transparent 60%, ${BRAND.cyan}10 100%)`,
+            }}
+          >
+            <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
+              Nghĩa tiếng Việt
+            </span>
+            <p className="mt-2 text-2xl font-black text-foreground sm:text-3xl">
+              {current.backText}
             </p>
-          ) : null}
-          <div className="mt-4">
-            <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-              Viết từ vựng
+            {current.note ? (
+              <p className="mt-3 rounded-xl bg-background/80 px-3 py-1 text-xs text-muted-foreground">
+                💡 {current.note}
+              </p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Gõ từ vựng tương ứng
             </label>
             <input
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               disabled={result !== null}
-              placeholder="Nhập đáp án…"
-              className="w-full rounded-xl border border-border bg-secondary px-3.5 py-2.5 text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20 disabled:opacity-70"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  if (result === null) submitAnswer();
+                  else nextCard();
+                }
+              }}
+              placeholder="Nhập từ vựng…"
+              className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-base font-semibold text-foreground outline-none shadow-sm transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-70"
             />
           </div>
 
           {result ? (
-            <p
-              className="mt-3 rounded-lg px-3 py-2 text-sm font-medium"
+            <div
+              className="flex items-center gap-3 rounded-2xl p-4 text-sm font-semibold shadow-sm"
               style={{
                 color: result === "correct" ? BRAND.green : BRAND.red,
                 backgroundColor: `${result === "correct" ? BRAND.green : BRAND.red}14`,
+                border: `1px solid ${result === "correct" ? BRAND.green : BRAND.red}35`,
               }}
             >
-              {result === "correct"
-                ? "Đúng rồi!"
-                : `Chưa đúng. Đáp án đúng: ${current.frontText}`}
-            </p>
+              {result === "correct" ? (
+                <>
+                  <CheckCircle2 size={20} className="shrink-0" />
+                  <span>Chính xác! Bạn đã ghi nhớ từ này rất tốt.</span>
+                </>
+              ) : (
+                <>
+                  <XCircle size={20} className="shrink-0" />
+                  <span>
+                    Chưa đúng. Đáp án chính xác là: <strong className="underline">{current.frontText}</strong>
+                  </span>
+                </>
+              )}
+            </div>
           ) : null}
 
-          <div className="mt-4 flex justify-end">
+          <div className="flex justify-end pt-2">
             {result === null ? (
               <button
                 type="button"
                 onClick={submitAnswer}
                 disabled={!answer.trim()}
-                className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-                style={{ background: GRADIENT }}
+                className="rounded-2xl px-6 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5 disabled:opacity-60"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                  boxShadow: `0 4px 14px 0 ${BRAND.blue}35`,
+                }}
               >
-                Chấm điểm
+                Kiểm tra đáp án
               </button>
             ) : (
               <button
                 type="button"
                 onClick={nextCard}
-                className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white"
-                style={{ background: GRADIENT }}
+                className="rounded-2xl px-6 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                  boxShadow: `0 4px 14px 0 ${BRAND.blue}35`,
+                }}
               >
-                Thẻ tiếp theo
+                Thẻ tiếp theo →
               </button>
             )}
           </div>

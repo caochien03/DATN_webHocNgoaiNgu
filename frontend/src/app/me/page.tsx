@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ArrowRight,
   BookOpen,
+  Calendar,
+  CheckCircle2,
   Flame,
   Globe,
   Mail,
@@ -18,7 +20,7 @@ import {
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { AvatarCircle } from "@/components/ui-kit/AppMark";
-import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import { BRAND, GRADIENT, GRADIENT_DIAGONAL } from "@/components/ui-kit/brand";
 import { Bar } from "@/components/ui-kit/primitives";
 import { errorClass, inputClass } from "@/components/ui-kit/form-styles";
 import { PageHeader } from "@/components/ui-kit/primitives";
@@ -160,107 +162,141 @@ function ProfileContent() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <PageHeader title="Hồ sơ" sub="Thông tin tài khoản và cài đặt" />
+    <div className="mx-auto max-w-4xl pb-10">
+      <PageHeader title="Hồ sơ cá nhân" sub="Thông tin tài khoản, cài đặt ngôn ngữ và tổng kết tiến độ" />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="flex flex-col items-center rounded-2xl border border-border bg-card p-6 text-center">
-          <AvatarCircle label={initial} className="mb-4 h-20 w-20 text-3xl" />
-          <p className="text-lg font-bold text-foreground">
-            {user.name || "(chưa đặt tên)"}
+        {/* User Card */}
+        <div className="relative flex flex-col items-center overflow-hidden rounded-3xl border border-border bg-card p-6 text-center shadow-sm">
+          <div
+            className="absolute inset-x-0 top-0 h-[3px]"
+            style={{ background: `linear-gradient(90deg, ${BRAND.blue}, ${BRAND.cyan})` }}
+          />
+          <div className="relative mb-4 mt-2">
+            <AvatarCircle label={initial} className="h-20 w-20 text-2xl font-black shadow-lg" />
+          </div>
+          <p className="text-xl font-extrabold text-foreground">
+            {user.name || "(Chưa đặt tên)"}
           </p>
-          <p className="mt-1 break-all text-sm text-muted-foreground">{user.email}</p>
-          <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
-            <Shield size={12} />
-            <span>{isAdmin ? "Quản trị viên" : "Học viên"}</span>
+          <p className="mt-1 break-all text-xs font-semibold text-muted-foreground">{user.email}</p>
+          <div className="mt-3">
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
+              style={{
+                background: isAdmin ? `${BRAND.purple}20` : `${BRAND.blue}18`,
+                color: isAdmin ? BRAND.purple : BRAND.blue,
+              }}
+            >
+              <Shield size={13} />
+              <span>{isAdmin ? "Quản trị viên" : "Học viên"}</span>
+            </span>
+          </div>
+
+          <div className="mt-6 w-full border-t border-border pt-4 text-left">
+            <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
+              <Calendar size={14} className="text-primary" />
+              <span>Tham gia từ: <strong className="text-foreground">{createdAt}</strong></span>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4 lg:col-span-2">
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <h3 className="mb-4 font-semibold text-foreground">Thông tin tài khoản</h3>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="flex items-start gap-2 border-b border-border py-2 sm:border-0">
-                <Mail size={15} className="mt-0.5 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Email</p>
-                  <p className="break-all text-sm text-foreground">{user.email}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 py-2">
-                <UserRound size={15} className="mt-0.5 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Tham gia</p>
-                  <p className="text-sm text-foreground">{createdAt}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <h3 className="mb-4 font-semibold text-foreground">Sửa hồ sơ</h3>
-            <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-              Tên hiển thị
-            </label>
-            <div className="flex items-center gap-2">
+        {/* Details & Settings */}
+        <div className="space-y-6 lg:col-span-2">
+          {/* Edit Profile */}
+          <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <div
+              className="absolute inset-x-0 top-0 h-[3px]"
+              style={{ background: `linear-gradient(90deg, ${BRAND.blue}, ${BRAND.cyan})` }}
+            />
+            <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Cài đặt</span>
+            <h3 className="mt-1 font-bold text-foreground text-lg">Chỉnh sửa tên hiển thị</h3>
+            <div className="mt-4 flex items-center gap-3">
               <input
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
                   setSaved(false);
                 }}
-                placeholder="Nhập tên hiển thị"
+                placeholder="Nhập tên hiển thị mới…"
                 className={`flex-1 ${inputClass}`}
               />
               <button
                 type="button"
                 onClick={() => void saveProfile()}
                 disabled={saving}
-                className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-                style={{ background: GRADIENT }}
+                className="rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5 disabled:opacity-60"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
+                  boxShadow: `0 4px 12px 0 ${BRAND.blue}35`,
+                }}
               >
-                {saving ? "Đang lưu…" : "Lưu"}
+                {saving ? "Đang lưu…" : "Lưu thay đổi"}
               </button>
             </div>
             {error ? <p className={`mt-2 ${errorClass}`}>{error}</p> : null}
             {saved ? (
-              <p className="mt-2 text-sm text-emerald-300">Đã lưu thay đổi.</p>
+              <p className="mt-2.5 text-sm font-semibold text-emerald-500">✓ Đã lưu thay đổi hồ sơ.</p>
             ) : null}
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-6">
+          {/* Languages Selector */}
+          <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <div
+              className="absolute inset-x-0 top-0 h-[3px]"
+              style={{ background: `linear-gradient(90deg, ${BRAND.purple}, ${BRAND.cyan})` }}
+            />
             <div className="mb-4 flex items-center gap-2">
-              <Globe size={18} className="text-muted-foreground" />
-              <h3 className="font-semibold text-foreground">Ngôn ngữ đang học</h3>
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Globe size={16} />
+              </div>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Đa ngôn ngữ</span>
+                <h3 className="text-lg font-bold text-foreground">Ngôn ngữ đang học</h3>
+              </div>
             </div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Bạn có thể học nhiều ngôn ngữ song song. Chọn ngôn ngữ đang xem
-              trong header hoặc tại đây.
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+              Học song song nhiều ngôn ngữ. Chuyển đổi ngôn ngữ để cập nhật toàn bộ bài học, bộ thẻ và đề thi.
             </p>
-            <div className="space-y-2">
-              {languages.map((lang) => (
-                <button
-                  key={lang.languageCode}
-                  type="button"
-                  disabled={langBusy !== null}
-                  onClick={() =>
-                    void handleSetActive(lang.languageCode as LearningLanguageCode)
-                  }
-                  className={cn(
-                    "flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm transition-colors",
-                    lang.languageCode === languageCode
-                      ? "border-primary/50 bg-primary/10 font-semibold text-foreground"
-                      : "border-border hover:border-primary/30 hover:bg-secondary",
-                  )}
-                >
-                  <span>{learningLanguageLabel(lang.languageCode)}</span>
-                  {lang.languageCode === languageCode ? (
-                    <span className="text-xs text-primary">Đang học</span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Chọn</span>
-                  )}
-                </button>
-              ))}
+            <div className="space-y-2.5">
+              {languages.map((lang) => {
+                const isActive = lang.languageCode === languageCode;
+                return (
+                  <button
+                    key={lang.languageCode}
+                    type="button"
+                    disabled={langBusy !== null}
+                    onClick={() =>
+                      void handleSetActive(lang.languageCode as LearningLanguageCode)
+                    }
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-2xl border p-4 text-left text-sm font-semibold transition-all duration-150",
+                      isActive
+                        ? "border-primary/50 bg-primary/10 shadow-sm"
+                        : "border-border hover:border-primary/30 hover:bg-secondary/60",
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-extrabold"
+                        style={{
+                          background: isActive ? BRAND.blue : "var(--secondary)",
+                          color: isActive ? "#ffffff" : "var(--muted-foreground)",
+                        }}
+                      >
+                        {lang.languageCode.toUpperCase()}
+                      </span>
+                      <span className="text-foreground">{learningLanguageLabel(lang.languageCode)}</span>
+                    </div>
+                    {isActive ? (
+                      <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-bold text-primary">
+                        Đang chọn
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground font-normal">Nhấn để chọn →</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
             {availableToAdd.length > 0 ? (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -270,10 +306,10 @@ function ProfileContent() {
                     type="button"
                     disabled={langBusy !== null}
                     onClick={() => void handleAddLanguage(opt.code)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                    className="inline-flex items-center gap-1.5 rounded-2xl border border-dashed border-border px-3.5 py-2 text-xs font-bold text-muted-foreground transition hover:border-primary hover:text-foreground"
                   >
                     <Plus size={14} />
-                    {langBusy === opt.code ? "Đang thêm…" : `Thêm ${opt.nameVi}`}
+                    {langBusy === opt.code ? "Đang thêm…" : `Học thêm ${opt.nameVi}`}
                   </button>
                 ))}
               </div>
@@ -281,21 +317,24 @@ function ProfileContent() {
             {langError ? <p className={`mt-3 ${errorClass}`}>{langError}</p> : null}
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-6">
+          {/* Progress Summary */}
+          <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <div
+              className="absolute inset-x-0 top-0 h-[3px]"
+              style={{ background: `linear-gradient(90deg, ${BRAND.green}, ${BRAND.cyan})` }}
+            />
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h3 className="font-semibold text-foreground">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Thống kê</span>
+                <h3 className="text-lg font-bold text-foreground">
                   Tiến độ {learningLanguageLabel(languageCode)}
                 </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Mục tiêu, ôn tập và hoạt động gần đây theo ngôn ngữ đang chọn.
-                </p>
               </div>
               <Link
                 href="/goals"
-                className="shrink-0 text-xs font-medium text-primary hover:underline"
+                className="text-xs font-bold text-primary hover:underline"
               >
-                Mục tiêu ngày
+                Mục tiêu ngày →
               </Link>
             </div>
 
@@ -308,128 +347,133 @@ function ProfileContent() {
             ) : (
               <div className="space-y-5">
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <div className="rounded-xl border border-border bg-secondary/40 px-3 py-3">
-                    <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Flame size={13} style={{ color: BRAND.yellow }} />
-                      Chuỗi
+                  <div className="rounded-2xl border border-border bg-card p-3.5 shadow-sm">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                      <Flame size={14} style={{ color: BRAND.yellow }} />
+                      Chuỗi học
                     </div>
-                    <p className="text-lg font-bold text-foreground">
-                      {goal?.streak ?? 0} ngày
+                    <p className="text-xl font-black text-foreground">
+                      {goal?.streak ?? 0} <span className="text-xs font-medium text-muted-foreground">ngày</span>
                     </p>
                   </div>
-                  <div className="rounded-xl border border-border bg-secondary/40 px-3 py-3">
-                    <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Target size={13} style={{ color: BRAND.blue }} />
+                  <div className="rounded-2xl border border-border bg-card p-3.5 shadow-sm">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                      <Target size={14} style={{ color: BRAND.blue }} />
                       Hôm nay
                     </div>
-                    <p className="text-lg font-bold text-foreground">
+                    <p className="text-xl font-black text-foreground">
                       {goal?.today.reviewedCards ?? 0}/{goal?.today.target ?? 0}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-border bg-secondary/40 px-3 py-3">
-                    <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <BookOpen size={13} style={{ color: BRAND.cyan }} />
-                      Ôn hôm nay
+                  <div className="rounded-2xl border border-border bg-card p-3.5 shadow-sm">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                      <BookOpen size={14} style={{ color: BRAND.cyan }} />
+                      Cần ôn
                     </div>
-                    <p className="text-lg font-bold text-foreground">
-                      {progress.reviewDue.dueCount} thẻ
+                    <p className="text-xl font-black text-foreground">
+                      {progress.reviewDue.dueCount} <span className="text-xs font-medium text-muted-foreground">thẻ</span>
                     </p>
                   </div>
-                  <div className="rounded-xl border border-border bg-secondary/40 px-3 py-3">
-                    <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Route size={13} style={{ color: BRAND.green }} />
+                  <div className="rounded-2xl border border-border bg-card p-3.5 shadow-sm">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                      <Route size={14} style={{ color: BRAND.green }} />
                       Lộ trình
                     </div>
-                    <p className="text-lg font-bold text-foreground">
+                    <p className="text-xl font-black text-foreground">
                       {progress.paths.avgPercent}%
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="rounded-xl border border-border px-4 py-3">
-                    <p className="text-xs text-muted-foreground">Bộ thẻ</p>
-                    <p className="mt-1 text-sm text-foreground">
+                  <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Bộ thẻ từ vựng</p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
                       {progress.decks.learnedCards}/{progress.decks.totalCards} từ đã thuộc
                       {" · "}
                       {progress.decks.deckCount} bộ
                     </p>
                     <Link
                       href="/decks"
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                      className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
                     >
-                      Xem bộ thẻ <ArrowRight size={12} />
+                      Xem các bộ thẻ <ArrowRight size={12} />
                     </Link>
                   </div>
 
                   {progress.paths.primaryPath ? (
-                    <div className="rounded-xl border border-border px-4 py-3">
-                      <p className="text-xs text-muted-foreground">Lộ trình chính</p>
-                      <p className="mt-1 text-sm font-medium text-foreground">
+                    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Lộ trình chính</p>
+                      <p className="mt-1 text-sm font-bold text-foreground">
                         {progress.paths.primaryPath.title}
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         {progress.paths.primaryPath.completedSteps}/
-                        {progress.paths.primaryPath.totalSteps} bước
+                        {progress.paths.primaryPath.totalSteps} bước hoàn thành
                       </p>
-                      <Bar
-                        done={progress.paths.primaryPath.completedSteps}
-                        total={progress.paths.primaryPath.totalSteps}
-                        color={BRAND.green}
-                      />
+                      <div className="mt-2">
+                        <Bar
+                          done={progress.paths.primaryPath.completedSteps}
+                          total={progress.paths.primaryPath.totalSteps}
+                          color={BRAND.green}
+                        />
+                      </div>
                       <Link
                         href={`/paths/${progress.paths.primaryPath.id}`}
-                        className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
                       >
-                        Tiếp tục <ArrowRight size={12} />
+                        Tiếp tục học <ArrowRight size={12} />
                       </Link>
                     </div>
                   ) : null}
                 </div>
 
                 <div className="space-y-2 border-t border-border pt-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Hoạt động gần đây
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Hoạt động gần nhất
                   </p>
                   {progress.recentQuiz ? (
-                    <p className="text-sm text-foreground">
-                      Quiz: {progress.recentQuiz.sourceTitle} —{" "}
-                      {progress.recentQuiz.scorePercent}%
-                    </p>
+                    <div className="rounded-xl bg-secondary/50 p-2.5 text-xs font-medium text-foreground">
+                      📝 Quiz: <strong>{progress.recentQuiz.sourceTitle}</strong> —{" "}
+                      <span className="font-bold text-primary">{progress.recentQuiz.scorePercent}%</span>
+                    </div>
                   ) : null}
                   {progress.recentExam ? (
-                    <p className="text-sm text-foreground">
-                      {examLabel}: {progress.recentExam.scorePercent}% (
-                      {progress.recentExam.correctCount}/
-                      {progress.recentExam.totalQuestions})
+                    <div className="rounded-xl bg-secondary/50 p-2.5 text-xs font-medium text-foreground flex items-center justify-between">
+                      <span>
+                        🏆 {examLabel}: <strong>{progress.recentExam.scorePercent}%</strong> (
+                        {progress.recentExam.correctCount}/{progress.recentExam.totalQuestions} câu)
+                      </span>
                       <Link
                         href={examHref}
-                        className="ml-2 text-xs text-primary hover:underline"
+                        className="font-bold text-primary hover:underline"
                       >
-                        Luyện thi
+                        Luyện tiếp →
                       </Link>
-                    </p>
+                    </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Chưa có lần thi {examLabel} nào.
+                    <p className="text-xs text-muted-foreground">
+                      Chưa có kết quả thi {examLabel} nào gần đây.
                     </p>
                   )}
                   {progress.recentSpeaking ? (
-                    <p className="flex items-center gap-1.5 text-sm text-foreground">
-                      <Mic size={14} className="text-muted-foreground" />
-                      Nói: {progress.recentSpeaking.situationTitle}
-                      {progress.recentSpeaking.overallScore != null
-                        ? ` — ${Math.round(progress.recentSpeaking.overallScore)} điểm`
-                        : ""}
+                    <div className="rounded-xl bg-secondary/50 p-2.5 text-xs font-medium text-foreground flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Mic size={14} className="text-primary" />
+                        Nói: <strong>{progress.recentSpeaking.situationTitle}</strong>
+                        {progress.recentSpeaking.overallScore != null
+                          ? ` — ${Math.round(progress.recentSpeaking.overallScore)} điểm`
+                          : ""}
+                      </span>
                       <Link
                         href="/speaking"
-                        className="ml-1 text-xs text-primary hover:underline"
+                        className="font-bold text-primary hover:underline"
                       >
-                        Luyện nói
+                        Luyện nói →
                       </Link>
-                    </p>
+                    </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Chưa có phiên luyện nói nào.
                     </p>
                   )}

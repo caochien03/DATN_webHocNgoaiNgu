@@ -1,8 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, ChevronRight, CircleX, HelpCircle, RotateCcw, Sparkles, Trophy } from "lucide-react";
-import { BRAND, GRADIENT_DIAGONAL, scoreColor } from "@/components/ui-kit/brand";
+import {
+  Check,
+  ChevronRight,
+  CircleX,
+  HelpCircle,
+  RotateCcw,
+  Sparkles,
+  Trophy,
+} from "lucide-react";
+import { BRAND, scoreColor } from "@/components/ui-kit/brand";
 import { shuffle } from "@/lib/shuffle";
 import type { AttemptHandler, LearnCard } from "./types";
 
@@ -95,120 +103,221 @@ export function QuizGame({
   }
 
   if (done) {
-    const pctScore = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+    const pctScore =
+      questions.length > 0
+        ? Math.round((score / questions.length) * 100)
+        : 0;
     return (
-      <div className="relative mt-5 overflow-hidden rounded-[28px] border border-border bg-card p-8 text-center shadow-[0_18px_45px_-38px_rgba(249,115,22,0.8)]">
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-primary/10 to-transparent" />
-        <div className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg shadow-primary/25" style={{ background: GRADIENT_DIAGONAL }}>
-          <Trophy size={26} />
+      <div className="relative mt-5 overflow-hidden rounded-3xl border border-border bg-card p-8 text-center shadow-lg md:p-10">
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary/15 to-transparent" />
+        <div
+          className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-xl shadow-primary/25"
+          style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})` }}
+        >
+          <Trophy size={32} />
         </div>
-        <p className="relative mt-4 text-sm font-semibold text-muted-foreground">Hoàn thành lượt luyện</p>
-        <p className="relative mt-1 text-5xl font-bold tracking-tight" style={{ color: scoreColor(pctScore) }}>
+        <p className="relative mt-4 text-xs font-bold uppercase tracking-[0.16em] text-primary">
+          Tổng kết kết quả
+        </p>
+        <p
+          className="relative mt-1 text-5xl font-black tracking-tight sm:text-6xl"
+          style={{ color: scoreColor(pctScore) }}
+        >
           {pctScore}%
         </p>
-        <p className="relative mt-2 text-sm text-muted-foreground">
-          Đúng {score}/{questions.length} câu · Sai {wrongCards.length} từ
-        </p>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+        <div className="relative mt-3 flex items-center justify-center gap-3">
+          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-500">
+            ✓ Đúng: {score} câu
+          </span>
+          <span className="rounded-full bg-red-500/15 px-3 py-1 text-xs font-bold text-red-500">
+            ✗ Sai: {wrongCards.length} từ
+          </span>
+        </div>
+
+        <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3">
           {wrongCards.length > 0 ? (
             <button
               type="button"
               onClick={() => restart(wrongCards)}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md shadow-primary/20"
-              style={{ background: GRADIENT_DIAGONAL }}
+              className="rounded-2xl px-6 py-3 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5"
+              style={{
+                background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})`,
+                boxShadow: `0 4px 14px 0 ${BRAND.purple}35`,
+              }}
             >
               Ôn lại {wrongCards.length} từ sai
             </button>
           ) : null}
           <button
-              type="button"
-              onClick={() => restart()}
-              className="flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            >
-              <RotateCcw size={15} /> Làm lại cả bộ
-            </button>
-          </div>
+            type="button"
+            onClick={() => restart()}
+            className="flex items-center gap-2 rounded-2xl border border-border bg-card px-6 py-3 text-sm font-bold text-foreground transition-all hover:bg-secondary hover:border-primary/40"
+          >
+            <RotateCcw size={16} /> Làm lại cả bộ
+          </button>
         </div>
+      </div>
     );
   }
 
   if (!q) return null;
 
+  const progressPercent = Math.round(((index + 1) / questions.length) * 100);
+
   return (
-    <section className="mt-5 rounded-[28px] border border-border bg-card p-5 shadow-[0_18px_45px_-38px_rgba(249,115,22,0.8)]">
+    <section className="relative mt-5 overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-lg md:p-8">
+      {/* Top Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><HelpCircle size={19} /></span>
+          <span
+            className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-md"
+            style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})` }}
+          >
+            <HelpCircle size={22} />
+          </span>
           <div>
-            <p className="text-sm font-bold text-foreground">Trắc nghiệm</p>
-            <p className="text-xs text-muted-foreground">Chọn nghĩa phù hợp nhất</p>
+            <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Phản xạ nhanh</span>
+            <p className="text-lg font-extrabold text-foreground">Trắc Nghiệm 4 Lựa Chọn</p>
           </div>
         </div>
-        <span className="rounded-lg bg-secondary px-2.5 py-1 text-xs font-semibold text-muted-foreground">Điểm {score}</span>
-      </div>
-      <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-secondary">
-        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${((index + 1) / questions.length) * 100}%`, background: GRADIENT_DIAGONAL }} />
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-primary/10 px-3 py-1 font-mono text-xs font-bold text-primary">
+            Câu {index + 1} / {questions.length}
+          </span>
+          <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-mono text-xs font-bold text-emerald-500">
+            {score} điểm
+          </span>
+        </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-primary/15 bg-primary/[0.045] px-6 py-7 text-center">
-        <p className="flex items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          <Sparkles size={13} style={{ color: BRAND.yellow }} /> Nghĩa của từ
+      {/* Progress Bar */}
+      <div className="mt-5 h-2 overflow-hidden rounded-full bg-secondary/80">
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{
+            width: `${progressPercent}%`,
+            background: `linear-gradient(90deg, ${BRAND.purple}, ${BRAND.blue})`,
+          }}
+        />
+      </div>
+
+      {/* Question Prompt Box */}
+      <div
+        className="mt-6 flex flex-col items-center justify-center rounded-3xl border border-border p-7 text-center shadow-sm"
+        style={{
+          background: `linear-gradient(135deg, ${BRAND.purple}12 0%, var(--card) 60%, ${BRAND.blue}12 100%)`,
+        }}
+      >
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-0.5 text-xs font-extrabold uppercase tracking-wider text-primary">
+          <Sparkles size={12} /> Chọn nghĩa chính xác của từ:
+        </span>
+        <p className="mt-3 text-3xl font-black text-foreground sm:text-4xl">
+          {q.card.frontText}
         </p>
-        <p className="mt-3 text-3xl font-bold tracking-tight text-foreground">{q.card.frontText}</p>
+        {q.card.note ? (
+          <p className="mt-2 text-xs font-medium text-muted-foreground">
+            💡 Gợi ý: {q.card.note}
+          </p>
+        ) : null}
       </div>
 
-      <ul className="mt-5 grid grid-cols-2 gap-3">
+      {/* 4 Options Grid */}
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {q.options.map((opt, optionIndex) => {
           const isCorrect = opt === q.correct;
           const isPicked = picked === opt;
           const revealed = picked !== null;
-          const tint = revealed
-            ? isCorrect
-              ? BRAND.green
-              : isPicked
-                ? BRAND.red
-                : null
-            : null;
+          const letters = ["A", "B", "C", "D"];
+
+          let style = {};
+          let className =
+            "group relative flex min-h-[72px] w-full items-center gap-3.5 rounded-2xl border p-4 text-left transition-all duration-200 disabled:cursor-default ";
+
+          if (revealed) {
+            if (isCorrect) {
+              className += "border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shadow-md shadow-emerald-500/10 scale-[1.01]";
+            } else if (isPicked) {
+              className += "border-red-500 bg-red-500/15 text-red-500 shadow-md shadow-red-500/10";
+            } else {
+              className += "border-border bg-card/60 opacity-60";
+            }
+          } else {
+            className += "border-border bg-card hover:-translate-y-1 hover:border-primary/50 hover:bg-secondary/60 hover:shadow-md";
+          }
+
           return (
-            <li key={opt}>
-              <button
-                type="button"
-                disabled={revealed}
-                onClick={() => choose(opt)}
-                className={`flex min-h-[72px] w-full items-center gap-3 rounded-2xl border p-3 text-left text-sm transition-all disabled:cursor-default ${
-                  !revealed ? "bg-background hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5" : ""
+            <button
+              key={opt}
+              type="button"
+              disabled={revealed}
+              onClick={() => choose(opt)}
+              className={className}
+              style={style}
+            >
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black transition-colors ${
+                  revealed && isCorrect
+                    ? "bg-emerald-500 text-white"
+                    : revealed && isPicked
+                    ? "bg-red-500 text-white"
+                    : "bg-secondary text-muted-foreground group-hover:bg-primary group-hover:text-white"
                 }`}
-                style={
-                  tint
-                    ? { borderColor: tint, backgroundColor: `${tint}1a` }
-                    : { borderColor: "var(--border)" }
-                }
               >
-                <span
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-xs font-bold text-muted-foreground"
-                  style={tint ? { color: tint, backgroundColor: `${tint}18` } : undefined}
-                >
-                  {revealed && isCorrect ? <Check size={16} /> : revealed && isPicked ? <CircleX size={16} /> : String.fromCharCode(65 + optionIndex)}
-                </span>
-                <span className="font-medium text-foreground">{opt}</span>
-              </button>
-            </li>
+                {revealed && isCorrect ? (
+                  <Check size={18} />
+                ) : revealed && isPicked ? (
+                  <CircleX size={18} />
+                ) : (
+                  letters[optionIndex]
+                )}
+              </span>
+              <span className="font-bold text-foreground leading-snug">{opt}</span>
+            </button>
           );
         })}
-      </ul>
+      </div>
 
+      {/* Answer Feedback Banner & Next Button */}
       {picked !== null ? (
-        <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-secondary/70 px-4 py-3">
-          <p className="text-sm font-medium" style={{ color: picked === q.correct ? BRAND.green : BRAND.red }}>
-            {picked === q.correct ? "Chính xác, rất tốt!" : `Đáp án đúng: ${q.correct}`}
-          </p>
+        <div
+          className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl p-4 shadow-sm"
+          style={{
+            backgroundColor: picked === q.correct ? `${BRAND.green}15` : `${BRAND.red}15`,
+            border: `1px solid ${picked === q.correct ? BRAND.green : BRAND.red}35`,
+          }}
+        >
+          <div className="flex items-center gap-2.5">
+            {picked === q.correct ? (
+              <>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500 text-white">
+                  <Check size={16} />
+                </span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                  Chính xác! Bạn ghi nhớ rất tốt.
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white">
+                  <CircleX size={16} />
+                </span>
+                <span className="font-bold text-red-500 text-sm">
+                  Chưa đúng. Đáp án chính xác là: <strong className="underline text-foreground">{q.correct}</strong>
+                </span>
+              </>
+            )}
+          </div>
           <button
             type="button"
             onClick={nextQuestion}
-            className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md shadow-primary/20"
-            style={{ background: GRADIENT_DIAGONAL }}
+            className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-transform hover:-translate-y-0.5"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})`,
+              boxShadow: `0 4px 12px 0 ${BRAND.purple}35`,
+            }}
           >
-            {index + 1 >= questions.length ? "Xem kết quả" : "Câu tiếp"} <ChevronRight size={16} />
+            <span>{index + 1 >= questions.length ? "Xem tổng kết" : "Câu tiếp theo"}</span>
+            <ChevronRight size={16} />
           </button>
         </div>
       ) : null}
