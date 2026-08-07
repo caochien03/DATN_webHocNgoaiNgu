@@ -67,7 +67,9 @@ export class AdminSpeakingService {
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.titleNative !== undefined && { titleNative: dto.titleNative }),
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.languageCode !== undefined && { languageCode: dto.languageCode }),
+        ...(dto.languageCode !== undefined && {
+          languageCode: dto.languageCode,
+        }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
         ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
       },
@@ -109,7 +111,9 @@ export class AdminSpeakingService {
         title: dto.title,
         topicId: dto.topicId ?? null,
         languageCode: dto.languageCode,
-        level: (dto.level ?? undefined) as Parameters<typeof this.prisma.speakingSituation.create>[0]['data']['level'],
+        level: (dto.level ?? undefined) as Parameters<
+          typeof this.prisma.speakingSituation.create
+        >[0]['data']['level'],
         contextVi: dto.contextVi,
         userRoleVi: dto.userRoleVi,
         npcRoleVi: dto.npcRoleVi,
@@ -137,15 +141,21 @@ export class AdminSpeakingService {
       data: {
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.topicId !== undefined && { topicId: dto.topicId }),
-        ...(dto.languageCode !== undefined && { languageCode: dto.languageCode }),
+        ...(dto.languageCode !== undefined && {
+          languageCode: dto.languageCode,
+        }),
         ...(dto.level !== undefined && { level: dto.level ?? null }),
         ...(dto.contextVi !== undefined && { contextVi: dto.contextVi }),
         ...(dto.userRoleVi !== undefined && { userRoleVi: dto.userRoleVi }),
         ...(dto.npcRoleVi !== undefined && { npcRoleVi: dto.npcRoleVi }),
         ...(dto.openingLine !== undefined && { openingLine: dto.openingLine }),
-        ...(dto.systemPrompt !== undefined && { systemPrompt: dto.systemPrompt }),
+        ...(dto.systemPrompt !== undefined && {
+          systemPrompt: dto.systemPrompt,
+        }),
         ...(dto.goals !== undefined && { goals: dto.goals as object[] }),
-        ...(dto.maxUserTurns !== undefined && { maxUserTurns: dto.maxUserTurns }),
+        ...(dto.maxUserTurns !== undefined && {
+          maxUserTurns: dto.maxUserTurns,
+        }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
         ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
       },

@@ -75,9 +75,37 @@ function PracticeContent() {
     }
   }
 
+  async function finishPractice() {
+    setDone(true);
+    try {
+      const finalPct = queue.length > 0 ? Math.round((score / queue.length) * 100) : 0;
+      await fetchWithAuth('/quiz-attempts', {
+        method: 'POST',
+        body: JSON.stringify({
+          sourceType: 'LESSON',
+          sourceId: id,
+          sourceTitle: 'Luyện tập ngữ pháp',
+          languageCode: 'ko',
+          totalQuestions: queue.length,
+          correctAnswers: score,
+          scorePercent: finalPct,
+        }),
+      });
+
+      if (finalPct >= 80) {
+        void fetchWithAuth('/paths/complete-by-source', {
+          method: 'POST',
+          body: JSON.stringify({ sourceType: 'LESSON', sourceId: id }),
+        });
+      }
+    } catch (e) {
+      console.error('Lỗi khi lưu kết quả bài học:', e);
+    }
+  }
+
   function next() {
     if (index + 1 >= queue.length) {
-      setDone(true);
+      void finishPractice();
       return;
     }
     setIndex((v) => v + 1);
@@ -281,6 +309,19 @@ function PracticeContent() {
             <span className="rounded-full bg-red-500/15 px-3 py-1 text-xs font-bold text-red-500">
               ✗ Sai: {wrongList.length} câu
             </span>
+          </div>
+
+          <div
+            className="relative mx-auto mt-4 max-w-sm rounded-2xl border p-3 text-xs font-semibold leading-relaxed"
+            style={{
+              backgroundColor: pct >= 80 ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)",
+              borderColor: pct >= 80 ? "rgba(16, 185, 129, 0.25)" : "rgba(245, 158, 11, 0.25)",
+              color: pct >= 80 ? "#10b981" : "#f59e0b",
+            }}
+          >
+            {pct >= 80
+              ? "🎉 Xuất sắc! Bạn đã đạt yêu cầu phần Ngữ pháp (>= 80%)!"
+              : "⚠️ Cần đạt tối thiểu 80% điểm để được tính hoàn thành phần Ngữ pháp trong lộ trình."}
           </div>
 
           <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3">

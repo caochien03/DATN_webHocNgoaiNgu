@@ -63,11 +63,10 @@ export class SpeakingGeminiService {
         } catch (e) {
           lastError = e;
           const isRateLimit =
-            String(e).includes('429') || String(e).includes('RESOURCE_EXHAUSTED');
+            String(e).includes('429') ||
+            String(e).includes('RESOURCE_EXHAUSTED');
           if (isRateLimit && attempt === 1) {
-            this.logger.warn(
-              `Model ${m} gặp 429 (lần 1), đợi 1.2s thử lại...`,
-            );
+            this.logger.warn(`Model ${m} gặp 429 (lần 1), đợi 1.2s thử lại...`);
             await sleep(1200);
             continue;
           }
@@ -113,7 +112,8 @@ export class SpeakingGeminiService {
         } catch (e) {
           lastError = e;
           const isRateLimit =
-            String(e).includes('429') || String(e).includes('RESOURCE_EXHAUSTED');
+            String(e).includes('429') ||
+            String(e).includes('RESOURCE_EXHAUSTED');
           if (isRateLimit && attempt === 1) {
             this.logger.warn(
               `Audio model ${m} gặp 429 (lần 1), đợi 1.2s thử lại...`,

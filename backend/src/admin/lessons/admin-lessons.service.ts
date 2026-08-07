@@ -68,7 +68,9 @@ export class AdminLessonsService {
         ...(dto.level !== undefined && { level: dto.level }),
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.summary !== undefined && { summary: dto.summary }),
-        ...(dto.languageCode !== undefined && { languageCode: dto.languageCode }),
+        ...(dto.languageCode !== undefined && {
+          languageCode: dto.languageCode,
+        }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },
     });
@@ -187,7 +189,9 @@ export class AdminLessonsService {
       data: {
         ...(dto.prompt !== undefined && { prompt: dto.prompt }),
         ...(dto.options !== undefined && { options: dto.options }),
-        ...(dto.correctIndex !== undefined && { correctIndex: dto.correctIndex }),
+        ...(dto.correctIndex !== undefined && {
+          correctIndex: dto.correctIndex,
+        }),
         ...(dto.explanation !== undefined && { explanation: dto.explanation }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },
@@ -202,9 +206,7 @@ export class AdminLessonsService {
 
   private validateExerciseOptions(options: string[], correctIndex: number) {
     if (correctIndex < 0 || correctIndex >= options.length) {
-      throw new BadRequestException(
-        'correctIndex is out of range for options',
-      );
+      throw new BadRequestException('correctIndex is out of range for options');
     }
   }
 

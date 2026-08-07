@@ -2,7 +2,8 @@ export function toVnDayStart(date: Date) {
   const tzOffsetMs = 7 * 60 * 60 * 1000;
   const vn = new Date(date.getTime() + tzOffsetMs);
   return new Date(
-    Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - tzOffsetMs,
+    Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) -
+      tzOffsetMs,
   );
 }
 

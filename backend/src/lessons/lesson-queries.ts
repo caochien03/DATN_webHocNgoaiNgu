@@ -1,10 +1,7 @@
 import { Prisma } from '@prisma/client';
 
-export const LESSON_LIST_ORDER: Prisma.GrammarLessonOrderByWithRelationInput[] = [
-  { level: 'asc' },
-  { sortOrder: 'asc' },
-  { createdAt: 'asc' },
-];
+export const LESSON_LIST_ORDER: Prisma.GrammarLessonOrderByWithRelationInput[] =
+  [{ level: 'asc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }];
 
 export const LESSON_LIST_COUNTS_INCLUDE = {
   _count: { select: { vocabulary: true, points: true, exercises: true } },
@@ -20,10 +17,8 @@ const POINTS_ORDER: Prisma.GrammarPointOrderByWithRelationInput[] = [
   { createdAt: 'asc' },
 ];
 
-export const EXERCISE_LIST_ORDER: Prisma.GrammarExerciseOrderByWithRelationInput[] = [
-  { sortOrder: 'asc' },
-  { createdAt: 'asc' },
-];
+export const EXERCISE_LIST_ORDER: Prisma.GrammarExerciseOrderByWithRelationInput[] =
+  [{ sortOrder: 'asc' }, { createdAt: 'asc' }];
 
 export const lessonDetailInclude = {
   vocabulary: { orderBy: VOCAB_ORDER },

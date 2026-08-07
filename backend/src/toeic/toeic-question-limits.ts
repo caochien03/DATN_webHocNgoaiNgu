@@ -24,8 +24,6 @@ export function validateOptions(correctIndex: number, options: string[]) {
     throw new BadRequestException('options must have at least 2 items');
   }
   if (correctIndex < 0 || correctIndex >= options.length) {
-    throw new BadRequestException(
-      'correctIndex is out of range for options',
-    );
+    throw new BadRequestException('correctIndex is out of range for options');
   }
 }

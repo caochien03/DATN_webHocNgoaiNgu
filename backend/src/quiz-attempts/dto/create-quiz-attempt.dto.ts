@@ -1,5 +1,13 @@
 import { QuizSourceType } from '@prisma/client';
-import { IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { SUPPORTED_LANGUAGES } from '../../languages/supported-languages';
 
 const LANGUAGE_CODES = SUPPORTED_LANGUAGES.map((l) => l.code);

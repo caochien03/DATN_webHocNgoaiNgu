@@ -24,7 +24,9 @@ import {
 @Controller('admin/toeic/exams')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class AdminToeicExamsController {
-  constructor(private readonly adminToeicExamsService: AdminToeicExamsService) {}
+  constructor(
+    private readonly adminToeicExamsService: AdminToeicExamsService,
+  ) {}
 
   @Get()
   list() {

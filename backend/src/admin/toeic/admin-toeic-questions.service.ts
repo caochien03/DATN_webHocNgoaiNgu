@@ -78,7 +78,9 @@ export class AdminToeicQuestionsService {
         ...(dto.prompt !== undefined && { prompt: dto.prompt }),
         ...(dto.passage !== undefined && { passage: dto.passage }),
         ...(dto.options !== undefined && { options: dto.options }),
-        ...(dto.correctIndex !== undefined && { correctIndex: dto.correctIndex }),
+        ...(dto.correctIndex !== undefined && {
+          correctIndex: dto.correctIndex,
+        }),
         ...(dto.explanation !== undefined && { explanation: dto.explanation }),
         ...(dto.audioUrl !== undefined && { audioUrl: dto.audioUrl }),
         ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),

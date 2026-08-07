@@ -16,10 +16,7 @@ export class LanguagesController {
   }
 
   @Post()
-  add(
-    @CurrentUser('id') userId: string,
-    @Body() dto: AddLearningLanguageDto,
-  ) {
+  add(@CurrentUser('id') userId: string, @Body() dto: AddLearningLanguageDto) {
     return this.languagesService.addForUser(userId, dto.languageCode);
   }
 

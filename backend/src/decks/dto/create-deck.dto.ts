@@ -1,4 +1,10 @@
-import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { SUPPORTED_LANGUAGES } from '../../languages/supported-languages';
 
 const LANGUAGE_CODES = SUPPORTED_LANGUAGES.map((l) => l.code);

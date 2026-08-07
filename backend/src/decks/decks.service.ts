@@ -256,7 +256,11 @@ export class DecksService {
         },
       }),
     ]);
-    if (progress && !progress.goalAchieved && progress.reviewedCards >= goalTarget) {
+    if (
+      progress &&
+      !progress.goalAchieved &&
+      progress.reviewedCards >= goalTarget
+    ) {
       await this.prisma.userDailyProgress.update({
         where: { id: progress.id },
         data: { goalAchieved: true },

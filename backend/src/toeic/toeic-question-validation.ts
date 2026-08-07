@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { validateOptions } from './toeic-question-limits';
 
 export function assertQuestionInput(params: {

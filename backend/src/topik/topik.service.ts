@@ -168,7 +168,9 @@ export class TopikService {
       throw new BadRequestException('Dữ liệu bài làm không hợp lệ');
     }
 
-    const pendingCount = graded.filter((a) => a.gradeStatus === 'pending').length;
+    const pendingCount = graded.filter(
+      (a) => a.gradeStatus === 'pending',
+    ).length;
     if (pendingCount === 0) {
       throw new BadRequestException('Không có câu viết nào đang chờ chấm');
     }
@@ -183,7 +185,9 @@ export class TopikService {
 
     await this.aiGrading.gradeWritingAnswers(graded, questions);
 
-    const stillPending = graded.filter((a) => a.gradeStatus === 'pending').length;
+    const stillPending = graded.filter(
+      (a) => a.gradeStatus === 'pending',
+    ).length;
     const regradedCount = pendingCount - stillPending;
 
     const updated = await this.prisma.topikExamAttempt.update({
@@ -201,9 +205,7 @@ export class TopikService {
     };
   }
 
-  private shapeAttemptResponse<
-    T extends { answers: unknown },
-  >(attempt: T) {
+  private shapeAttemptResponse<T extends { answers: unknown }>(attempt: T) {
     const { answers, ...row } = attempt;
     return {
       ...row,
@@ -255,8 +257,7 @@ export class TopikService {
         answers: graded,
         correctCount: mcqScore.correctCount,
         totalQuestions,
-        scorePercent:
-          mcqScore.totalMcq > 0 ? mcqScore.scorePercent : 0,
+        scorePercent: mcqScore.totalMcq > 0 ? mcqScore.scorePercent : 0,
         finishedAt: now,
       },
     });
@@ -325,8 +326,7 @@ export class TopikService {
         answers: graded,
         correctCount: mcqScore.correctCount,
         totalQuestions,
-        scorePercent:
-          mcqScore.totalMcq > 0 ? mcqScore.scorePercent : 0,
+        scorePercent: mcqScore.totalMcq > 0 ? mcqScore.scorePercent : 0,
         finishedAt: now,
       },
     });

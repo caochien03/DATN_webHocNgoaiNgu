@@ -5,9 +5,7 @@ import {
   TopikSection,
   TopikTier,
 } from '@prisma/client';
-import {
-  assertValidQuestionNo,
-} from '../../topik/topik-question-limits';
+import { assertValidQuestionNo } from '../../topik/topik-question-limits';
 import { assertQuestionInput } from '../../topik/topik-question-validation';
 import { parseWritingParts } from '../../topik/topik-writing-parts';
 import { ExamQuestionInputDto } from './dto/exam-question-input.dto';
@@ -128,7 +126,9 @@ export async function createQuestionsForExam(
         minChars: q.minChars,
         maxChars: q.maxChars,
         maxScore: q.maxScore,
-        ...(q.rubric !== undefined && { rubric: q.rubric as Prisma.InputJsonValue }),
+        ...(q.rubric !== undefined && {
+          rubric: q.rubric as Prisma.InputJsonValue,
+        }),
         points: q.points ?? 2,
         isPublished: true,
       },

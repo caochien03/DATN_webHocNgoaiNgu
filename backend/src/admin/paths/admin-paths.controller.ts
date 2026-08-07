@@ -46,10 +46,7 @@ export class AdminPathsController {
   }
 
   @Post(':id/steps')
-  createStep(
-    @Param('id') pathId: string,
-    @Body() dto: CreatePathStepDto,
-  ) {
+  createStep(@Param('id') pathId: string, @Body() dto: CreatePathStepDto) {
     return this.adminPathsService.createStep(pathId, dto);
   }
 
@@ -63,10 +60,7 @@ export class AdminPathsController {
   }
 
   @Delete(':id/steps/:stepId')
-  removeStep(
-    @Param('id') pathId: string,
-    @Param('stepId') stepId: string,
-  ) {
+  removeStep(@Param('id') pathId: string, @Param('stepId') stepId: string) {
     return this.adminPathsService.removeStep(pathId, stepId);
   }
 }

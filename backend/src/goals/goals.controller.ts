@@ -23,7 +23,11 @@ export class GoalsController {
     @Body() dto: UpdateGoalDto,
     @Query('languageCode') languageCode?: string,
   ) {
-    return this.goalsService.updateMe(userId, dto.dailyCardTarget, languageCode);
+    return this.goalsService.updateMe(
+      userId,
+      dto.dailyCardTarget,
+      languageCode,
+    );
   }
 
   @Get('me/history')

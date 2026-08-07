@@ -56,7 +56,9 @@ export class AdminTopicsService {
       data: {
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.languageCode !== undefined && { languageCode: dto.languageCode }),
+        ...(dto.languageCode !== undefined && {
+          languageCode: dto.languageCode,
+        }),
         ...(dto.level !== undefined && { level: dto.level }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },

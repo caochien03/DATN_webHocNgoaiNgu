@@ -37,8 +37,18 @@ describe('topik-ai-grading', () => {
     prompt: '㉠, ㉡에 쓰십시오.',
     maxScore: 10,
     parts: [
-      { label: '㉠', textAnswer: '운동을 합니다', modelAnswer: 'x', maxScore: 5 },
-      { label: '㉡', textAnswer: '건강해졌어요', modelAnswer: 'y', maxScore: 5 },
+      {
+        label: '㉠',
+        textAnswer: '운동을 합니다',
+        modelAnswer: 'x',
+        maxScore: 5,
+      },
+      {
+        label: '㉡',
+        textAnswer: '건강해졌어요',
+        modelAnswer: 'y',
+        maxScore: 5,
+      },
     ],
   };
 

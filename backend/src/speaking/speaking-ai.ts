@@ -489,7 +489,6 @@ export function buildSpeakingSessionSummaryPrompt(
   ].join('\n');
 }
 
-
 const VALID_ESTIMATED_LEVELS = new Set(['Sơ cấp', 'Trung bình', 'Khá']);
 
 /** Parse phản hồi tổng kết phiên. */

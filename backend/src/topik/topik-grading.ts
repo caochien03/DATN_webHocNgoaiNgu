@@ -1,16 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
-import {
-  TopikQuestion,
-  TopikQuestionType,
-  TopikSection,
-} from '@prisma/client';
+import { TopikQuestion, TopikQuestionType, TopikSection } from '@prisma/client';
 import { TopikAnswerItemDto } from './dto/submit-topik.dto';
 import { isWritingQuestionType } from './topik-question-validation';
-import {
-  getWritingPartCount,
-  parseWritingParts,
-  type TopikWritingPart,
-} from './topik-writing-parts';
+import { getWritingPartCount, parseWritingParts } from './topik-writing-parts';
 
 export type WritingGradeStatus = 'pending' | 'ai_graded' | 'not_applicable';
 
@@ -107,9 +99,7 @@ export function gradeTopikAnswers(
   const graded = answers.map((answer) => {
     const question = byId.get(answer.questionId);
     if (!question) {
-      throw new BadRequestException(
-        `Question not found: ${answer.questionId}`,
-      );
+      throw new BadRequestException(`Question not found: ${answer.questionId}`);
     }
 
     if (isWritingQuestionType(question.questionType)) {
@@ -117,10 +107,7 @@ export function gradeTopikAnswers(
     }
 
     const selectedIndex = answer.selectedIndex!;
-    if (
-      selectedIndex < 0 ||
-      selectedIndex >= question.options.length
-    ) {
+    if (selectedIndex < 0 || selectedIndex >= question.options.length) {
       throw new BadRequestException(
         `selectedIndex out of range for question ${answer.questionId}`,
       );
@@ -149,9 +136,11 @@ export function scorePercent(correct: number, total: number) {
 }
 
 /** Chỉ tính % trên câu trắc nghiệm đã chấm (viết chưa tính). */
-export function scorePercentMcqOnly(
-  graded: GradedTopikAnswer[],
-): { correctCount: number; totalMcq: number; scorePercent: number } {
+export function scorePercentMcqOnly(graded: GradedTopikAnswer[]): {
+  correctCount: number;
+  totalMcq: number;
+  scorePercent: number;
+} {
   const mcq = graded.filter(
     (a) => a.questionType === TopikQuestionType.MULTIPLE_CHOICE,
   );

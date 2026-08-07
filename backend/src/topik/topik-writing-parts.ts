@@ -15,7 +15,7 @@ export function parseWritingParts(value: unknown): TopikWritingPart[] | null {
   if (!Array.isArray(value) || value.length === 0) return null;
   const parts: TopikWritingPart[] = [];
   for (let i = 0; i < value.length; i++) {
-    const raw = value[i];
+    const raw: unknown = value[i];
     if (typeof raw !== 'object' || raw === null) {
       throw new BadRequestException(`writingParts[${i}] must be an object`);
     }

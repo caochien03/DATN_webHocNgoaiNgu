@@ -54,7 +54,9 @@ export class AdminTopikExamsService {
           ...(dto.durationMinutes !== undefined && {
             durationMinutes: dto.durationMinutes,
           }),
-          ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
+          ...(dto.isPublished !== undefined && {
+            isPublished: dto.isPublished,
+          }),
           ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
         },
       });
@@ -116,12 +118,16 @@ export class AdminTopikExamsService {
         where: { id },
         data: {
           ...(dto.title !== undefined && { title: dto.title }),
-          ...(dto.description !== undefined && { description: dto.description }),
+          ...(dto.description !== undefined && {
+            description: dto.description,
+          }),
           ...(dto.tier !== undefined && { tier: dto.tier }),
           ...(dto.durationMinutes !== undefined && {
             durationMinutes: dto.durationMinutes,
           }),
-          ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
+          ...(dto.isPublished !== undefined && {
+            isPublished: dto.isPublished,
+          }),
           ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
         },
       });
@@ -200,9 +206,7 @@ export class AdminTopikExamsService {
     const messages: string[] = [];
     const walk = (errs: typeof errors, prefix = '') => {
       for (const err of errs) {
-        const path = prefix
-          ? `${prefix}.${err.property}`
-          : err.property;
+        const path = prefix ? `${prefix}.${err.property}` : err.property;
         if (err.constraints) {
           messages.push(
             ...Object.values(err.constraints).map((m) => `${path}: ${m}`),

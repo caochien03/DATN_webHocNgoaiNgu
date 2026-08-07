@@ -1,5 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
-import { Prisma, TopikQuestionType, TopikSection, TopikTier } from '@prisma/client';
+import {
+  Prisma,
+  TopikQuestionType,
+  TopikSection,
+  TopikTier,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { partitionPoolIntoUnits } from './topik-question-bundles';
 import {
@@ -139,4 +144,3 @@ export async function loadFixedExamQuestions(
   });
   return slots.map((slot) => toClientQuestion(slot.question));
 }
-

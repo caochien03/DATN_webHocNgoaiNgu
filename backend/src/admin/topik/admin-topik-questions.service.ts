@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, TopikQuestionType, TopikSection, TopikTier } from '@prisma/client';
+import {
+  Prisma,
+  TopikQuestionType,
+  TopikSection,
+  TopikTier,
+} from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertValidQuestionNo } from '../../topik/topik-question-limits';
 import { assertQuestionInput } from '../../topik/topik-question-validation';
@@ -69,7 +74,8 @@ export class AdminTopikQuestionsService {
     });
 
     const writingParts =
-      questionType === TopikQuestionType.SHORT_ANSWER && dto.writingParts?.length
+      questionType === TopikQuestionType.SHORT_ANSWER &&
+      dto.writingParts?.length
         ? parseWritingParts(dto.writingParts)
         : null;
 
@@ -145,7 +151,9 @@ export class AdminTopikQuestionsService {
         ...(dto.prompt !== undefined && { prompt: dto.prompt }),
         ...(dto.passage !== undefined && { passage: dto.passage }),
         ...(dto.options !== undefined && { options: dto.options }),
-        ...(dto.correctIndex !== undefined && { correctIndex: dto.correctIndex }),
+        ...(dto.correctIndex !== undefined && {
+          correctIndex: dto.correctIndex,
+        }),
         ...(dto.explanation !== undefined && { explanation: dto.explanation }),
         ...(dto.audioUrl !== undefined && { audioUrl: dto.audioUrl }),
         ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),

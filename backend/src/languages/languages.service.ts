@@ -51,8 +51,9 @@ export class LanguagesService {
 
     return rows.map((row) => ({
       languageCode: row.languageCode,
-      nameVi: SUPPORTED_LANGUAGES.find((l) => l.code === row.languageCode)
-        ?.nameVi ?? row.languageCode,
+      nameVi:
+        SUPPORTED_LANGUAGES.find((l) => l.code === row.languageCode)?.nameVi ??
+        row.languageCode,
       isActive: row.isActive,
       addedAt: row.addedAt,
     }));

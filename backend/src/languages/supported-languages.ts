@@ -19,9 +19,7 @@ export function isSupportedLanguageCode(
 }
 
 export function languageNameVi(code: string): string {
-  return (
-    SUPPORTED_LANGUAGES.find((l) => l.code === code)?.nameVi ?? code
-  );
+  return SUPPORTED_LANGUAGES.find((l) => l.code === code)?.nameVi ?? code;
 }
 
 export const DEFAULT_LANGUAGE_CODE: SupportedLanguageCode = 'ko';

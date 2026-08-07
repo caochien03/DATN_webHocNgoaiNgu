@@ -1,10 +1,7 @@
 import { Prisma } from '@prisma/client';
 
-export const TOPIC_LIST_ORDER: Prisma.VocabularyTopicOrderByWithRelationInput[] = [
-  { languageCode: 'asc' },
-  { sortOrder: 'asc' },
-  { createdAt: 'asc' },
-];
+export const TOPIC_LIST_ORDER: Prisma.VocabularyTopicOrderByWithRelationInput[] =
+  [{ languageCode: 'asc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }];
 
 export const TOPIC_LIST_COUNTS_INCLUDE = {
   _count: { select: { words: true } },

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   PATH_LIST_COUNTS_INCLUDE,
@@ -8,6 +8,8 @@ import {
 
 @Injectable()
 export class PathsService {
+  private readonly logger = new Logger(PathsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   listCatalog() {
@@ -68,7 +70,13 @@ export class PathsService {
         steps: {
           orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
           include: {
-            topic: { select: { id: true, title: true, _count: { select: { words: true } } } },
+            topic: {
+              select: {
+                id: true,
+                title: true,
+                _count: { select: { words: true } },
+              },
+            },
             lesson: {
               select: {
                 id: true,
@@ -149,6 +157,247 @@ export class PathsService {
       where: { id: progress.id },
       data: { completedStepIds: completed },
     });
+  }
+
+  async evaluateSourceRequirements(
+    userId: string,
+    sourceType: string,
+    sourceId: string,
+  ): Promise<{
+    vocabRequired: boolean;
+    vocabPassed: boolean;
+    vocabBestScore: number | null;
+    grammarRequired: boolean;
+    grammarPassed: boolean;
+    grammarBestScore: number | null;
+    allPassed: boolean;
+  }> {
+    if (sourceType === 'TOPIC') {
+      const topic = await this.prisma.vocabularyTopic.findUnique({
+        where: { id: sourceId },
+        select: { id: true, words: true },
+      });
+      const vocabRequired = (topic?.words?.length ?? 0) > 0;
+      const attempts = await this.prisma.quizAttempt.findMany({
+        where: {
+          userId,
+          sourceType: 'TOPIC',
+          sourceId,
+        },
+        select: { scorePercent: true },
+        orderBy: { scorePercent: 'desc' },
+      });
+      const vocabBestScore =
+        attempts.length > 0 ? attempts[0].scorePercent : null;
+      const vocabPassed =
+        !vocabRequired || (vocabBestScore !== null && vocabBestScore >= 80);
+
+      return {
+        vocabRequired,
+        vocabPassed,
+        vocabBestScore,
+        grammarRequired: false,
+        grammarPassed: true,
+        grammarBestScore: null,
+        allPassed: vocabPassed,
+      };
+    }
+
+    if (sourceType === 'LESSON') {
+      const lesson = await this.prisma.grammarLesson.findUnique({
+        where: { id: sourceId },
+        select: { id: true, vocabulary: true, exercises: true },
+      });
+      const vocabRequired = (lesson?.vocabulary?.length ?? 0) > 0;
+      const grammarRequired = (lesson?.exercises?.length ?? 0) > 0;
+
+      const attempts = await this.prisma.quizAttempt.findMany({
+        where: {
+          userId,
+          sourceType: 'LESSON',
+          sourceId,
+        },
+        select: { sourceTitle: true, scorePercent: true },
+      });
+
+      const vocabAttempts = attempts.filter(
+        (a) =>
+          a.sourceTitle.toLowerCase().includes('từ vựng') ||
+          a.sourceTitle.toLowerCase().includes('vocab') ||
+          a.sourceTitle.toLowerCase().includes('write') ||
+          a.sourceTitle.toLowerCase().includes('viết'),
+      );
+      const grammarAttempts = attempts.filter(
+        (a) =>
+          a.sourceTitle.toLowerCase().includes('ngữ pháp') ||
+          a.sourceTitle.toLowerCase().includes('grammar') ||
+          a.sourceTitle.toLowerCase().includes('practice') ||
+          a.sourceTitle.toLowerCase().includes('luyện tập'),
+      );
+
+      const vocabBestScore =
+        vocabAttempts.length > 0
+          ? Math.max(...vocabAttempts.map((a) => a.scorePercent))
+          : null;
+      const grammarBestScore =
+        grammarAttempts.length > 0
+          ? Math.max(...grammarAttempts.map((a) => a.scorePercent))
+          : null;
+
+      const vocabPassed =
+        !vocabRequired || (vocabBestScore !== null && vocabBestScore >= 80);
+      const grammarPassed =
+        !grammarRequired ||
+        (grammarBestScore !== null && grammarBestScore >= 80);
+
+      return {
+        vocabRequired,
+        vocabPassed,
+        vocabBestScore,
+        grammarRequired,
+        grammarPassed,
+        grammarBestScore,
+        allPassed: vocabPassed && grammarPassed,
+      };
+    }
+
+    return {
+      vocabRequired: false,
+      vocabPassed: true,
+      vocabBestScore: null,
+      grammarRequired: false,
+      grammarPassed: true,
+      grammarBestScore: null,
+      allPassed: true,
+    };
+  }
+
+  async autoCompleteStepIfExists(
+    userId: string,
+    sourceType: string,
+    sourceId: string,
+  ): Promise<string[]> {
+    try {
+      if (sourceType !== 'TOPIC' && sourceType !== 'LESSON') {
+        return [];
+      }
+
+      // Kiểm tra xem người học đã đạt đủ điểm sàn 80% cho từng phần bắt buộc chưa
+      const evaluation = await this.evaluateSourceRequirements(
+        userId,
+        sourceType,
+        sourceId,
+      );
+
+      if (!evaluation.allPassed) {
+        this.logger.log(
+          `User ${userId} chưa đạt đủ điều kiện hoàn thành cho ${sourceType} ${sourceId} (allPassed: false)`,
+        );
+        return [];
+      }
+
+      const field = sourceType === 'TOPIC' ? 'topicId' : 'lessonId';
+
+      const steps = await this.prisma.learningPathStep.findMany({
+        where: {
+          [field]: sourceId,
+          path: {
+            progress: {
+              some: { userId },
+            },
+          },
+        },
+        select: { id: true, pathId: true },
+      });
+
+      const completedIds: string[] = [];
+      for (const step of steps) {
+        await this.completeStep(step.pathId, step.id, userId);
+        completedIds.push(step.id);
+      }
+      if (completedIds.length > 0) {
+        this.logger.log(
+          `Đã tự động hoàn thành ${completedIds.length} bước lộ trình cho user ${userId} (source: ${sourceType} ${sourceId})`,
+        );
+      }
+      return completedIds;
+    } catch (e) {
+      this.logger.warn(
+        `autoCompleteStepIfExists thất bại: ${e instanceof Error ? e.message : String(e)}`,
+      );
+      return [];
+    }
+  }
+
+  async getSourcePathStatus(
+    userId: string,
+    sourceType: string,
+    sourceId: string,
+  ) {
+    const evaluation = await this.evaluateSourceRequirements(
+      userId,
+      sourceType,
+      sourceId,
+    );
+
+    if (sourceType !== 'TOPIC' && sourceType !== 'LESSON') {
+      return {
+        inPath: false,
+        completed: false,
+        requirements: evaluation,
+        steps: [],
+      };
+    }
+    const field = sourceType === 'TOPIC' ? 'topicId' : 'lessonId';
+    const steps = await this.prisma.learningPathStep.findMany({
+      where: {
+        [field]: sourceId,
+        path: {
+          progress: {
+            some: { userId },
+          },
+        },
+      },
+      include: {
+        path: {
+          include: {
+            progress: {
+              where: { userId },
+              select: { completedStepIds: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (steps.length === 0) {
+      return {
+        inPath: false,
+        completed: false,
+        requirements: evaluation,
+        steps: [],
+      };
+    }
+
+    const stepStatuses = steps.map((s) => {
+      const completedIds = s.path.progress[0]?.completedStepIds ?? [];
+      const isCompleted = completedIds.includes(s.id);
+      return {
+        stepId: s.id,
+        pathId: s.pathId,
+        pathTitle: s.path.title,
+        completed: isCompleted,
+      };
+    });
+
+    const allCompleted = stepStatuses.every((s) => s.completed);
+
+    return {
+      inPath: true,
+      completed: allCompleted,
+      requirements: evaluation,
+      steps: stepStatuses,
+    };
   }
 
   private async ensurePath(pathId: string) {

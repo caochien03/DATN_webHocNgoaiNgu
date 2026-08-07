@@ -39,9 +39,11 @@ function buildQuestions(target: LearnCard[], pool: LearnCard[]): Question[] {
 export function QuizGame({
   cards,
   onAttempt,
+  onComplete,
 }: {
   cards: LearnCard[];
   onAttempt?: AttemptHandler;
+  onComplete?: (score: number, total: number) => void;
 }) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [index, setIndex] = useState(0);
@@ -99,6 +101,7 @@ export function QuizGame({
   function nextQuestion() {
     if (index + 1 >= questions.length) {
       setDone(true);
+      onComplete?.(score, questions.length);
       return;
     }
     setIndex((i) => i + 1);

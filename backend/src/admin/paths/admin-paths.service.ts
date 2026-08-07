@@ -57,7 +57,9 @@ export class AdminPathsService {
       data: {
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.languageCode !== undefined && { languageCode: dto.languageCode }),
+        ...(dto.languageCode !== undefined && {
+          languageCode: dto.languageCode,
+        }),
         ...(dto.level !== undefined && { level: dto.level }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },
@@ -86,7 +88,8 @@ export class AdminPathsService {
         title: dto.title,
         summary: dto.summary,
         topicId: dto.type === LearningPathStepType.TOPIC ? dto.topicId : null,
-        lessonId: dto.type === LearningPathStepType.LESSON ? dto.lessonId : null,
+        lessonId:
+          dto.type === LearningPathStepType.LESSON ? dto.lessonId : null,
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },
     });
@@ -96,8 +99,7 @@ export class AdminPathsService {
     const path = await this.ensurePath(pathId);
     const existing = await this.ensureStep(pathId, stepId);
     const type = dto.type ?? existing.type;
-    const topicId =
-      dto.topicId !== undefined ? dto.topicId : existing.topicId;
+    const topicId = dto.topicId !== undefined ? dto.topicId : existing.topicId;
     const lessonId =
       dto.lessonId !== undefined ? dto.lessonId : existing.lessonId;
     this.validateStepLinks(type, topicId, lessonId);

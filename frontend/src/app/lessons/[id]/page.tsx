@@ -7,6 +7,7 @@ import { BookOpen, ChevronDown, Dumbbell, Languages, Play, Sparkles } from "luci
 import { AuthGate } from "@/components/AuthGate";
 import { BRAND, GRADIENT_DIAGONAL, levelColor } from "@/components/ui-kit/brand";
 import { Tag } from "@/components/ui-kit/primitives";
+import { PathStepStatusCard } from "@/components/paths/PathStepStatusCard";
 import { useLesson } from "@/lib/use-lesson";
 import type { GrammarLevel } from "@/lib/types";
 
@@ -275,6 +276,8 @@ function LessonDetailContent() {
               )}
             </section>
           </div>
+
+          <PathStepStatusCard sourceType="LESSON" sourceId={lesson.id} />
         </>
       ) : null}
     </div>

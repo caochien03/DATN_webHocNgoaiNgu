@@ -13,7 +13,10 @@ import { TopikSection, TopikTier } from '@prisma/client';
 import { AdminGuard } from '../../auth/guards/admin.guard';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AdminTopikQuestionsService } from './admin-topik-questions.service';
-import { CreateTopikQuestionDto, UpdateTopikQuestionDto } from './dto/topik-question.dto';
+import {
+  CreateTopikQuestionDto,
+  UpdateTopikQuestionDto,
+} from './dto/topik-question.dto';
 
 @Controller('admin/topik/questions')
 @UseGuards(JwtAuthGuard, AdminGuard)

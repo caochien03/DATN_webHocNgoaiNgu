@@ -24,7 +24,9 @@ import {
 @Controller('admin/topik/exams')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class AdminTopikExamsController {
-  constructor(private readonly adminTopikExamsService: AdminTopikExamsService) {}
+  constructor(
+    private readonly adminTopikExamsService: AdminTopikExamsService,
+  ) {}
 
   @Get()
   list() {

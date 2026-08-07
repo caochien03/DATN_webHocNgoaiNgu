@@ -1,5 +1,4 @@
 import { TopikQuestionType, TopikSection } from '@prisma/client';
-import { Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -11,7 +10,6 @@ import {
   MaxLength,
   Min,
   MinLength,
-  ValidateNested,
 } from 'class-validator';
 
 export class TopikWritingPartInputDto {

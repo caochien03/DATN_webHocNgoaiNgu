@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreateQuizAttemptDto } from './dto/create-quiz-attempt.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { PathsService } from '../paths/paths.service';
 import { toVnDayStart } from '../goals/vn-day';
 
 @Injectable()
 export class QuizAttemptsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pathsService: PathsService,
+  ) {}
 
   async list(userId: string, languageCode?: string) {
     return this.prisma.quizAttempt.findMany({
@@ -28,7 +32,7 @@ export class QuizAttemptsService {
       select: { dailyCardTarget: true },
     });
     const goalTarget = setting?.dailyCardTarget ?? 20;
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const attempt = await tx.quizAttempt.create({
         data: {
           userId,
@@ -70,5 +74,15 @@ export class QuizAttemptsService {
       }
       return attempt;
     });
+
+    if (dto.sourceType === 'TOPIC' || dto.sourceType === 'LESSON') {
+      void this.pathsService.autoCompleteStepIfExists(
+        userId,
+        dto.sourceType,
+        dto.sourceId,
+      );
+    }
+
+    return result;
   }
 }

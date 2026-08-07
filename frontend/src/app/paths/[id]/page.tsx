@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BookOpen, Check, GraduationCap } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
-import { BRAND, GRADIENT } from "@/components/ui-kit/brand";
+import { BRAND } from "@/components/ui-kit/brand";
 import { Bar } from "@/components/ui-kit/primitives";
 import { fetchWithAuth, parseApiError } from "@/lib/api-fetch";
 import type { LearningPathDetail, LearningPathStep } from "@/lib/types";
@@ -64,26 +64,6 @@ function PathsDetailContent() {
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không bắt đầu được lộ trình");
-    } finally {
-      setBusyStepId(null);
-    }
-  }
-
-  async function completeStep(stepId: string) {
-    setBusyStepId(stepId);
-    setError(null);
-    try {
-      const res = await fetchWithAuth(`/paths/${id}/steps/${stepId}/complete`, {
-        method: "POST",
-      });
-      if (!res.ok) {
-        setError(await parseApiError(res));
-        return;
-      }
-      await load();
-      router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Không cập nhật được bước");
     } finally {
       setBusyStepId(null);
     }
@@ -222,42 +202,35 @@ function PathsDetailContent() {
                       {step.summary ? (
                         <p className="mt-0.5 text-sm text-muted-foreground">{step.summary}</p>
                       ) : null}
-                      <p className="mt-1 text-xs text-muted-foreground/70">
+                      <p className="mt-1 text-xs text-muted-foreground/80">
                         {step.topic
-                          ? `${step.topic._count.words} từ`
+                          ? `${step.topic._count.words} từ • Yêu cầu: Đạt ≥ 80% Trắc nghiệm hoặc Luyện viết`
                           : step.lesson
-                            ? `${step.lesson._count.vocabulary} từ · ${step.lesson._count.points} ngữ pháp · ${step.lesson._count.exercises} bài tập`
+                            ? `${step.lesson._count.vocabulary} từ · ${step.lesson._count.points} ngữ pháp · ${step.lesson._count.exercises} bài tập • Yêu cầu: Đạt ≥ 80% cả Từ vựng & Ngữ pháp`
                             : "Nội dung không còn tồn tại"}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Link
                           href={stepHref(step)}
-                          className="rounded-xl border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                          style={{ borderColor: "var(--border)" }}
+                          className="rounded-xl px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition-transform hover:-translate-y-0.5"
+                          style={{
+                            background: step.completed
+                              ? "var(--secondary)"
+                              : `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})`,
+                            color: step.completed ? "var(--foreground)" : "#fff",
+                            border: step.completed ? "1px solid var(--border)" : "none",
+                          }}
                         >
-                          Mở nội dung
+                          {step.completed ? "Xem lại nội dung →" : "Vào học & làm bài →"}
                         </Link>
-                        {!step.completed ? (
-                          <button
-                            type="button"
-                            onClick={() => void completeStep(step.id)}
-                            disabled={busyStepId === step.id}
-                            className="rounded-xl px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
-                            style={{
-                              background: `linear-gradient(135deg, ${BRAND.green}, #16a34a)`,
-                              boxShadow: `0 2px 8px 0 ${BRAND.green}40`,
-                            }}
-                          >
-                            Hoàn thành
-                          </button>
-                        ) : (
+                        {step.completed ? (
                           <span
                             className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-bold"
                             style={{ background: `${BRAND.green}15`, color: BRAND.green }}
                           >
-                            <Check size={12} /> Đã xong
+                            <Check size={12} /> Đã hoàn thành (≥ 80%)
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </div>

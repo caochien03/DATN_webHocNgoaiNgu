@@ -22,10 +22,7 @@ export class AdminTopicsController {
   constructor(private readonly adminTopicsService: AdminTopicsService) {}
 
   @Get()
-  list(
-    @Query('language') language?: string,
-    @Query('level') level?: string,
-  ) {
+  list(@Query('language') language?: string, @Query('level') level?: string) {
     return this.adminTopicsService.list(language, level);
   }
 
@@ -50,10 +47,7 @@ export class AdminTopicsController {
   }
 
   @Post(':id/words')
-  createWord(
-    @Param('id') topicId: string,
-    @Body() dto: CreateTopicWordDto,
-  ) {
+  createWord(@Param('id') topicId: string, @Body() dto: CreateTopicWordDto) {
     return this.adminTopicsService.createWord(topicId, dto);
   }
 
@@ -67,10 +61,7 @@ export class AdminTopicsController {
   }
 
   @Delete(':id/words/:wordId')
-  removeWord(
-    @Param('id') topicId: string,
-    @Param('wordId') wordId: string,
-  ) {
+  removeWord(@Param('id') topicId: string, @Param('wordId') wordId: string) {
     return this.adminTopicsService.removeWord(topicId, wordId);
   }
 }

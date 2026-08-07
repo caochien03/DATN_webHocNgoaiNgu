@@ -6,6 +6,7 @@ import { BookOpen, Play, Sparkles } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { BRAND, GRADIENT_DIAGONAL, levelColor } from "@/components/ui-kit/brand";
 import { Tag } from "@/components/ui-kit/primitives";
+import { PathStepStatusCard } from "@/components/paths/PathStepStatusCard";
 import { useTopic } from "@/lib/use-topic";
 
 function TopicDetailContent() {
@@ -146,6 +147,8 @@ function TopicDetailContent() {
               </div>
             )}
           </section>
+
+          <PathStepStatusCard sourceType="TOPIC" sourceId={topic.id} />
         </>
       ) : null}
     </div>

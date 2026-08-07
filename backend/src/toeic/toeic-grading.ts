@@ -29,16 +29,11 @@ export function gradeToeicAnswers(
   const graded = answers.map((answer) => {
     const question = byId.get(answer.questionId);
     if (!question) {
-      throw new BadRequestException(
-        `Question not found: ${answer.questionId}`,
-      );
+      throw new BadRequestException(`Question not found: ${answer.questionId}`);
     }
 
-    const selectedIndex = answer.selectedIndex!;
-    if (
-      selectedIndex < 0 ||
-      selectedIndex >= question.options.length
-    ) {
+    const selectedIndex = answer.selectedIndex;
+    if (selectedIndex < 0 || selectedIndex >= question.options.length) {
       throw new BadRequestException(
         `selectedIndex out of range for question ${answer.questionId}`,
       );

@@ -4,7 +4,7 @@ import { User } from '@prisma/client';
 type SafeUser = Omit<User, 'passwordHash'>;
 
 export const CurrentUser = createParamDecorator(
-  (data: keyof SafeUser | undefined, ctx: ExecutionContext): SafeUser | unknown => {
+  (data: keyof SafeUser | undefined, ctx: ExecutionContext): unknown => {
     const request = ctx.switchToHttp().getRequest<{ user: SafeUser }>();
     const user = request.user;
     if (!user) return undefined;

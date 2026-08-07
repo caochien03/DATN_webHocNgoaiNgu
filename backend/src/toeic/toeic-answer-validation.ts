@@ -11,9 +11,7 @@ export function assertAnswersMatchQuestions(
   for (const answer of answers) {
     const question = byId.get(answer.questionId);
     if (!question) {
-      throw new BadRequestException(
-        `Question not found: ${answer.questionId}`,
-      );
+      throw new BadRequestException(`Question not found: ${answer.questionId}`);
     }
 
     if (answer.selectedIndex === undefined || answer.selectedIndex === null) {

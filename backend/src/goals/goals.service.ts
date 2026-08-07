@@ -87,7 +87,9 @@ export class GoalsService {
 
   async getHistory(userId: string, days = 30, languageCode = 'ko') {
     const lang = languageCode || 'ko';
-    const safeDays = Number.isFinite(days) ? Math.min(Math.max(days, 7), 90) : 30;
+    const safeDays = Number.isFinite(days)
+      ? Math.min(Math.max(days, 7), 90)
+      : 30;
     const today = toVnDayStart(new Date());
     const start = addVnDays(today, -(safeDays - 1));
     const rows = await this.prisma.userDailyProgress.findMany({

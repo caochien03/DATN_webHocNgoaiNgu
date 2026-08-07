@@ -91,7 +91,9 @@ export function buildWritingGradingPrompt(input: WritingGradingInput): string {
     return lines.join('\n');
   }
 
-  const max = input.maxScore ?? (input.questionType === TopikQuestionType.ESSAY ? 50 : 10);
+  const max =
+    input.maxScore ??
+    (input.questionType === TopikQuestionType.ESSAY ? 50 : 10);
   lines.push(
     '',
     `Đáp án mẫu (tham khảo): ${input.modelAnswer ?? '(không có)'}`,
@@ -140,8 +142,7 @@ export function parseWritingGradingResponse(
       return {
         label: part.label,
         score: clampScore(match?.score, part.maxScore),
-        feedback:
-          typeof match?.feedback === 'string' ? match.feedback : '',
+        feedback: typeof match?.feedback === 'string' ? match.feedback : '',
       };
     });
     const total = parts.reduce((sum, p) => sum + p.score, 0);

@@ -24,9 +24,11 @@ function normalize(value: string): string {
 export function WriteGame({
   cards,
   onAttempt,
+  onComplete,
 }: {
   cards: LearnCard[];
   onAttempt?: AttemptHandler;
+  onComplete?: (score: number, total: number) => void;
 }) {
   const [queue, setQueue] = useState<LearnCard[]>([]);
   const [index, setIndex] = useState(0);
@@ -83,6 +85,7 @@ export function WriteGame({
   function next() {
     if (index + 1 >= queue.length) {
       setDone(true);
+      onComplete?.(score, queue.length);
       return;
     }
     setIndex((i) => i + 1);

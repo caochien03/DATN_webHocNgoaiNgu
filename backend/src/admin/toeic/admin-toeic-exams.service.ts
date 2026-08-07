@@ -56,7 +56,9 @@ export class AdminToeicExamsService {
           ...(dto.durationMinutes !== undefined && {
             durationMinutes: dto.durationMinutes,
           }),
-          ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
+          ...(dto.isPublished !== undefined && {
+            isPublished: dto.isPublished,
+          }),
           ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
         },
       });
@@ -107,12 +109,16 @@ export class AdminToeicExamsService {
         where: { id },
         data: {
           ...(dto.title !== undefined && { title: dto.title }),
-          ...(dto.description !== undefined && { description: dto.description }),
+          ...(dto.description !== undefined && {
+            description: dto.description,
+          }),
           ...(dto.tier !== undefined && { tier: dto.tier }),
           ...(dto.durationMinutes !== undefined && {
             durationMinutes: dto.durationMinutes,
           }),
-          ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
+          ...(dto.isPublished !== undefined && {
+            isPublished: dto.isPublished,
+          }),
           ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
         },
       });

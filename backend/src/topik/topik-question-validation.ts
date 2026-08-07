@@ -1,9 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import {
-  TopikQuestionType,
-  TopikSection,
-  TopikTier,
-} from '@prisma/client';
+import { TopikQuestionType, TopikSection, TopikTier } from '@prisma/client';
 import { validateOptions } from './topik-question-limits';
 import { parseWritingParts } from './topik-writing-parts';
 
@@ -49,7 +45,6 @@ export function assertQuestionInput(params: {
 
 export function isWritingQuestionType(type: TopikQuestionType): boolean {
   return (
-    type === TopikQuestionType.SHORT_ANSWER ||
-    type === TopikQuestionType.ESSAY
+    type === TopikQuestionType.SHORT_ANSWER || type === TopikQuestionType.ESSAY
   );
 }
