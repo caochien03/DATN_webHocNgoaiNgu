@@ -8,6 +8,10 @@ import { ConfigService } from '@nestjs/config';
 
 const DEFAULT_MODEL = 'gemini-2.0-flash';
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 @Injectable()
 export class SpeakingGeminiService {
   private readonly logger = new Logger(SpeakingGeminiService.name);
@@ -37,13 +41,43 @@ export class SpeakingGeminiService {
     }
   }
 
+  private getCandidateModels(): string[] {
+    const primary = this.model;
+    const candidates = [primary, 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    return Array.from(new Set(candidates));
+  }
+
   async generateText(prompt: string): Promise<string> {
     this.assertEnabled();
-    const response = await this.client!.models.generateContent({
-      model: this.model,
-      contents: prompt,
-    });
-    return response.text ?? '';
+    const models = this.getCandidateModels();
+    let lastError: unknown;
+
+    for (const m of models) {
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const response = await this.client!.models.generateContent({
+            model: m,
+            contents: prompt,
+          });
+          return response.text ?? '';
+        } catch (e) {
+          lastError = e;
+          const isRateLimit =
+            String(e).includes('429') || String(e).includes('RESOURCE_EXHAUSTED');
+          if (isRateLimit && attempt === 1) {
+            this.logger.warn(
+              `Model ${m} gặp 429 (lần 1), đợi 1.2s thử lại...`,
+            );
+            await sleep(1200);
+            continue;
+          }
+          this.logger.warn(`Model ${m} thất bại, chuyển model khác...`);
+          break;
+        }
+      }
+    }
+
+    throw lastError;
   }
 
   async generateFromAudio(
@@ -52,23 +86,47 @@ export class SpeakingGeminiService {
     mimeType: string,
   ): Promise<string> {
     this.assertEnabled();
-    const response = await this.client!.models.generateContent({
-      model: this.model,
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            {
-              inlineData: {
-                mimeType,
-                data: audio.toString('base64'),
+    const models = this.getCandidateModels();
+    let lastError: unknown;
+
+    for (const m of models) {
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const response = await this.client!.models.generateContent({
+            model: m,
+            contents: [
+              {
+                role: 'user',
+                parts: [
+                  {
+                    inlineData: {
+                      mimeType,
+                      data: audio.toString('base64'),
+                    },
+                  },
+                  { text: prompt },
+                ],
               },
-            },
-            { text: prompt },
-          ],
-        },
-      ],
-    });
-    return response.text ?? '';
+            ],
+          });
+          return response.text ?? '';
+        } catch (e) {
+          lastError = e;
+          const isRateLimit =
+            String(e).includes('429') || String(e).includes('RESOURCE_EXHAUSTED');
+          if (isRateLimit && attempt === 1) {
+            this.logger.warn(
+              `Audio model ${m} gặp 429 (lần 1), đợi 1.2s thử lại...`,
+            );
+            await sleep(1200);
+            continue;
+          }
+          this.logger.warn(`Audio model ${m} thất bại, chuyển model khác...`);
+          break;
+        }
+      }
+    }
+
+    throw lastError;
   }
 }

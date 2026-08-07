@@ -8,7 +8,6 @@
 
 import { fetchWithAuth } from './api-fetch';
 
-
 // ────────────────────────────────────────────────────
 // Server TTS (Google Cloud TTS Neural2 qua Backend)
 // ────────────────────────────────────────────────────
@@ -18,8 +17,13 @@ let currentAudio: HTMLAudioElement | null = null;
 
 function stopCurrentAudio() {
   if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.src = '';
+    try {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio.src = '';
+    } catch {
+      // Bỏ qua nếu audio đã dừng hoặc bị browser ngắt
+    }
     currentAudio = null;
   }
 }
@@ -47,17 +51,35 @@ async function speakFromServer(
     stopCurrentAudio();
     const audio = new Audio(url);
     currentAudio = audio;
-    audio.onended = () => {
-      URL.revokeObjectURL(url);
-      if (currentAudio === audio) currentAudio = null;
-      onEnd?.();
+
+    let endedCalled = false;
+    const cleanupAndEnd = () => {
+      if (!endedCalled) {
+        endedCalled = true;
+        URL.revokeObjectURL(url);
+        if (currentAudio === audio) currentAudio = null;
+        onEnd?.();
+      }
     };
-    audio.onerror = () => {
-      URL.revokeObjectURL(url);
-      if (currentAudio === audio) currentAudio = null;
-      onEnd?.();
-    };
-    void audio.play();
+
+    audio.onended = cleanupAndEnd;
+    audio.onerror = cleanupAndEnd;
+
+    try {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err: unknown) => {
+          // Bỏ qua AbortError khi audio.pause() được gọi trước khi play() hoàn tất
+          if (err instanceof Error && err.name === 'AbortError') {
+            return;
+          }
+          cleanupAndEnd();
+        });
+      }
+    } catch {
+      cleanupAndEnd();
+    }
+
     return true;
   } catch {
     return false;
@@ -67,7 +89,6 @@ async function speakFromServer(
 // ────────────────────────────────────────────────────
 // Web Speech API fallback
 // ────────────────────────────────────────────────────
-
 
 const SPEECH_LANG: Record<string, string> = {
   ko: 'ko-KR',
@@ -87,25 +108,29 @@ function speakFromWebSpeech(text: string, languageCode = 'ko', onEnd?: () => voi
   const trimmed = text.trim();
   if (!trimmed || !isWebSpeechSupported()) return false;
 
-  window.speechSynthesis.cancel();
+  try {
+    window.speechSynthesis.cancel();
 
-  const utter = new SpeechSynthesisUtterance(trimmed);
-  utter.lang = SPEECH_LANG[languageCode] ?? SPEECH_LANG.ko;
-  utter.rate = 0.92;
-  utter.pitch = 1;
+    const utter = new SpeechSynthesisUtterance(trimmed);
+    utter.lang = SPEECH_LANG[languageCode] ?? SPEECH_LANG.ko;
+    utter.rate = 0.92;
+    utter.pitch = 1;
 
-  const voices = getVoices();
-  const prefix = utter.lang.split('-')[0];
-  const voice =
-    voices.find((v) => v.lang === utter.lang) ??
-    voices.find((v) => v.lang.startsWith(prefix)) ??
-    null;
-  if (voice) utter.voice = voice;
+    const voices = getVoices();
+    const prefix = utter.lang.split('-')[0];
+    const voice =
+      voices.find((v) => v.lang === utter.lang) ??
+      voices.find((v) => v.lang.startsWith(prefix)) ??
+      null;
+    if (voice) utter.voice = voice;
 
-  if (onEnd) utter.onend = () => onEnd();
+    if (onEnd) utter.onend = () => onEnd();
 
-  window.speechSynthesis.speak(utter);
-  return true;
+    window.speechSynthesis.speak(utter);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // ────────────────────────────────────────────────────
@@ -114,7 +139,13 @@ function speakFromWebSpeech(text: string, languageCode = 'ko', onEnd?: () => voi
 
 export function stopSpeech(): void {
   stopCurrentAudio();
-  if (isWebSpeechSupported()) window.speechSynthesis.cancel();
+  if (isWebSpeechSupported()) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      // Bỏ qua lỗi trình duyệt khi hủy speech
+    }
+  }
 }
 
 /**
@@ -153,6 +184,10 @@ export async function speakKorean(text: string): Promise<void> {
 /** Gọi sau mount để nạp danh sách voice cho Web Speech (Safari/Chrome). */
 export function warmUpKoreanTts(): void {
   if (!isWebSpeechSupported()) return;
-  void getVoices();
-  window.speechSynthesis.onvoiceschanged = () => undefined;
+  try {
+    void getVoices();
+    window.speechSynthesis.onvoiceschanged = () => undefined;
+  } catch {
+    // ignore
+  }
 }

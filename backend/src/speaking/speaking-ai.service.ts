@@ -51,30 +51,45 @@ export class SpeakingAiService {
 
     // ─── Luồng chính: Whisper STT + Gemini text ───
     if (this.whisper.enabled) {
+      let transcript: string | null = null;
       try {
         this.logger.debug('Dùng Whisper STT để nhận diện giọng nói...');
-        const transcript = await this.whisper.transcribe(
+        transcript = await this.whisper.transcribe(
           audio,
           mimeType,
           whisperLang,
         );
-
-        this.logger.debug(
-          `Whisper transcript: "${transcript}" — gửi Gemini...`,
-        );
-        const prompt = buildSpeakingTextTurnPrompt(ctx, transcript);
-        const text = await this.gemini.generateText(prompt);
-        return parseSpeakingTextTurnResponse(text, ctx, transcript);
+        this.logger.debug(`Whisper transcript: "${transcript}"`);
       } catch (e) {
         if (e instanceof BadRequestException) throw e;
-        // Lỗi không mong đợi → fallback Gemini audio
         this.logger.warn(
-          `Whisper thất bại, chuyển sang Gemini audio: ${e instanceof Error ? e.message : String(e)}`,
+          `Whisper thất bại, thử fallback Gemini audio: ${e instanceof Error ? e.message : String(e)}`,
         );
+      }
+
+      if (transcript) {
+        try {
+          const prompt = buildSpeakingTextTurnPrompt(ctx, transcript);
+          const text = await this.gemini.generateText(prompt);
+          return parseSpeakingTextTurnResponse(text, ctx, transcript);
+        } catch (e) {
+          this.logger.error(
+            `Gemini generateText thất bại: ${e instanceof Error ? e.message : String(e)}`,
+          );
+          const msg = String(e);
+          if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
+            throw new BadRequestException(
+              'Gia sư AI đang phản hồi chậm do quá tải, bạn vui lòng thử lại sau giây lát nhé.',
+            );
+          }
+          throw new BadRequestException(
+            'Không thể tạo phản hồi từ AI. Vui lòng thử lại sau giây lát.',
+          );
+        }
       }
     }
 
-    // ─── Fallback: Gemini audio (1 bước) ───
+    // ─── Fallback: Gemini audio trực tiếp (khi không bật Whisper) ───
     try {
       const prompt = buildSpeakingAudioTurnPrompt(ctx);
       const text = await this.gemini.generateFromAudio(
@@ -87,8 +102,14 @@ export class SpeakingAiService {
       this.logger.error(
         `Xử lý audio lượt nói thất bại: ${e instanceof Error ? e.message : String(e)}`,
       );
+      const msg = String(e);
+      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
+        throw new BadRequestException(
+          'Gia sư AI đang phản hồi chậm do quá tải, bạn vui lòng thử lại sau giây lát nhé.',
+        );
+      }
       throw new BadRequestException(
-        'AI không thể xử lý lượt nói. Vui lòng thử lại.',
+        'Gia sư AI tạm thời chưa thể nghe rõ câu trả lời, bạn vui lòng thử nói lại nhé.',
       );
     }
   }

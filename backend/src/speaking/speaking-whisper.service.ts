@@ -73,7 +73,21 @@ export class SpeakingWhisperService {
     form.append('file', blob, `audio.${ext}`);
     form.append('model', 'whisper-1');
     form.append('response_format', 'text');
-    if (language) {
+    form.append('temperature', '0');
+
+    if (language === 'ko') {
+      form.append('language', 'ko');
+      form.append(
+        'prompt',
+        '안녕하세요. 한국어 회화 및 말하기 연습입니다. 한국어 표준어 문장으로 정확히 텍스트로 변환해 주세요.',
+      );
+    } else if (language === 'en') {
+      form.append('language', 'en');
+      form.append(
+        'prompt',
+        'Hello. This is an English conversation practice. Please transcribe accurately in standard English.',
+      );
+    } else if (language) {
       form.append('language', language);
     }
 
