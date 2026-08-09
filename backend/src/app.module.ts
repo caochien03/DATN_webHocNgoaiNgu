@@ -6,8 +6,10 @@ import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { DecksModule } from './decks/decks.module';
 import { GoalsModule } from './goals/goals.module';
+import { GroupsModule } from './groups/groups.module';
 import { LanguagesModule } from './languages/languages.module';
 import { LessonsModule } from './lessons/lessons.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { PathsModule } from './paths/paths.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { QuizAttemptsModule } from './quiz-attempts/quiz-attempts.module';
@@ -34,6 +36,8 @@ import { UsersModule } from './users/users.module';
     SpeakingModule,
     TopikModule,
     ToeicModule,
+    GroupsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

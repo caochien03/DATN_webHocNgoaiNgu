@@ -18,6 +18,10 @@ model User {
   passwordHash String
   name         String?
   avatarUrl    String?
+  avatarFrame  String?  @default("DEFAULT")
+  bio          String?
+  targetGoal   String?
+  currentLevel String?
   role         UserRole @default(USER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -30,6 +34,10 @@ model User {
   goalSetting       UserGoalSetting?
   dailyProgress     UserDailyProgress[]
   learningLanguages UserLearningLanguage[]
+  groupMembers      StudyGroupMember[]
+  groupActivities   GroupActivity[]
+  groupCards        GroupCard[]
+  pushSubscriptions PushSubscription[]
 }
 
 /// Ngôn ngữ user đang học (có thể học nhiều ngôn ngữ song song).
@@ -593,6 +601,7 @@ model SpeakingSituation {
   maxUserTurns  Int                 @default(5)
   sortOrder     Int                 @default(0)
   isPublished   Boolean             @default(true)
+  testScript    String?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   sessions      SpeakingSession[]
@@ -647,3 +656,105 @@ model SpeakingTurn {
   @@unique([sessionId, orderIndex])
   @@index([sessionId])
 }
+
+/// Nhóm học tập (Lingora Squad)
+model StudyGroup {
+  id           String             @id @default(cuid())
+  name         String
+  description  String?
+  avatarUrl    String?
+  languageCode String             @default("ko")
+  inviteCode   String             @unique
+  targetPathId String?
+  maxMembers   Int                @default(8)
+  createdById  String
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  members      StudyGroupMember[]
+  activities   GroupActivity[]
+  cards        GroupCard[]
+
+  @@index([inviteCode])
+  @@index([languageCode])
+}
+
+model StudyGroupMember {
+  id       String    @id @default(cuid())
+  groupId  String
+  userId   String
+  role     GroupRole @default(MEMBER)
+  weeklyXp Int       @default(0)
+  totalXp  Int       @default(0)
+  joinedAt DateTime  @default(now())
+
+  group    StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@index([groupId])
+}
+
+enum GroupRole {
+  LEADER
+  ADMIN
+  MEMBER
+}
+
+model GroupActivity {
+  id        String       @id @default(cuid())
+  groupId   String
+  userId    String
+  type      ActivityType
+  metadata  Json?
+  createdAt DateTime     @default(now())
+
+  group     StudyGroup   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
+  @@index([userId])
+}
+
+enum ActivityType {
+  COMPLETED_DAILY_GOAL
+  COMPLETED_QUIZ
+  COMPLETED_LESSON
+  ADDED_CARD
+  JOINED_GROUP
+  NUDGE
+}
+
+model GroupCard {
+  id          String     @id @default(cuid())
+  groupId     String
+  createdById String
+  term        String
+  meaning     String
+  example     String?
+  createdAt   DateTime   @default(now())
+
+  group       StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
+  @@index([createdById])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+

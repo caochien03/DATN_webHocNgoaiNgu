@@ -6,23 +6,24 @@ import {
   ArrowRight,
   BookOpen,
   Calendar,
-  CheckCircle2,
+  Camera,
+  Edit3,
   Flame,
   Globe,
-  Mail,
+  GraduationCap,
   Mic,
   Plus,
   Route,
   Shield,
   Target,
-  UserRound,
-  Sparkles,
+  X,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { AuthGate } from "@/components/AuthGate";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
-import { AvatarCircle } from "@/components/ui-kit/AppMark";
+import { AvatarWithFrame, PRESET_LIST } from "@/components/ui-kit/AvatarWithFrame";
 import { BRAND } from "@/components/ui-kit/brand";
+import { PushNotificationCard } from "@/components/ui-kit/PushNotificationCard";
 import { Bar } from "@/components/ui-kit/primitives";
 import { errorClass, inputClass } from "@/components/ui-kit/form-styles";
 import { PageHeader } from "@/components/ui-kit/primitives";
@@ -41,18 +42,54 @@ import {
 import type { LanguageProgressResponse } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
+const TARGET_GOAL_OPTIONS = [
+  { value: "topik", label: "🏆 Luyện thi TOPIK" },
+  { value: "toeic", label: "📝 Luyện thi TOEIC" },
+  { value: "study_abroad", label: "🎓 Du học" },
+  { value: "work", label: "💼 Làm việc" },
+  { value: "hobby", label: "💡 Sở thích" },
+  { value: "other", label: "🔹 Khác" },
+];
+
+const LEVEL_OPTIONS = [
+  { value: "beginner", label: "🌱 Sơ cấp (Beginner)" },
+  { value: "elementary", label: "📗 Cơ bản (Elementary)" },
+  { value: "intermediate", label: "📘 Trung cấp (Intermediate)" },
+  { value: "advanced", label: "📕 Nâng cao (Advanced)" },
+];
+
+type FrameInfo = {
+  id: string;
+  name: string;
+  description: string;
+  unlocked: boolean;
+  condition: string;
+};
+
 function ProfileContent() {
   const { languages, addLanguage, setActive, languageCode, refresh } =
     useLearningLanguage();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [progress, setProgress] = useState<LanguageProgressResponse | null>(null);
   const [progressLoading, setProgressLoading] = useState(true);
+
+  // Profile form states
   const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+  const [targetGoal, setTargetGoal] = useState("");
+  const [currentLevel, setCurrentLevel] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarFrame, setAvatarFrame] = useState("DEFAULT");
+
   const [saving, setSaving] = useState(false);
   const [langBusy, setLangBusy] = useState<LearningLanguageCode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [langError, setLangError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  // Avatar & Frame picker modal
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [frames, setFrames] = useState<FrameInfo[]>([]);
 
   const enrolled = new Set(languages.map((l) => l.languageCode));
   const availableToAdd = LEARNING_LANGUAGE_OPTIONS.filter(
@@ -63,6 +100,11 @@ function ProfileContent() {
     const u = getStoredAuth()?.user ?? null;
     setUser(u);
     setName(u?.name ?? "");
+    setBio(u?.bio ?? "");
+    setTargetGoal(u?.targetGoal ?? "");
+    setCurrentLevel(u?.currentLevel ?? "");
+    setAvatarUrl(u?.avatarUrl ?? "");
+    setAvatarFrame(u?.avatarFrame ?? "DEFAULT");
   }, []);
 
   const loadProgress = useCallback(async () => {
@@ -86,6 +128,22 @@ function ProfileContent() {
   useEffect(() => {
     void loadProgress();
   }, [loadProgress]);
+
+  const loadFrames = useCallback(async () => {
+    try {
+      const res = await fetchWithAuth("/users/me/unlocked-frames");
+      if (res.ok) {
+        const data = (await res.json()) as { frames: FrameInfo[] };
+        setFrames(data.frames);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadFrames();
+  }, [loadFrames]);
 
   const handleAddLanguage = useCallback(
     async (code: LearningLanguageCode) => {
@@ -143,9 +201,17 @@ function ProfileContent() {
     setError(null);
     setSaved(false);
     try {
+      const body: Record<string, string> = {};
+      if (name.trim()) body.name = name.trim();
+      body.bio = bio.trim();
+      body.avatarUrl = avatarUrl;
+      body.avatarFrame = avatarFrame;
+      body.targetGoal = targetGoal;
+      body.currentLevel = currentLevel;
+
       const res = await fetchWithAuth("/users/me", {
         method: "PATCH",
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         setError(await parseApiError(res));
@@ -163,24 +229,58 @@ function ProfileContent() {
     }
   }
 
+  function selectPreset(presetId: string) {
+    setAvatarUrl(presetId);
+    setSaved(false);
+  }
+
+  function selectFrame(frameId: string) {
+    setAvatarFrame(frameId);
+    setSaved(false);
+  }
+
   return (
     <div className="space-y-6 pb-10">
       <PageHeader title="Hồ sơ học viên" sub="Thông tin tài khoản cá nhân, cài đặt ngôn ngữ và tiến trình tích lũy" />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* User Card */}
+        {/* User Card — bên trái */}
         <div className="relative flex flex-col items-center overflow-hidden rounded-3xl border border-border bg-card p-6 text-center shadow-sm">
           <div
             className="absolute inset-x-0 top-0 h-[2.5px]"
             style={{ background: `linear-gradient(90deg, ${BRAND.blue}, ${BRAND.cyan})` }}
           />
+
+          {/* Avatar + Frame */}
           <div className="relative mb-4 mt-2">
-            <AvatarCircle label={initial} className="h-20 w-20 text-2xl font-black shadow-md ring-4 ring-primary/20" />
+            <AvatarWithFrame
+              avatarUrl={avatarUrl || user.avatarUrl}
+              frame={avatarFrame || user.avatarFrame}
+              fallbackInitial={initial}
+              size={96}
+            />
+            <button
+              type="button"
+              onClick={() => setShowAvatarPicker(true)}
+              className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-md transition-transform hover:scale-110"
+            >
+              <Camera size={14} />
+            </button>
           </div>
+
           <p className="text-xl font-black text-foreground">
             {user.name || "(Chưa đặt tên)"}
           </p>
           <p className="mt-1 break-all text-xs font-semibold text-muted-foreground">{user.email}</p>
+
+          {/* Bio */}
+          {user.bio ? (
+            <p className="mt-2 text-xs italic text-muted-foreground leading-relaxed">
+              &ldquo;{user.bio}&rdquo;
+            </p>
+          ) : null}
+
+          {/* Role badge */}
           <div className="mt-3">
             <span
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black"
@@ -194,6 +294,20 @@ function ProfileContent() {
             </span>
           </div>
 
+          {/* Target goal & Level badges */}
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            {user.targetGoal ? (
+              <span className="rounded-full bg-secondary px-3 py-1 text-[11px] font-bold text-foreground">
+                🎯 {TARGET_GOAL_OPTIONS.find((o) => o.value === user.targetGoal)?.label ?? user.targetGoal}
+              </span>
+            ) : null}
+            {user.currentLevel ? (
+              <span className="rounded-full bg-secondary px-3 py-1 text-[11px] font-bold text-foreground">
+                {LEVEL_OPTIONS.find((o) => o.value === user.currentLevel)?.label ?? user.currentLevel}
+              </span>
+            ) : null}
+          </div>
+
           <div className="mt-6 w-full border-t border-border/80 pt-4 text-left">
             <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
               <Calendar size={14} className="text-primary" />
@@ -202,31 +316,91 @@ function ProfileContent() {
           </div>
         </div>
 
-        {/* Details & Settings */}
+        {/* Details & Settings — bên phải */}
         <div className="space-y-6 lg:col-span-2">
-          {/* Edit Profile */}
+          {/* Push Notifications Card */}
+          <PushNotificationCard />
+
+          {/* Edit Profile form */}
           <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
             <div
               className="absolute inset-x-0 top-0 h-[2.5px]"
               style={{ background: `linear-gradient(90deg, ${BRAND.blue}, ${BRAND.cyan})` }}
             />
-            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Cài đặt</span>
-            <h3 className="mt-1 font-black text-foreground text-base">Chỉnh sửa tên hiển thị</h3>
-            <div className="mt-4 flex items-center gap-3">
-              <input
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setSaved(false);
-                }}
-                placeholder="Nhập tên hiển thị mới…"
-                className={`flex-1 ${inputClass}`}
-              />
+            <div className="mb-4 flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-2xs">
+                <Edit3 size={16} />
+              </div>
+              <div>
+                <span className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Cài đặt</span>
+                <h3 className="text-base font-black text-foreground">Chỉnh sửa hồ sơ</h3>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Tên */}
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-muted-foreground">Tên hiển thị</label>
+                <input
+                  value={name}
+                  onChange={(e) => { setName(e.target.value); setSaved(false); }}
+                  placeholder="Nhập tên…"
+                  className={`w-full ${inputClass}`}
+                />
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-muted-foreground">Châm ngôn / Bio (tối đa 150 ký tự)</label>
+                <input
+                  value={bio}
+                  onChange={(e) => { setBio(e.target.value); setSaved(false); }}
+                  placeholder="Ví dụ: Mỗi ngày tiến thêm 1 bước!"
+                  maxLength={150}
+                  className={`w-full ${inputClass}`}
+                />
+              </div>
+
+              {/* Target Goal */}
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-muted-foreground">🎯 Mục tiêu học tập</label>
+                <select
+                  value={targetGoal}
+                  onChange={(e) => { setTargetGoal(e.target.value); setSaved(false); }}
+                  className={`w-full ${inputClass}`}
+                >
+                  <option value="">Chưa chọn</option>
+                  {TARGET_GOAL_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Current Level */}
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-muted-foreground">
+                  <GraduationCap size={13} className="mr-1 inline" />
+                  Trình độ hiện tại
+                </label>
+                <select
+                  value={currentLevel}
+                  onChange={(e) => { setCurrentLevel(e.target.value); setSaved(false); }}
+                  className={`w-full ${inputClass}`}
+                >
+                  <option value="">Chưa chọn</option>
+                  {LEVEL_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-5 flex items-center gap-3">
               <motion.button
                 type="button"
                 onClick={() => void saveProfile()}
                 disabled={saving}
-                className="rounded-2xl px-5 py-3 text-xs font-black text-white shadow-md transition-all disabled:opacity-60"
+                className="rounded-2xl px-6 py-3 text-xs font-black text-white shadow-md transition-all disabled:opacity-60"
                 style={{
                   background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.cyan})`,
                   boxShadow: `0 4px 14px 0 ${BRAND.blue}35`,
@@ -234,13 +408,13 @@ function ProfileContent() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                {saving ? "Đang lưu…" : "Lưu thay đổi"}
+                {saving ? "Đang lưu…" : "💾 Lưu thay đổi"}
               </motion.button>
+              {saved ? (
+                <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">✓ Đã lưu thay đổi hồ sơ.</p>
+              ) : null}
             </div>
             {error ? <p className={`mt-2 ${errorClass}`}>{error}</p> : null}
-            {saved ? (
-              <p className="mt-2.5 text-xs font-black text-emerald-600 dark:text-emerald-400">✓ Đã lưu thay đổi hồ sơ.</p>
-            ) : null}
           </div>
 
           {/* Languages Selector */}
@@ -480,8 +654,164 @@ function ProfileContent() {
               </div>
             )}
           </div>
+
+          {/* Avatar Frames Showcase */}
+          {frames.length > 0 ? (
+            <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
+              <div
+                className="absolute inset-x-0 top-0 h-[2.5px]"
+                style={{ background: `linear-gradient(90deg, ${BRAND.yellow}, ${BRAND.purple})` }}
+              />
+              <span className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Bộ sưu tập</span>
+              <h3 className="mt-1 text-base font-black text-foreground">Khung Avatar & Thành Tích</h3>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {frames.map((f) => (
+                  <div
+                    key={f.id}
+                    className={cn(
+                      "rounded-2xl border p-3.5 text-center transition-all",
+                      f.unlocked
+                        ? "border-primary/30 bg-primary/5 shadow-sm"
+                        : "border-border bg-secondary/30 opacity-60",
+                    )}
+                  >
+                    <AvatarWithFrame
+                      avatarUrl={avatarUrl || user.avatarUrl}
+                      frame={f.id}
+                      fallbackInitial={initial}
+                      size={52}
+                      className="mx-auto"
+                    />
+                    <p className="mt-2 text-xs font-black text-foreground">{f.name}</p>
+                    <p className="mt-0.5 text-[10px] font-medium text-muted-foreground leading-tight">
+                      {f.condition}
+                    </p>
+                    {f.unlocked ? (
+                      <span className="mt-1.5 inline-block rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600">
+                        ✓ Đã mở khóa
+                      </span>
+                    ) : (
+                      <span className="mt-1.5 inline-block rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+                        🔒 Chưa mở
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
+
+      {/* Avatar Picker Modal */}
+      <AnimatePresence>
+        {showAvatarPicker ? (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowAvatarPicker(false)}
+          >
+            <motion.div
+              className="relative mx-4 w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-2xl"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setShowAvatarPicker(false)}
+                className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              >
+                <X size={18} />
+              </button>
+
+              <h3 className="text-lg font-black text-foreground">Chọn Avatar</h3>
+              <p className="mt-1 text-xs text-muted-foreground">Bấm chọn linh vật yêu thích làm ảnh đại diện</p>
+
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                {PRESET_LIST.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => { selectPreset(p.id); setShowAvatarPicker(false); }}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 rounded-2xl border p-4 transition-all hover:-translate-y-0.5",
+                      avatarUrl === p.id
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                        : "border-border hover:border-primary/30",
+                    )}
+                  >
+                    <span className="text-3xl">{p.emoji}</span>
+                    <span className="text-[11px] font-bold text-foreground">{p.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Tùy chọn Custom Image URL hoặc Reset */}
+              <div className="mt-4 border-t border-border/80 pt-3">
+                <label className="mb-1 block text-xs font-bold text-muted-foreground">Hoặc dùng liên kết ảnh tùy chỉnh (URL)</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    value={avatarUrl.startsWith("preset:") ? "" : avatarUrl}
+                    onChange={(e) => {
+                      setAvatarUrl(e.target.value);
+                      setSaved(false);
+                    }}
+                    placeholder="https://example.com/avatar.png"
+                    className={`flex-1 ${inputClass}`}
+                  />
+                  {avatarUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarUrl("");
+                        setSaved(false);
+                      }}
+                      className="rounded-xl border border-border bg-secondary px-2.5 py-2 text-xs font-bold text-muted-foreground hover:text-foreground"
+                    >
+                      Xóa ảnh
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Chọn khung viền */}
+              <h4 className="mt-5 text-sm font-black text-foreground">Chọn khung viền</h4>
+              <p className="mt-0.5 text-xs text-muted-foreground">Chỉ hiển thị các khung đã mở khóa</p>
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                {frames.filter((f) => f.unlocked).map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => { selectFrame(f.id); setShowAvatarPicker(false); }}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-2xl border p-3 text-left transition-all hover:-translate-y-0.5",
+                      avatarFrame === f.id
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                        : "border-border hover:border-primary/30",
+                    )}
+                  >
+                    <AvatarWithFrame
+                      avatarUrl={avatarUrl || user.avatarUrl}
+                      frame={f.id}
+                      fallbackInitial={initial}
+                      size={36}
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-foreground">{f.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{f.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

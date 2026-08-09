@@ -83,6 +83,36 @@ export class QuizAttemptsService {
       );
     }
 
+    // Tự động ghi nhận thành tích vào nhóm học tập (nếu có)
+    void this.prisma.studyGroupMember
+      .findFirst({
+        where: { userId, group: { languageCode: lang } },
+      })
+      .then(async (membership) => {
+        if (membership) {
+          const xpGain = Math.max(5, Math.round((dto.scorePercent / 100) * 15));
+          await this.prisma.groupActivity.create({
+            data: {
+              groupId: membership.groupId,
+              userId,
+              type: 'COMPLETED_QUIZ',
+              metadata: {
+                sourceTitle: dto.sourceTitle,
+                scorePercent: dto.scorePercent,
+              },
+            },
+          });
+          await this.prisma.studyGroupMember.update({
+            where: { id: membership.id },
+            data: {
+              weeklyXp: { increment: xpGain },
+              totalXp: { increment: xpGain },
+            },
+          });
+        }
+      })
+      .catch(() => {});
+
     return result;
   }
 }

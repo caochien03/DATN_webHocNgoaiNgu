@@ -3,6 +3,7 @@ import { Be_Vietnam_Pro, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/goo
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LearningLanguageProvider } from "@/components/LearningLanguageProvider";
 import { AppShell } from "@/components/ui-kit/AppShell";
+import { InAppPushNotificationBanner } from "@/components/ui-kit/InAppPushNotificationBanner";
 import { APP } from "@/components/ui-kit/brand";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
@@ -49,6 +50,7 @@ export default function RootLayout({
         <ThemeProvider>
           <LearningLanguageProvider>
             <AppShell>{children}</AppShell>
+            <InAppPushNotificationBanner />
           </LearningLanguageProvider>
         </ThemeProvider>
       </body>

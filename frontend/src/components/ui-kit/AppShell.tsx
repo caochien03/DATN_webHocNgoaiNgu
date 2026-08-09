@@ -19,6 +19,7 @@ import {
   Settings,
   Target,
   Trophy,
+  Users,
   Menu,
 } from "lucide-react";
 import {
@@ -31,7 +32,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LearningLanguageSelector } from "@/components/LearningLanguageSelector";
 import { useLearningLanguage } from "@/components/LearningLanguageProvider";
 import { cn } from "@/lib/cn";
-import { AppMark, AppWordmark, AvatarCircle } from "./AppMark";
+import { AppMark, AppWordmark } from "./AppMark";
+import { AvatarWithFrame } from "./AvatarWithFrame";
 import { APP, BRAND } from "./brand";
 
 const AUTH_PATHS = new Set(["/login", "/register"]);
@@ -52,6 +54,7 @@ const NAV: NavGroup[] = [
     items: [
       { href: "/", icon: Home, label: "Trang chủ" },
       { href: "/goals", icon: Target, label: "Mục tiêu ngày" },
+      { href: "/groups", icon: Users, label: "Nhóm học tập" },
     ],
   },
   {
@@ -170,11 +173,20 @@ function Sidebar({
 
       {/* User section */}
       {user ? (
-        <div className="mx-3 my-3 p-3 rounded-2xl border border-primary/20 bg-primary/5 shadow-2xs">
+        <Link
+          href="/me"
+          onClick={onCloseMobile}
+          className="group mx-3 my-3 block rounded-2xl border border-primary/20 bg-primary/5 p-3 shadow-2xs transition-all hover:border-primary/40 hover:bg-primary/10 hover:shadow-xs"
+        >
           <div className="flex items-center gap-3">
-            <AvatarCircle label={initial} className="h-9 w-9 flex-shrink-0 text-sm ring-2 ring-primary/30" />
+            <AvatarWithFrame
+              avatarUrl={user.avatarUrl}
+              frame={user.avatarFrame}
+              fallbackInitial={initial}
+              size={36}
+            />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-black text-foreground">
+              <p className="truncate text-xs font-black text-foreground group-hover:text-primary transition-colors">
                 {user.name || user.email}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -187,10 +199,15 @@ function Sidebar({
                 >
                   {admin ? "🛡️ Quản trị" : "🏃 Học viên"}
                 </span>
+                {user.avatarFrame && user.avatarFrame !== "DEFAULT" ? (
+                  <span className="text-[10px]">
+                    {user.avatarFrame === "FIRE_STREAK" ? "🔥" : user.avatarFrame === "DIAMOND_XP" ? "💎" : "👑"}
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
-        </div>
+        </Link>
       ) : null}
 
       {/* Navigation Groups */}
@@ -321,6 +338,7 @@ function Sidebar({
 const TITLES: { match: (p: string) => boolean; title: string }[] = [
   { match: (p) => p === "/", title: "Trang chủ" },
   { match: (p) => p.startsWith("/goals"), title: "Mục tiêu ngày" },
+  { match: (p) => p.startsWith("/groups"), title: "Nhóm học tập" },
   { match: (p) => p.startsWith("/topics"), title: "Từ vựng" },
   { match: (p) => p.startsWith("/decks"), title: "Bộ thẻ" },
   { match: (p) => p.startsWith("/review"), title: "Ôn tập SRS" },
@@ -343,6 +361,7 @@ function pageTitle(pathname: string) {
 const PAGE_ICONS: Record<string, React.ReactNode> = {
   "Trang chủ": <Home size={16} />,
   "Mục tiêu ngày": <Target size={16} />,
+  "Nhóm học tập": <Users size={16} />,
   "Từ vựng": <BookOpen size={16} />,
   "Bộ thẻ": <Layers size={16} />,
   "Ôn tập SRS": <RefreshCw size={16} />,

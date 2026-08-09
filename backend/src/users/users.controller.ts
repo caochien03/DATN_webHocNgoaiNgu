@@ -28,6 +28,12 @@ export class UsersController {
     return this.progressService.getForLanguage(userId, languageCode);
   }
 
+  @Get('me/unlocked-frames')
+  @UseGuards(JwtAuthGuard)
+  getUnlockedFrames(@CurrentUser('id') userId: string) {
+    return this.usersService.getUnlockedFrames(userId);
+  }
+
   @Patch('me')
   @UseGuards(JwtAuthGuard)
   updateMe(@CurrentUser('id') userId: string, @Body() dto: UpdateProfileDto) {
@@ -35,6 +41,14 @@ export class UsersController {
       ...(dto.name !== undefined && { name: dto.name }),
       ...(dto.avatarUrl !== undefined && {
         avatarUrl: dto.avatarUrl === '' ? null : dto.avatarUrl,
+      }),
+      ...(dto.avatarFrame !== undefined && { avatarFrame: dto.avatarFrame }),
+      ...(dto.bio !== undefined && { bio: dto.bio === '' ? null : dto.bio }),
+      ...(dto.targetGoal !== undefined && {
+        targetGoal: dto.targetGoal === '' ? null : dto.targetGoal,
+      }),
+      ...(dto.currentLevel !== undefined && {
+        currentLevel: dto.currentLevel === '' ? null : dto.currentLevel,
       }),
     });
   }

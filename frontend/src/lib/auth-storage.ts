@@ -9,6 +9,10 @@ export type AuthUser = {
   email: string;
   name: string | null;
   avatarUrl: string | null;
+  avatarFrame: string | null;
+  bio: string | null;
+  targetGoal: string | null;
+  currentLevel: string | null;
   role: UserRole;
   createdAt: string;
   updatedAt: string;
