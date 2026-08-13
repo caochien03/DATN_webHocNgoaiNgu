@@ -18,10 +18,12 @@ import { ToeicModule } from './toeic/toeic.module';
 import { TopikModule } from './topik/topik.module';
 import { TopicsModule } from './topics/topics.module';
 import { UsersModule } from './users/users.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     UsersModule,
     AuthModule,

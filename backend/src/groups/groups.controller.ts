@@ -19,10 +19,21 @@ import {
 } from './dto/groups.dto';
 import { GroupsService } from './groups.service';
 
+import { GroupsCronService } from './groups.cron.service';
+
 @Controller('groups')
 @UseGuards(JwtAuthGuard)
 export class GroupsController {
-  constructor(private readonly groupsService: GroupsService) {}
+  constructor(
+    private readonly groupsService: GroupsService,
+    private readonly groupsCronService: GroupsCronService,
+  ) {}
+
+  @Post('test-cron')
+  async triggerCron() {
+    await this.groupsCronService.calculateSquadStreaks();
+    return { success: true, message: 'Đã chạy tính toán Group Streak' };
+  }
 
   @Post()
   createGroup(@CurrentUser('id') userId: string, @Body() dto: CreateGroupDto) {

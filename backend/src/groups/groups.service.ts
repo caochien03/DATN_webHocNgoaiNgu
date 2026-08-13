@@ -392,7 +392,7 @@ export class GroupsService {
         totalMembers,
         percent: energyPercent,
         isFullSquadDay,
-        streakDays: isFullSquadDay ? 3 : 1,
+        streakDays: group.squadStreak + (isFullSquadDay ? 1 : 0),
       },
       milestones: {
         totalSquadXp,

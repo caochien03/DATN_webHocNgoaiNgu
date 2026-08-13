@@ -108,6 +108,26 @@ export class UsersService {
         p.path.steps.length > 0,
     );
 
+    // Tính điểm nhóm cao nhất
+    const groupMemberships = await this.prisma.studyGroupMember.findMany({
+      where: { userId },
+      include: {
+        group: {
+          include: {
+            members: {
+              select: { totalXp: true }
+            }
+          }
+        }
+      }
+    });
+
+    let maxSquadXp = 0;
+    for (const membership of groupMemberships) {
+      const squadXp = membership.group.members.reduce((sum, m) => sum + m.totalXp, 0);
+      if (squadXp > maxSquadXp) maxSquadXp = squadXp;
+    }
+
     const frames = [
       {
         id: 'DEFAULT',
@@ -136,6 +156,34 @@ export class UsersService {
         description: 'Viền vàng ánh kim + icon vương miện',
         unlocked: completedAnyPath,
         condition: `Hoàn thành ít nhất 1 lộ trình (${completedAnyPath ? 'Đã đạt' : 'Chưa đạt'})`,
+      },
+      {
+        id: 'SQUAD_BRONZE',
+        name: '🥉 Đồng Đội Hợp Lực',
+        description: 'Viền Đồng cổ điển',
+        unlocked: maxSquadXp >= 100,
+        condition: `Nhóm đạt mốc 100 XP (Cao nhất: ${maxSquadXp} XP)`,
+      },
+      {
+        id: 'SQUAD_SILVER',
+        name: '🥈 Tinh Tinh Tập Thể',
+        description: 'Viền Bạc ánh kim loại',
+        unlocked: maxSquadXp >= 300,
+        condition: `Nhóm đạt mốc 300 XP (Cao nhất: ${maxSquadXp} XP)`,
+      },
+      {
+        id: 'SQUAD_GOLD',
+        name: '🥇 Vàng Đoàn Kết',
+        description: 'Viền Vàng chói lọi rực rỡ',
+        unlocked: maxSquadXp >= 600,
+        condition: `Nhóm đạt mốc 600 XP (Cao nhất: ${maxSquadXp} XP)`,
+      },
+      {
+        id: 'SQUAD_DIAMOND',
+        name: '💎 Kim Cương Nhóm',
+        description: 'Viền Kim Cương phát sáng huyền ảo',
+        unlocked: maxSquadXp >= 1000,
+        condition: `Nhóm đạt mốc 1.000 XP (Cao nhất: ${maxSquadXp} XP)`,
       },
     ];
 

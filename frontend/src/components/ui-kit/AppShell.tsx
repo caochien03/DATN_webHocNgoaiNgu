@@ -144,7 +144,14 @@ function Sidebar({
   const admin = isAdminUser(user);
   const initial = (user?.name || user?.email || "?").charAt(0).toUpperCase();
 
-  function logout() {
+  async function logout() {
+    try {
+      // Gỡ thông báo push trước khi xóa token để gọi API với auth thành công
+      const { unsubscribeFromPushNotifications } = await import('@/lib/push-notifications');
+      await unsubscribeFromPushNotifications();
+    } catch (e) {
+      console.error('Lỗi khi gỡ push notification lúc đăng xuất', e);
+    }
     clearStoredAuth();
     router.push("/login");
     router.refresh();

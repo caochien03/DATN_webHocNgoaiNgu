@@ -19,10 +19,10 @@ export class UpdateProfileDto {
   @MaxLength(2048)
   avatarUrl?: string;
 
-  /** Mã khung avatar: DEFAULT | FIRE_STREAK | DIAMOND_XP | ROYAL_CROWN */
+  /** Mã khung avatar: DEFAULT | FIRE_STREAK | DIAMOND_XP | ROYAL_CROWN | SQUAD_... */
   @IsOptional()
   @IsString()
-  @IsIn(['DEFAULT', 'FIRE_STREAK', 'DIAMOND_XP', 'ROYAL_CROWN'])
+  @IsIn(['DEFAULT', 'FIRE_STREAK', 'DIAMOND_XP', 'ROYAL_CROWN', 'SQUAD_BRONZE', 'SQUAD_SILVER', 'SQUAD_GOLD', 'SQUAD_DIAMOND'])
   avatarFrame?: string;
 
   /** Châm ngôn / tiểu sử ngắn (tối đa 150 ký tự). */
